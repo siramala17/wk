@@ -1,9 +1,10 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HealthProvider, useHealth } from './context/HealthContext'
 import Navbar from './components/Navbar'
 import BottomNav from './components/BottomNav'
 import Register from './pages/Register'
+import Admin from './pages/Admin'
 import Dashboard from './pages/Dashboard'
 import Assessment from './pages/Assessment'
 import BMI from './pages/BMI'
@@ -13,6 +14,11 @@ import Rewards from './pages/Rewards'
 
 function AppContent() {
   const { isRegistered } = useHealth()
+  const { pathname } = useLocation()
+
+  if (pathname === '/admin') {
+    return <Admin />
+  }
 
   if (!isRegistered) {
     return <Register />

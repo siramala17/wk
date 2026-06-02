@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Camera, User, ChevronRight, Check, RefreshCw, AlertCircle } from 'lucide-react'
+import { Camera, User, ChevronRight, Check, RefreshCw, AlertCircle, Lock } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 export default function Register() {
@@ -8,6 +8,12 @@ export default function Register() {
   const [form, setForm] = useState({ firstName: '', lastName: '', age: '' })
   const [errors, setErrors] = useState({})
 
+  // step 2 — age verification
+  const [ageConfirm, setAgeConfirm] = useState('')
+  const [ageConfirmError, setAgeConfirmError] = useState(null)
+  const [ageVerified, setAgeVerified] = useState(false)
+
+  // camera
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const streamRef = useRef(null)
@@ -19,9 +25,9 @@ export default function Register() {
   const [flash, setFlash] = useState(false)
 
   useEffect(() => {
-    if (step === 2) startCamera()
+    if (step === 2 && ageVerified) startCamera()
     return () => stopCamera()
-  }, [step])
+  }, [step, ageVerified])
 
   function stopCamera() {
     if (streamRef.current) {
@@ -61,7 +67,27 @@ export default function Register() {
   }
 
   function handleNext() {
-    if (validateStep1()) setStep(2)
+    if (validateStep1()) {
+      setAgeConfirm('')
+      setAgeVerified(false)
+      setAgeConfirmError(null)
+      setStep(2)
+    }
+  }
+
+  function handleVerifyAge() {
+    const entered = parseInt(ageConfirm)
+    if (!ageConfirm || isNaN(entered)) {
+      setAgeConfirmError('กรุณากรอกอายุ')
+      return
+    }
+    if (entered !== parseInt(form.age)) {
+      setAgeConfirmError('อายุไม่ตรงกับที่ลงทะเบียน กรุณาลองใหม่')
+      setAgeConfirm('')
+      return
+    }
+    setAgeConfirmError(null)
+    setAgeVerified(true)
   }
 
   function startScan() {
@@ -122,7 +148,7 @@ export default function Register() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
 
-        {/* Logo */}
+        {/* icon + title */}
         <div className="text-center mb-6">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 ${
             step === 1 ? 'bg-blue-100' : 'bg-yellow-100'
@@ -132,14 +158,14 @@ export default function Register() {
               : <Camera size={32} className="text-yellow-600" />}
           </div>
           <h1 className="text-2xl font-bold text-slate-800">
-            {step === 1 ? 'ข้อมูลส่วนตัว' : 'สแกนใบหน้า'}
+            {step === 1 ? 'ข้อมูลส่วนตัว' : 'ยืนยันตัวตน'}
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            {step === 1 ? 'กรอกข้อมูลของคุณเพื่อเริ่มใช้งาน' : 'ยืนยันตัวตนเพื่อความปลอดภัย'}
+            {step === 1 ? 'กรอกข้อมูลของคุณเพื่อเริ่มใช้งาน' : 'ยืนยันอายุและสแกนใบหน้า'}
           </p>
         </div>
 
-        {/* Step indicator */}
+        {/* step indicator */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
             step >= 1 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-400'
@@ -154,7 +180,7 @@ export default function Register() {
           </div>
         </div>
 
-        {/* ── STEP 1: personal info ── */}
+        {/* ── STEP 1 ── */}
         {step === 1 && (
           <div className="space-y-4">
             <div>
@@ -204,112 +230,164 @@ export default function Register() {
           </div>
         )}
 
-        {/* ── STEP 2: face scan ── */}
+        {/* ── STEP 2 ── */}
         {step === 2 && (
-          <div>
-            <div className="relative rounded-2xl overflow-hidden bg-slate-900 aspect-square mb-4">
-              {cameraError ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-red-400 p-4">
-                  <AlertCircle size={40} />
-                  <p className="text-sm text-center">{cameraError}</p>
+          <div className="space-y-5">
+
+            {/* age verification block */}
+            <div className={`rounded-2xl border-2 p-4 transition-colors ${
+              ageVerified ? 'border-green-400 bg-green-50' : 'border-blue-200 bg-blue-50'
+            }`}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                  ageVerified ? 'bg-green-500' : 'bg-blue-500'
+                }`}>
+                  {ageVerified ? <Check size={14} className="text-white" /> : <Lock size={14} className="text-white" />}
                 </div>
-              ) : captured ? (
-                <>
-                  <img src={captured} alt="face" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
-                    <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                      <Check size={40} className="text-white" strokeWidth={3} />
-                    </div>
-                  </div>
-                </>
+                <p className="text-sm font-semibold text-slate-700">
+                  {ageVerified ? 'ยืนยันอายุสำเร็จ' : 'ยืนยันอายุของคุณ'}
+                </p>
+              </div>
+
+              {ageVerified ? (
+                <p className="text-green-700 text-sm text-center py-1">
+                  อายุ {form.age} ปี — ผ่านการยืนยันแล้ว
+                </p>
               ) : (
                 <>
-                  <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" muted playsInline />
-                  {/* face outline */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className={`w-44 h-52 border-4 rounded-[50%] transition-colors ${
-                      scanning ? 'border-yellow-400 animate-pulse' : 'border-white/70'
-                    }`} />
+                  <p className="text-slate-500 text-xs mb-2">กรอกอายุของคุณอีกครั้งเพื่อยืนยัน</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={ageConfirm}
+                      onChange={e => { setAgeConfirm(e.target.value); setAgeConfirmError(null) }}
+                      onKeyDown={e => e.key === 'Enter' && handleVerifyAge()}
+                      placeholder="กรอกอายุ"
+                      min="1"
+                      max="120"
+                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm ${
+                        ageConfirmError ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white'
+                      } focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800`}
+                    />
+                    <button
+                      onClick={handleVerifyAge}
+                      className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                      ยืนยัน
+                    </button>
                   </div>
-                  {/* corner guides */}
-                  <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-blue-400 rounded-tl-lg" />
-                  <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-blue-400 rounded-tr-lg" />
-                  <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-blue-400 rounded-bl-lg" />
-                  <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-blue-400 rounded-br-lg" />
-                  {/* loading overlay */}
-                  {!cameraReady && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white bg-slate-900/80">
-                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <p className="text-sm">กำลังเปิดกล้อง...</p>
-                    </div>
+                  {ageConfirmError && (
+                    <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                      <AlertCircle size={12} />{ageConfirmError}
+                    </p>
                   )}
-                  {/* countdown */}
-                  {countdown !== null && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <span className="text-white text-8xl font-black drop-shadow-2xl">{countdown}</span>
-                    </div>
-                  )}
-                  {/* flash */}
-                  {flash && <div className="absolute inset-0 bg-white animate-ping" />}
                 </>
               )}
             </div>
-            <canvas ref={canvasRef} className="hidden" />
 
-            {!captured && !cameraError && (
-              <p className="text-center text-slate-400 text-xs mb-4">
-                วางใบหน้าในกรอบวงรี แล้วกดปุ่มสแกน
-              </p>
+            {/* camera block — only visible after age verified */}
+            {ageVerified && (
+              <>
+                <div className="relative rounded-2xl overflow-hidden bg-slate-900 aspect-square">
+                  {cameraError ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-red-400 p-4">
+                      <AlertCircle size={40} />
+                      <p className="text-sm text-center">{cameraError}</p>
+                    </div>
+                  ) : captured ? (
+                    <>
+                      <img src={captured} alt="face" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
+                        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                          <Check size={40} className="text-white" strokeWidth={3} />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" muted playsInline />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className={`w-44 h-52 border-4 rounded-[50%] transition-colors ${
+                          scanning ? 'border-yellow-400 animate-pulse' : 'border-white/70'
+                        }`} />
+                      </div>
+                      <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-blue-400 rounded-tl-lg" />
+                      <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-blue-400 rounded-tr-lg" />
+                      <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-blue-400 rounded-bl-lg" />
+                      <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-blue-400 rounded-br-lg" />
+                      {!cameraReady && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white bg-slate-900/80">
+                          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <p className="text-sm">กำลังเปิดกล้อง...</p>
+                        </div>
+                      )}
+                      {countdown !== null && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <span className="text-white text-8xl font-black drop-shadow-2xl">{countdown}</span>
+                        </div>
+                      )}
+                      {flash && <div className="absolute inset-0 bg-white" />}
+                    </>
+                  )}
+                </div>
+                <canvas ref={canvasRef} className="hidden" />
+
+                {!captured && !cameraError && (
+                  <p className="text-center text-slate-400 text-xs -mt-2">
+                    วางใบหน้าในกรอบวงรี แล้วกดปุ่มสแกน
+                  </p>
+                )}
+                {captured && (
+                  <p className="text-center text-green-600 text-sm font-medium -mt-2">
+                    สแกนใบหน้าสำเร็จ!
+                  </p>
+                )}
+
+                <div className="space-y-3">
+                  {captured ? (
+                    <>
+                      <button
+                        onClick={handleRegister}
+                        className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all"
+                      >
+                        <Check size={18} /> เริ่มใช้งาน
+                      </button>
+                      <button
+                        onClick={retake}
+                        className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"
+                      >
+                        <RefreshCw size={15} /> สแกนใหม่
+                      </button>
+                    </>
+                  ) : cameraError ? (
+                    <button
+                      onClick={() => { setCameraError(null); startCamera() }}
+                      className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                      ลองอีกครั้ง
+                    </button>
+                  ) : (
+                    <button
+                      onClick={startScan}
+                      disabled={!cameraReady || scanning}
+                      className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Camera size={18} />
+                      {scanning ? 'กำลังสแกน...' : 'สแกนใบหน้า'}
+                    </button>
+                  )}
+                </div>
+              </>
             )}
-            {captured && (
-              <p className="text-center text-green-600 text-sm font-medium mb-4">
-                สแกนใบหน้าสำเร็จ!
-              </p>
+
+            {!captured && (
+              <button
+                onClick={() => { stopCamera(); setAgeVerified(false); setAgeConfirm(''); setStep(1) }}
+                className="w-full text-slate-400 text-sm hover:text-slate-600 transition-colors py-1"
+              >
+                ← ย้อนกลับ
+              </button>
             )}
-
-            <div className="space-y-3">
-              {captured ? (
-                <>
-                  <button
-                    onClick={handleRegister}
-                    className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all"
-                  >
-                    <Check size={18} /> เริ่มใช้งาน
-                  </button>
-                  <button
-                    onClick={retake}
-                    className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"
-                  >
-                    <RefreshCw size={15} /> สแกนใหม่
-                  </button>
-                </>
-              ) : cameraError ? (
-                <button
-                  onClick={() => { setCameraError(null); startCamera() }}
-                  className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                >
-                  ลองอีกครั้ง
-                </button>
-              ) : (
-                <button
-                  onClick={startScan}
-                  disabled={!cameraReady || scanning}
-                  className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Camera size={18} />
-                  {scanning ? 'กำลังสแกน...' : 'สแกนใบหน้า'}
-                </button>
-              )}
-
-              {!captured && (
-                <button
-                  onClick={() => { stopCamera(); setStep(1) }}
-                  className="w-full text-slate-400 text-sm hover:text-slate-600 transition-colors py-1"
-                >
-                  ← ย้อนกลับ
-                </button>
-              )}
-            </div>
           </div>
         )}
       </div>

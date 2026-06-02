@@ -54,6 +54,13 @@ export function HealthProvider({ children }) {
     } catch { return null }
   })
 
+  const [registeredUsers, setRegisteredUsers] = useState(() => {
+    try {
+      const s = localStorage.getItem('hc_users')
+      return s ? JSON.parse(s) : []
+    } catch { return [] }
+  })
+
   const [completedTips, setCompletedTips] = useState(() => {
     try {
       const s = localStorage.getItem('hc_tips')
@@ -66,6 +73,7 @@ export function HealthProvider({ children }) {
   useEffect(() => { localStorage.setItem('hc_history', JSON.stringify(history)) }, [history])
   useEffect(() => { if (bmiData) localStorage.setItem('hc_bmi', JSON.stringify(bmiData)) }, [bmiData])
   useEffect(() => { localStorage.setItem('hc_tips', JSON.stringify(completedTips)) }, [completedTips])
+  useEffect(() => { localStorage.setItem('hc_users', JSON.stringify(registeredUsers)) }, [registeredUsers])
 
   function saveAssessment(data) {
     setLatestAssessment(data)
@@ -92,6 +100,15 @@ export function HealthProvider({ children }) {
 
   function registerUser({ firstName, lastName, age, faceImage }) {
     const name = firstName
+    const newEntry = {
+      id: Date.now(),
+      firstName,
+      lastName,
+      age,
+      faceImage,
+      registeredAt: new Date().toISOString(),
+    }
+    setRegisteredUsers(prev => [...prev, newEntry])
     setUser(prev => ({ ...prev, name, firstName, lastName, age, faceImage }))
     setIsRegistered(true)
     localStorage.setItem('hc_registered', 'true')
@@ -111,6 +128,7 @@ export function HealthProvider({ children }) {
   return (
     <HealthContext.Provider value={{
       isRegistered, registerUser,
+      registeredUsers,
       user, setUser,
       latestAssessment, saveAssessment,
       history,
