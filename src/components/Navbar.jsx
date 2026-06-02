@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, Menu, X, Star } from 'lucide-react'
+import { Activity, Menu, X, Star, Shield } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 const links = [
@@ -43,10 +43,17 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link to="/rewards" className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 rounded-full px-3 py-1">
             <Star size={14} className="text-yellow-500 fill-yellow-400" />
             <span className="text-sm font-semibold text-yellow-700">{user.points}</span>
+          </Link>
+          <Link
+            to="/admin"
+            title="Admin Panel"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+          >
+            <Shield size={18} />
           </Link>
           <button onClick={() => setOpen(!open)} className="md:hidden p-1.5 rounded-lg hover:bg-blue-50">
             {open ? <X size={22} className="text-slate-700" /> : <Menu size={22} className="text-slate-700" />}

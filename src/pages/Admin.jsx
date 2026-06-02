@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp } from 'lucide-react'
+import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useHealth } from '../context/HealthContext'
 
 const ADMIN_PASSWORD = '2569'
@@ -18,6 +19,7 @@ function formatDate(iso) {
 
 export default function Admin() {
   const { registeredUsers } = useHealth()
+  const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
@@ -42,6 +44,7 @@ export default function Admin() {
     setAuthenticated(false)
     setPassword('')
     setLoginError(false)
+    navigate('/')
   }
 
   // ── LOGIN SCREEN ──
@@ -93,9 +96,12 @@ export default function Admin() {
             </button>
           </form>
 
-          <p className="text-center text-white/30 text-xs mt-6">
-            เฉพาะผู้ดูแลระบบเท่านั้น
-          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="w-full flex items-center justify-center gap-1.5 text-white/40 hover:text-white/70 text-sm mt-4 transition-colors"
+          >
+            <ArrowLeft size={14} /> กลับหน้าหลัก
+          </button>
         </div>
       </div>
     )
@@ -115,12 +121,20 @@ export default function Admin() {
             <p className="text-slate-400 text-xs">Admin Panel</p>
           </div>
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
-        >
-          <LogOut size={16} /> ออกจากระบบ
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
+          >
+            <ArrowLeft size={16} /> หน้าหลัก
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-red-400 text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
+          >
+            <LogOut size={16} /> ออกจากระบบ
+          </button>
+        </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
