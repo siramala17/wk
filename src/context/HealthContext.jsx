@@ -22,11 +22,15 @@ function generateSampleHistory() {
 }
 
 export function HealthProvider({ children }) {
+  const [isRegistered, setIsRegistered] = useState(() =>
+    localStorage.getItem('hc_registered') === 'true'
+  )
+
   const [user, setUser] = useState(() => {
     try {
       const s = localStorage.getItem('hc_user')
-      return s ? JSON.parse(s) : { name: 'ผู้ใช้งาน', age: 18, points: 120, streak: 3 }
-    } catch { return { name: 'ผู้ใช้งาน', age: 18, points: 120, streak: 3 } }
+      return s ? JSON.parse(s) : { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, points: 120, streak: 3, faceImage: null }
+    } catch { return { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, points: 120, streak: 3, faceImage: null } }
   })
 
   const [latestAssessment, setLatestAssessment] = useState(() => {
@@ -86,6 +90,13 @@ export function HealthProvider({ children }) {
     setCompletedTips([])
   }
 
+  function registerUser({ firstName, lastName, age, faceImage }) {
+    const name = firstName
+    setUser(prev => ({ ...prev, name, firstName, lastName, age, faceImage }))
+    setIsRegistered(true)
+    localStorage.setItem('hc_registered', 'true')
+  }
+
   function saveBmi(data) {
     setBmiData(data)
     setUser(prev => ({ ...prev, points: prev.points + 15 }))
@@ -99,6 +110,7 @@ export function HealthProvider({ children }) {
 
   return (
     <HealthContext.Provider value={{
+      isRegistered, registerUser,
       user, setUser,
       latestAssessment, saveAssessment,
       history,
