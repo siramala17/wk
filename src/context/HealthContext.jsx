@@ -44,8 +44,8 @@ export function HealthProvider({ children }) {
   const [history, setHistory] = useState(() => {
     try {
       const s = localStorage.getItem('hc_history')
-      return s ? JSON.parse(s) : generateSampleHistory()
-    } catch { return generateSampleHistory() }
+      return s ? JSON.parse(s) : []
+    } catch { return [] }
   })
 
   const [bmiData, setBmiData] = useState(() => {

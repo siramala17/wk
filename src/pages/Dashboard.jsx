@@ -43,7 +43,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const { latestAssessment, history, bmiData, user } = useHealth()
-  const score = latestAssessment?.overallScore ?? (history.length ? history[history.length - 1].score : 0)
+  const score = latestAssessment?.overallScore ?? (history.length ? history[history.length - 1].score : null)
   const level = getHealthLevel(score)
 
   const stats = latestAssessment ? [
@@ -54,6 +54,8 @@ export default function Dashboard() {
     { icon: Droplets, label: 'ดื่มน้ำ', value: latestAssessment.waterGlasses, unit: 'แก้ว', color: 'text-cyan-600', bgColor: 'bg-cyan-100', max: 8, current: latestAssessment.waterGlasses },
   ] : []
 
+  const hasAnyData = score !== null
+
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-5 animate-fade-in">
 
@@ -61,31 +63,38 @@ export default function Dashboard() {
       <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-16 translate-x-16" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-12 -translate-x-8" />
-        <div className="relative flex items-center justify-between">
-          <div>
-            <p className="text-blue-200 text-sm mb-1">สวัสดี, {user.name} 👋</p>
-            <h1 className="text-2xl font-bold mb-1">คะแนนสุขภาพ</h1>
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-white/20`}>
-              <span>{level.emoji}</span>
-              <span>{level.label}</span>
-            </div>
-            <p className="text-blue-200 text-xs mt-3">🔥 Streak {user.streak} วัน</p>
-          </div>
-          <div className="relative flex items-center justify-center">
-            <ScoreRing score={score} size={120} strokeWidth={10} color="#FBBF24" />
-            <div className="absolute text-center">
-              <span className="text-3xl font-black">{score}</span>
-              <p className="text-xs text-blue-200">/ 100</p>
-            </div>
-          </div>
-        </div>
 
-        {!latestAssessment && (
-          <Link to="/assessment" className="mt-4 flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-semibold rounded-xl px-4 py-3 transition-colors">
-            <Zap size={16} />
-            เริ่มประเมินสุขภาพเดี๋ยวนี้!
-          </Link>
+        {hasAnyData ? (
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-blue-200 text-sm mb-1">สวัสดี, {user.name} 👋</p>
+              <h1 className="text-2xl font-bold mb-1">คะแนนสุขภาพ</h1>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-white/20">
+                <span>{level.emoji}</span>
+                <span>{level.label}</span>
+              </div>
+              <p className="text-blue-200 text-xs mt-3">🔥 Streak {user.streak} วัน</p>
+            </div>
+            <div className="relative flex items-center justify-center">
+              <ScoreRing score={score} size={120} strokeWidth={10} color="#FBBF24" />
+              <div className="absolute text-center">
+                <span className="text-3xl font-black">{score}</span>
+                <p className="text-xs text-blue-200">/ 100</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="relative text-center py-2">
+            <p className="text-blue-200 text-sm mb-2">สวัสดี, {user.name} 👋</p>
+            <h1 className="text-2xl font-bold mb-1">ยังไม่มีข้อมูลสุขภาพ</h1>
+            <p className="text-blue-200 text-sm mb-4">กดปุ่มด้านล่างเพื่อเริ่มประเมินสุขภาพของคุณ</p>
+          </div>
         )}
+
+        <Link to="/assessment" className="mt-4 flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-semibold rounded-xl px-4 py-3 transition-colors">
+          <Zap size={16} />
+          {hasAnyData ? 'ประเมินสุขภาพอีกครั้ง' : 'เริ่มประเมินสุขภาพเดี๋ยวนี้!'}
+        </Link>
       </div>
 
       {/* Quick Actions */}
@@ -136,25 +145,27 @@ export default function Dashboard() {
       )}
 
       {/* Weekly Chart */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-50">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-slate-800">แนวโน้มสุขภาพ 7 วัน</h2>
-          <Link to="/analytics" className="text-xs text-blue-600 font-medium hover:underline">ดูเพิ่มเติม</Link>
+      {history.length > 0 && (
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-50">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-slate-800">แนวโน้มสุขภาพ 7 วัน</h2>
+            <Link to="/analytics" className="text-xs text-blue-600 font-medium hover:underline">ดูเพิ่มเติม</Link>
+          </div>
+          <ResponsiveContainer width="100%" height={140}>
+            <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#2563EB" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Area type="monotone" dataKey="score" stroke="#2563EB" strokeWidth={2.5} fill="url(#scoreGrad)" dot={{ r: 3, fill: '#2563EB', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#1D4ED8' }} />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
-        <ResponsiveContainer width="100%" height={140}>
-          <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#2563EB" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#2563EB" stopOpacity={0.02} />
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Area type="monotone" dataKey="score" stroke="#2563EB" strokeWidth={2.5} fill="url(#scoreGrad)" dot={{ r: 3, fill: '#2563EB', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#1D4ED8' }} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      )}
 
       {/* Tip Banner */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 flex gap-3 items-start">
