@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { pushUserToCloud } from '../services/userSync'
 
 const HealthContext = createContext(null)
 
@@ -113,6 +114,7 @@ export function HealthProvider({ children }) {
     setUser(prev => ({ ...prev, name, firstName, lastName, age, gender, faceImage, registeredAt: newEntry.registeredAt }))
     setIsRegistered(true)
     localStorage.setItem('hc_registered', 'true')
+    pushUserToCloud(newEntry).catch(() => {})
   }
 
   function saveBmi(data) {
