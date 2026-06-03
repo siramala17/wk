@@ -11,6 +11,7 @@ const links = [
   { to: '/recommendations', label: 'คำแนะนำ AI' },
   { to: '/rewards', label: 'แต้มสะสม' },
   { to: '/knowledge', label: 'ใบความรู้' },
+  { to: '/activity',  label: 'ส่งภาพกิจกรรม' },
 ]
 
 export default function Navbar() {

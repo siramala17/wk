@@ -14,6 +14,7 @@ import Recommendations from './pages/Recommendations'
 import Rewards from './pages/Rewards'
 import Profile from './pages/Profile'
 import Knowledge from './pages/Knowledge'
+import ActivitySubmit from './pages/ActivitySubmit'
 
 function AppContent() {
   const { isLoggedIn, registeredUsers, showRegister } = useHealth()
@@ -40,6 +41,7 @@ function AppContent() {
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/knowledge" element={<Knowledge />} />
+          <Route path="/activity" element={<ActivitySubmit />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { pushUserToCloud } from '../services/userSync'
+import { pushUserToCloud, claimApprovedPoints } from '../services/userSync'
 
 const HealthContext = createContext(null)
 
@@ -143,6 +143,15 @@ export function HealthProvider({ children }) {
     return { pointsEarned, alreadyToday }
   }
 
+  async function claimActivityPoints() {
+    if (!user.id) return 0
+    try {
+      const pts = await claimApprovedPoints(user.id)
+      if (pts > 0) setUser(prev => ({ ...prev, points: prev.points + pts }))
+      return pts
+    } catch { return 0 }
+  }
+
   function saveBmi(data) {
     setBmiData(data)
     setUser(prev => ({ ...prev, points: prev.points + 15 }))
@@ -157,6 +166,7 @@ export function HealthProvider({ children }) {
   return (
     <HealthContext.Provider value={{
       isLoggedIn, login, loginByName, logout,
+      claimActivityPoints,
       showRegister, setShowRegister,
       registeredUsers,
       user, setUser,
