@@ -1,139 +1,163 @@
 import React, { useState } from 'react'
-import { User, ChevronRight, UserPlus, ArrowLeft, Eye, EyeOff, Activity } from 'lucide-react'
+import { Eye, EyeOff, User, Lock, UserPlus } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 export default function Login() {
-  const { registeredUsers, login, setShowRegister } = useHealth()
-  const [selected, setSelected] = useState(null)
+  const { loginByName, setShowRegister } = useHealth()
+  const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
-  const [error, setError] = useState(false)
   const [showPin, setShowPin] = useState(false)
+  const [remember, setRemember] = useState(false)
+  const [error, setError] = useState('')
   const [shake, setShake] = useState(false)
 
-  function handleLogin() {
-    if (pin.length !== 4) return
-    const ok = login(selected.id, pin)
+  function handleLogin(e) {
+    e.preventDefault()
+    if (!username.trim()) { setError('กรุณากรอกชื่อผู้ใช้'); return }
+    if (!pin) { setError('กรุณากรอกรหัสผ่าน'); return }
+    const ok = loginByName(username, pin)
     if (!ok) {
-      setError(true)
+      setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
       setShake(true)
       setPin('')
       setTimeout(() => setShake(false), 500)
     }
   }
 
-  // ── หน้ากรอก PIN ──
-  if (selected) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex items-center justify-center p-4">
-        <div className={`w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 transition-transform ${shake ? 'animate-bounce' : ''}`}>
-
-          {/* avatar */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-200 bg-blue-100 flex items-center justify-center shadow-md">
-              {selected.faceImage
-                ? <img src={selected.faceImage} alt="face" className="w-full h-full object-cover" />
-                : <User size={40} className="text-blue-400" />}
-            </div>
-            <h2 className="mt-3 text-xl font-bold text-slate-800">{selected.firstName} {selected.lastName}</h2>
-            <p className="text-slate-400 text-sm mt-0.5">กรอก PIN เพื่อเข้าสู่ระบบ</p>
-          </div>
-
-          {/* PIN dots */}
-          <div className="flex justify-center gap-3 mb-5">
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className={`w-4 h-4 rounded-full border-2 transition-colors ${
-                i < pin.length ? 'bg-blue-600 border-blue-600' : 'border-slate-300'
-              }`} />
-            ))}
-          </div>
-
-          {/* hidden input */}
-          <div className="relative mb-4">
-            <input
-              type={showPin ? 'text' : 'password'}
-              inputMode="numeric"
-              maxLength={4}
-              value={pin}
-              autoFocus
-              onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError(false) }}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              placeholder="● ● ● ●"
-              className={`w-full px-4 py-3.5 pr-12 rounded-xl border text-center text-xl tracking-[0.5em] font-bold focus:outline-none focus:ring-2 transition-colors ${
-                error ? 'border-red-400 bg-red-50 focus:ring-red-400 text-red-600' : 'border-slate-200 focus:ring-blue-400 text-slate-800'
-              }`}
-            />
-            <button type="button" onClick={() => setShowPin(p => !p)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-              {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-
-          {error && (
-            <p className="text-red-500 text-sm text-center mb-3">PIN ไม่ถูกต้อง กรุณาลองใหม่</p>
-          )}
-
-          <button
-            onClick={handleLogin}
-            disabled={pin.length !== 4}
-            className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed mb-3"
-          >
-            เข้าสู่ระบบ
-          </button>
-
-          <button
-            onClick={() => { setSelected(null); setPin(''); setError(false) }}
-            className="w-full text-slate-400 text-sm hover:text-slate-600 py-1.5 flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <ArrowLeft size={14} /> เลือกบัญชีอื่น
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // ── หน้าเลือกบัญชี ──
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center"
+      style={{ background: '#0a1535' }}>
 
-        {/* logo */}
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-3">
-            <Activity size={28} className="text-white" />
+      {/* ── พื้นหลัง diagonal ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        {/* แถบขาวทแยงกลาง */}
+        <div className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(115deg, transparent 28%, rgba(255,255,255,0.97) 28%, rgba(255,255,255,0.97) 72%, transparent 72%)',
+          }} />
+
+        {/* แถบเหลืองบน */}
+        <div className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(115deg, transparent 22%, #f5c800 22%, #f5c800 27%, transparent 27%)',
+            mixBlendMode: 'normal',
+          }} />
+
+        {/* แถบเหลืองล่าง */}
+        <div className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(115deg, transparent 73%, #f5c800 73%, #f5c800 78%, transparent 78%)',
+          }} />
+
+        {/* แถบน้ำเงินซ้าย */}
+        <div className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(115deg, transparent 18%, #1a3a8f 18%, #1a3a8f 22%, transparent 22%)',
+          }} />
+
+        {/* แถบน้ำเงินขวา */}
+        <div className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(115deg, transparent 78%, #1a3a8f 78%, #1a3a8f 82%, transparent 82%)',
+          }} />
+      </div>
+
+      {/* ⚡ สายฟ้าตกแต่ง */}
+      <span className="absolute top-12 left-[18%] text-5xl opacity-90 pointer-events-none select-none"
+        style={{ color: '#f5c800', filter: 'drop-shadow(0 0 8px #f5c800)' }}>⚡</span>
+      <span className="absolute top-8 left-[30%] text-3xl opacity-70 pointer-events-none select-none"
+        style={{ color: '#2563eb', filter: 'drop-shadow(0 0 6px #3b82f6)' }}>⚡</span>
+      <span className="absolute bottom-16 right-[18%] text-5xl opacity-90 pointer-events-none select-none"
+        style={{ color: '#f5c800', filter: 'drop-shadow(0 0 8px #f5c800)' }}>⚡</span>
+      <span className="absolute top-20 right-[26%] text-3xl opacity-70 pointer-events-none select-none"
+        style={{ color: '#2563eb', filter: 'drop-shadow(0 0 6px #3b82f6)' }}>⚡</span>
+      <span className="absolute bottom-24 left-[22%] text-2xl opacity-60 pointer-events-none select-none"
+        style={{ color: '#2563eb' }}>⚡</span>
+      <span className="absolute top-32 right-[16%] text-2xl opacity-60 pointer-events-none select-none"
+        style={{ color: '#2563eb' }}>⚡</span>
+
+      {/* ── กล่อง form ── */}
+      <div className="relative z-10 w-full max-w-sm mx-4">
+        <div className={`bg-white rounded-2xl shadow-2xl px-8 py-8 transition-transform ${shake ? 'animate-bounce' : ''}`}>
+
+          {/* โลโก้ + ชื่อแอป */}
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-black tracking-wide mb-0.5"
+              style={{ color: '#0a1535', fontFamily: 'serif' }}>W.K.</h1>
+            <p className="text-lg font-bold italic"
+              style={{ color: '#0a1535', letterSpacing: '0.02em' }}>SmartTeen Health AI</p>
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">ยินดีต้อนรับกลับ</h1>
-          <p className="text-slate-400 text-sm mt-1">เลือกบัญชีของคุณเพื่อเข้าสู่ระบบ</p>
-        </div>
 
-        {/* รายชื่อบัญชี */}
-        <div className="space-y-2.5 mb-5">
-          {registeredUsers.map(u => (
+          <form onSubmit={handleLogin} className="space-y-4">
+            {/* ชื่อผู้ใช้ */}
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1.5">ชื่อผู้ใช้</label>
+              <div className="relative">
+                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={e => { setUsername(e.target.value); setError('') }}
+                  placeholder="กรอกชื่อ (ชื่อที่ลงทะเบียน)"
+                  className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 text-sm placeholder-slate-300"
+                />
+              </div>
+            </div>
+
+            {/* รหัสผ่าน */}
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1.5">รหัสผ่าน</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type={showPin ? 'text' : 'password'}
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={pin}
+                  onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError('') }}
+                  placeholder="PIN 4 หลัก"
+                  className="w-full pl-9 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 text-sm placeholder-slate-300"
+                />
+                <button type="button" onClick={() => setShowPin(p => !p)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* จดจำฉัน */}
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-400" />
+              <span className="text-sm text-slate-500">จดจำฉัน</span>
+            </label>
+
+            {/* error */}
+            {error && (
+              <p className="text-red-500 text-xs text-center">{error}</p>
+            )}
+
+            {/* ปุ่มเข้าสู่ระบบ */}
             <button
-              key={u.id}
-              onClick={() => setSelected(u)}
-              className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-100 hover:border-blue-300 hover:bg-blue-50 transition-all text-left active:scale-[0.98] group"
+              type="submit"
+              className="w-full py-3.5 rounded-xl font-bold text-white text-base tracking-wide transition-all active:scale-[0.98] shadow-lg hover:shadow-xl"
+              style={{ background: '#0a1535' }}
             >
-              <div className="w-13 h-13 w-12 h-12 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center flex-shrink-0 border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
-                {u.faceImage
-                  ? <img src={u.faceImage} alt="face" className="w-full h-full object-cover" />
-                  : <User size={22} className="text-blue-400" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-slate-800 truncate">{u.firstName} {u.lastName}</p>
-                <p className="text-slate-400 text-xs mt-0.5">อายุ {u.age} ปี</p>
-              </div>
-              <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-400 transition-colors flex-shrink-0" />
+              เข้าสู่ระบบ
             </button>
-          ))}
-        </div>
+          </form>
 
-        {/* สมัครบัญชีใหม่ */}
-        <button
-          onClick={() => setShowRegister(true)}
-          className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 text-slate-500 py-3.5 rounded-xl font-medium hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-[0.98]"
-        >
-          <UserPlus size={18} /> สมัครบัญชีใหม่
-        </button>
+          {/* สมัครสมาชิก */}
+          <div className="text-center mt-5">
+            <span className="text-sm text-slate-400">ยังไม่มีบัญชี? </span>
+            <button
+              onClick={() => setShowRegister(true)}
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+            >
+              สมัครสมาชิก
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

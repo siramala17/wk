@@ -62,6 +62,20 @@ export function HealthProvider({ children }) {
     return true
   }
 
+  function loginByName(firstName, pin) {
+    const found = registeredUsers.find(
+      u => u.firstName.trim().toLowerCase() === firstName.trim().toLowerCase() && u.pin === pin
+    )
+    if (!found) return false
+    const { pin: _, ...safeUser } = found
+    setUser(safeUser)
+    setIsLoggedIn(true)
+    setShowRegister(false)
+    localStorage.setItem('hc_session', 'true')
+    localStorage.setItem('hc_user', JSON.stringify(safeUser))
+    return true
+  }
+
   function logout() {
     setIsLoggedIn(false)
     setUser(BLANK_USER)
@@ -142,7 +156,7 @@ export function HealthProvider({ children }) {
 
   return (
     <HealthContext.Provider value={{
-      isLoggedIn, login, logout,
+      isLoggedIn, login, loginByName, logout,
       showRegister, setShowRegister,
       registeredUsers,
       user, setUser,
