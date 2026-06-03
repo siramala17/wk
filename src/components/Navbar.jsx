@@ -10,6 +10,7 @@ const links = [
   { to: '/analytics', label: 'กราฟสุขภาพ' },
   { to: '/recommendations', label: 'คำแนะนำ AI' },
   { to: '/rewards', label: 'แต้มสะสม' },
+  { to: '/knowledge', label: 'ใบความรู้' },
 ]
 
 export default function Navbar() {

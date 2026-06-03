@@ -1,13 +1,13 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, ClipboardList, Scale, BarChart2, Lightbulb, Award, UserCircle } from 'lucide-react'
+import { Home, ClipboardList, Scale, BarChart2, BookOpen, Award, UserCircle } from 'lucide-react'
 
 const tabs = [
   { to: '/', icon: Home, label: 'หลัก' },
   { to: '/assessment', icon: ClipboardList, label: 'ประเมิน' },
   { to: '/bmi', icon: Scale, label: 'BMI' },
   { to: '/analytics', icon: BarChart2, label: 'กราฟ' },
-  { to: '/rewards', icon: Award, label: 'แต้ม' },
+  { to: '/knowledge', icon: BookOpen, label: 'ความรู้' },
   { to: '/profile', icon: UserCircle, label: 'บัญชี' },
 ]
 
