@@ -3,70 +3,44 @@ import { pushUserToCloud } from '../services/userSync'
 
 const HealthContext = createContext(null)
 
-function generateSampleHistory() {
-  const days = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']
-  const today = new Date()
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today)
-    d.setDate(d.getDate() - (6 - i))
-    return {
-      date: days[d.getDay()],
-      fullDate: d.toISOString().split('T')[0],
-      sleep: +(4.5 + Math.random() * 4).toFixed(1),
-      water: Math.floor(3 + Math.random() * 6),
-      stress: Math.floor(2 + Math.random() * 7),
-      screen: +(2 + Math.random() * 7).toFixed(1),
-      exercise: Math.random() > 0.45 ? 1 : 0,
-      score: Math.floor(45 + Math.random() * 45),
-    }
-  })
-}
+const BLANK_USER = { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, gender: '', points: 0, streak: 0, faceImage: null }
 
 export function HealthProvider({ children }) {
-  const [isRegistered, setIsRegistered] = useState(() =>
-    localStorage.getItem('hc_registered') === 'true'
+  const [isLoggedIn, setIsLoggedIn] = useState(() =>
+    localStorage.getItem('hc_session') === 'true'
   )
+  const [showRegister, setShowRegister] = useState(false)
 
   const [user, setUser] = useState(() => {
     try {
       const s = localStorage.getItem('hc_user')
-      return s ? JSON.parse(s) : { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, gender: '', points: 120, streak: 3, faceImage: null }
-    } catch { return { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, points: 120, streak: 3, faceImage: null } }
+      return s ? JSON.parse(s) : BLANK_USER
+    } catch { return BLANK_USER }
   })
 
   const [latestAssessment, setLatestAssessment] = useState(() => {
-    try {
-      const s = localStorage.getItem('hc_latest')
-      return s ? JSON.parse(s) : null
-    } catch { return null }
+    try { return JSON.parse(localStorage.getItem('hc_latest')) ?? null }
+    catch { return null }
   })
 
   const [history, setHistory] = useState(() => {
-    try {
-      const s = localStorage.getItem('hc_history')
-      return s ? JSON.parse(s) : []
-    } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('hc_history')) ?? [] }
+    catch { return [] }
   })
 
   const [bmiData, setBmiData] = useState(() => {
-    try {
-      const s = localStorage.getItem('hc_bmi')
-      return s ? JSON.parse(s) : null
-    } catch { return null }
+    try { return JSON.parse(localStorage.getItem('hc_bmi')) ?? null }
+    catch { return null }
   })
 
   const [registeredUsers, setRegisteredUsers] = useState(() => {
-    try {
-      const s = localStorage.getItem('hc_users')
-      return s ? JSON.parse(s) : []
-    } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('hc_users')) ?? [] }
+    catch { return [] }
   })
 
   const [completedTips, setCompletedTips] = useState(() => {
-    try {
-      const s = localStorage.getItem('hc_tips')
-      return s ? JSON.parse(s) : []
-    } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('hc_tips')) ?? [] }
+    catch { return [] }
   })
 
   useEffect(() => { localStorage.setItem('hc_user', JSON.stringify(user)) }, [user])
@@ -75,6 +49,55 @@ export function HealthProvider({ children }) {
   useEffect(() => { if (bmiData) localStorage.setItem('hc_bmi', JSON.stringify(bmiData)) }, [bmiData])
   useEffect(() => { localStorage.setItem('hc_tips', JSON.stringify(completedTips)) }, [completedTips])
   useEffect(() => { localStorage.setItem('hc_users', JSON.stringify(registeredUsers)) }, [registeredUsers])
+
+  function login(userId, pin) {
+    const found = registeredUsers.find(u => u.id === userId)
+    if (!found || found.pin !== pin) return false
+    const { pin: _, ...safeUser } = found
+    setUser(safeUser)
+    setIsLoggedIn(true)
+    setShowRegister(false)
+    localStorage.setItem('hc_session', 'true')
+    localStorage.setItem('hc_user', JSON.stringify(safeUser))
+    return true
+  }
+
+  function logout() {
+    setIsLoggedIn(false)
+    setUser(BLANK_USER)
+    setLatestAssessment(null)
+    setHistory([])
+    setBmiData(null)
+    setCompletedTips([])
+    localStorage.removeItem('hc_session')
+    localStorage.removeItem('hc_latest')
+    localStorage.removeItem('hc_history')
+    localStorage.removeItem('hc_bmi')
+    localStorage.removeItem('hc_tips')
+  }
+
+  function registerUser({ firstName, lastName, age, gender, pin, faceImage }) {
+    const name = firstName
+    const newEntry = {
+      id: Date.now(),
+      firstName,
+      lastName,
+      age,
+      gender,
+      pin,
+      faceImage,
+      registeredAt: new Date().toISOString(),
+      points: 0,
+      streak: 0,
+    }
+    setRegisteredUsers(prev => [...prev, newEntry])
+    const { pin: _, ...safeUser } = newEntry
+    setUser({ ...safeUser, name })
+    setIsLoggedIn(true)
+    setShowRegister(false)
+    localStorage.setItem('hc_session', 'true')
+    pushUserToCloud(newEntry).catch(() => {})
+  }
 
   function saveAssessment(data) {
     setLatestAssessment(data)
@@ -99,24 +122,6 @@ export function HealthProvider({ children }) {
     setCompletedTips([])
   }
 
-  function registerUser({ firstName, lastName, age, gender, faceImage }) {
-    const name = firstName
-    const newEntry = {
-      id: Date.now(),
-      firstName,
-      lastName,
-      age,
-      gender,
-      faceImage,
-      registeredAt: new Date().toISOString(),
-    }
-    setRegisteredUsers(prev => [...prev, newEntry])
-    setUser(prev => ({ ...prev, name, firstName, lastName, age, gender, faceImage, registeredAt: newEntry.registeredAt }))
-    setIsRegistered(true)
-    localStorage.setItem('hc_registered', 'true')
-    pushUserToCloud(newEntry).catch(() => {})
-  }
-
   function saveBmi(data) {
     setBmiData(data)
     setUser(prev => ({ ...prev, points: prev.points + 15 }))
@@ -130,13 +135,15 @@ export function HealthProvider({ children }) {
 
   return (
     <HealthContext.Provider value={{
-      isRegistered, registerUser,
+      isLoggedIn, login, logout,
+      showRegister, setShowRegister,
       registeredUsers,
       user, setUser,
       latestAssessment, saveAssessment,
       history,
       bmiData, saveBmi,
       completedTips, toggleTip,
+      registerUser,
     }}>
       {children}
     </HealthContext.Provider>

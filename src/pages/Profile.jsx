@@ -1,5 +1,5 @@
 import React from 'react'
-import { User, Calendar, Star, Flame, Shield } from 'lucide-react'
+import { User, Calendar, Star, Flame, LogOut } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 const GENDER_STYLE = {
@@ -9,7 +9,7 @@ const GENDER_STYLE = {
 }
 
 export default function Profile() {
-  const { user } = useHealth()
+  const { user, logout } = useHealth()
 
   const registeredAt = user.registeredAt
     ? new Date(user.registeredAt).toLocaleDateString('th-TH', {
@@ -70,6 +70,17 @@ export default function Profile() {
             bg="bg-orange-50"
           />
         </div>
+
+        {/* logout */}
+        <div className="px-6 pb-6">
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-red-100 text-red-500 font-semibold hover:bg-red-50 hover:border-red-300 active:scale-[0.98] transition-all"
+          >
+            <LogOut size={18} /> ออกจากระบบ
+          </button>
+        </div>
+
       </div>
     </div>
   )

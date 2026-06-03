@@ -5,7 +5,7 @@ import { useHealth } from '../context/HealthContext'
 export default function Register() {
   const { registerUser } = useHealth()
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '', pin: '', confirmPin: '' })
   const [errors, setErrors] = useState({})
 
   // step 2 — age verification
@@ -63,6 +63,8 @@ export default function Register() {
     const age = parseInt(form.age)
     if (!form.age || isNaN(age) || age < 1 || age > 120) e.age = 'กรุณากรอกอายุที่ถูกต้อง (1-120 ปี)'
     if (!form.gender) e.gender = 'กรุณาเลือกเพศ'
+    if (!form.pin || form.pin.length !== 4) e.pin = 'กรุณาตั้ง PIN 4 หลัก'
+    if (form.pin && form.confirmPin !== form.pin) e.confirmPin = 'PIN ไม่ตรงกัน'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -137,6 +139,7 @@ export default function Register() {
       lastName: form.lastName.trim(),
       age: parseInt(form.age),
       gender: form.gender,
+      pin: form.pin,
       faceImage: captured,
     })
   }
@@ -247,6 +250,36 @@ export default function Register() {
                 ))}
               </div>
               {errors.gender && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} />{errors.gender}</p>}
+            </div>
+
+            {/* PIN */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                <Lock size={13} className="inline mr-1 mb-0.5" />ตั้ง PIN 4 หลัก (สำหรับเข้าสู่ระบบ)
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={form.pin}
+                onChange={e => { setForm(p => ({ ...p, pin: e.target.value.replace(/\D/g, '') })); setErrors(p => ({ ...p, pin: undefined })) }}
+                placeholder="● ● ● ●"
+                className={`${inputClass('pin')} text-center text-2xl tracking-[0.5em]`}
+              />
+              {errors.pin && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.pin}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">ยืนยัน PIN</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={form.confirmPin}
+                onChange={e => { setForm(p => ({ ...p, confirmPin: e.target.value.replace(/\D/g, '') })); setErrors(p => ({ ...p, confirmPin: undefined })) }}
+                placeholder="● ● ● ●"
+                className={`${inputClass('confirmPin')} text-center text-2xl tracking-[0.5em]`}
+              />
+              {errors.confirmPin && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.confirmPin}</p>}
             </div>
 
             <button

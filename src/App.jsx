@@ -4,6 +4,7 @@ import { HealthProvider, useHealth } from './context/HealthContext'
 import Navbar from './components/Navbar'
 import BottomNav from './components/BottomNav'
 import Register from './pages/Register'
+import Login from './pages/Login'
 import Admin from './pages/Admin'
 import Dashboard from './pages/Dashboard'
 import Assessment from './pages/Assessment'
@@ -14,16 +15,16 @@ import Rewards from './pages/Rewards'
 import Profile from './pages/Profile'
 
 function AppContent() {
-  const { isRegistered } = useHealth()
+  const { isLoggedIn, registeredUsers, showRegister } = useHealth()
   const { pathname } = useLocation()
 
-  if (pathname === '/admin') {
-    return <Admin />
-  }
+  if (pathname === '/admin') return <Admin />
 
-  if (!isRegistered) {
-    return <Register />
-  }
+  // ยังไม่มีบัญชีหรือกดสมัครใหม่
+  if (registeredUsers.length === 0 || showRegister) return <Register />
+
+  // มีบัญชีแต่ยังไม่ได้ login
+  if (!isLoggedIn) return <Login />
 
   return (
     <div className="min-h-screen bg-blue-50">

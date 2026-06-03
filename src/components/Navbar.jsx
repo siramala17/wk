@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, Menu, X, Star, Shield, User } from 'lucide-react'
+import { Activity, Menu, X, Star, Shield, User, LogOut } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 const links = [
@@ -14,7 +14,7 @@ const links = [
 
 export default function Navbar() {
   const { pathname } = useLocation()
-  const { user } = useHealth()
+  const { user, logout } = useHealth()
   const [open, setOpen] = useState(false)
 
   return (
@@ -65,6 +65,13 @@ export default function Navbar() {
           >
             <Shield size={18} />
           </Link>
+          <button
+            onClick={logout}
+            title="ออกจากระบบ"
+            className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <LogOut size={18} />
+          </button>
           <button onClick={() => setOpen(!open)} className="md:hidden p-1.5 rounded-lg hover:bg-blue-50">
             {open ? <X size={22} className="text-slate-700" /> : <Menu size={22} className="text-slate-700" />}
           </button>
@@ -102,6 +109,12 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+          <button
+            onClick={() => { setOpen(false); logout() }}
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <LogOut size={15} /> ออกจากระบบ
+          </button>
         </div>
       )}
     </header>
