@@ -11,6 +11,7 @@ import BMI from './pages/BMI'
 import Analytics from './pages/Analytics'
 import Recommendations from './pages/Recommendations'
 import Rewards from './pages/Rewards'
+import Profile from './pages/Profile'
 
 function AppContent() {
   const { isRegistered } = useHealth()
@@ -35,6 +36,7 @@ function AppContent() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/recommendations" element={<Recommendations />} />
           <Route path="/rewards" element={<Rewards />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

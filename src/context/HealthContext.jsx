@@ -29,7 +29,7 @@ export function HealthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const s = localStorage.getItem('hc_user')
-      return s ? JSON.parse(s) : { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, points: 120, streak: 3, faceImage: null }
+      return s ? JSON.parse(s) : { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, gender: '', points: 120, streak: 3, faceImage: null }
     } catch { return { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, points: 120, streak: 3, faceImage: null } }
   })
 
@@ -98,18 +98,19 @@ export function HealthProvider({ children }) {
     setCompletedTips([])
   }
 
-  function registerUser({ firstName, lastName, age, faceImage }) {
+  function registerUser({ firstName, lastName, age, gender, faceImage }) {
     const name = firstName
     const newEntry = {
       id: Date.now(),
       firstName,
       lastName,
       age,
+      gender,
       faceImage,
       registeredAt: new Date().toISOString(),
     }
     setRegisteredUsers(prev => [...prev, newEntry])
-    setUser(prev => ({ ...prev, name, firstName, lastName, age, faceImage }))
+    setUser(prev => ({ ...prev, name, firstName, lastName, age, gender, faceImage, registeredAt: newEntry.registeredAt }))
     setIsRegistered(true)
     localStorage.setItem('hc_registered', 'true')
   }

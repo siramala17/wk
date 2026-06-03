@@ -5,7 +5,7 @@ import { useHealth } from '../context/HealthContext'
 export default function Register() {
   const { registerUser } = useHealth()
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState({ firstName: '', lastName: '', age: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '' })
   const [errors, setErrors] = useState({})
 
   // step 2 — age verification
@@ -62,6 +62,7 @@ export default function Register() {
     if (!form.lastName.trim()) e.lastName = 'กรุณากรอกนามสกุล'
     const age = parseInt(form.age)
     if (!form.age || isNaN(age) || age < 1 || age > 120) e.age = 'กรุณากรอกอายุที่ถูกต้อง (1-120 ปี)'
+    if (!form.gender) e.gender = 'กรุณาเลือกเพศ'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -135,6 +136,7 @@ export default function Register() {
       firstName: form.firstName.trim(),
       lastName: form.lastName.trim(),
       age: parseInt(form.age),
+      gender: form.gender,
       faceImage: captured,
     })
   }
@@ -219,6 +221,32 @@ export default function Register() {
                 className={inputClass('age')}
               />
               {errors.age && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.age}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">เพศ</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'ชาย', emoji: '♂', bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-600', ring: 'ring-blue-400' },
+                  { value: 'หญิง', emoji: '♀', bg: 'bg-pink-50', border: 'border-pink-400', text: 'text-pink-600', ring: 'ring-pink-400' },
+                  { value: 'LGBTQ+', emoji: '🏳️‍🌈', bg: 'bg-purple-50', border: 'border-purple-400', text: 'text-purple-600', ring: 'ring-purple-400' },
+                ].map(({ value, emoji, bg, border, text, ring }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => { setForm(p => ({ ...p, gender: value })); setErrors(p => ({ ...p, gender: undefined })) }}
+                    className={`flex flex-col items-center gap-1 py-3 px-2 rounded-xl border-2 font-semibold text-sm transition-all active:scale-95 ${
+                      form.gender === value
+                        ? `${bg} ${border} ${text} ring-2 ${ring} ring-offset-1`
+                        : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="text-xl">{emoji}</span>
+                    <span>{value}</span>
+                  </button>
+                ))}
+              </div>
+              {errors.gender && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} />{errors.gender}</p>}
             </div>
 
             <button

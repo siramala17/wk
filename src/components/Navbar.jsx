@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, Menu, X, Star, Shield } from 'lucide-react'
+import { Activity, Menu, X, Star, Shield, User } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 const links = [
@@ -20,11 +20,21 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-blue-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-            <Activity size={18} className="text-white" />
+
+        {/* ซ้าย: โปรไฟล์ผู้ใช้ */}
+        <Link to="/profile" className="flex items-center gap-2 group">
+          <div className="w-9 h-9 rounded-full border-2 border-blue-200 overflow-hidden bg-blue-100 flex items-center justify-center flex-shrink-0 group-hover:border-blue-400 transition-colors">
+            {user.faceImage
+              ? <img src={user.faceImage} alt="avatar" className="w-full h-full object-cover" />
+              : <User size={18} className="text-blue-400" />
+            }
           </div>
-          <span className="font-bold text-blue-700 text-lg hidden sm:block">HealthCheck</span>
+          <div className="hidden sm:block leading-tight">
+            <p className="text-xs text-slate-400 font-medium">สวัสดี 👋</p>
+            <p className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+              {user.firstName || user.name}
+            </p>
+          </div>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
@@ -63,6 +73,21 @@ export default function Navbar() {
 
       {open && (
         <div className="md:hidden bg-white border-t border-blue-100 px-4 pb-4 pt-2 space-y-1">
+          <Link
+            to="/profile"
+            onClick={() => setOpen(false)}
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              pathname === '/profile' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-blue-50'
+            }`}
+          >
+            <div className="w-7 h-7 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
+              {user.faceImage
+                ? <img src={user.faceImage} alt="avatar" className="w-full h-full object-cover" />
+                : <User size={14} className="text-blue-400" />
+              }
+            </div>
+            บัญชีของฉัน ({user.firstName || user.name})
+          </Link>
           {links.map(l => (
             <Link
               key={l.to}

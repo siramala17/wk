@@ -5,6 +5,12 @@ import { useHealth } from '../context/HealthContext'
 
 const ADMIN_PASSWORD = '2569'
 
+const GENDER_STYLE = {
+  'ชาย':    { bg: 'bg-blue-100',   text: 'text-blue-700',   emoji: '♂' },
+  'หญิง':   { bg: 'bg-pink-100',   text: 'text-pink-700',   emoji: '♀' },
+  'LGBTQ+': { bg: 'bg-purple-100', text: 'text-purple-700', emoji: '🏳️‍🌈' },
+}
+
 function formatDate(iso) {
   if (!iso) return '-'
   const d = new Date(iso)
@@ -139,35 +145,64 @@ export default function Admin() {
 
       <div className="max-w-3xl mx-auto px-4 py-6">
 
-        {/* summary card */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Users size={20} className="text-blue-600" />
+        {/* summary cards */}
+        {(() => {
+          const total = registeredUsers.length
+          const avgAge = total > 0
+            ? Math.round(registeredUsers.reduce((s, u) => s + (u.age || 0), 0) / total)
+            : null
+          const male   = registeredUsers.filter(u => u.gender === 'ชาย').length
+          const female = registeredUsers.filter(u => u.gender === 'หญิง').length
+          const lgbt   = registeredUsers.filter(u => u.gender === 'LGBTQ+').length
+
+          return (
+            <>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <Users size={20} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-800">{total}</p>
+                      <p className="text-slate-500 text-xs">ผู้ใช้ทั้งหมด</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                      <User size={20} className="text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-800">{avgAge ?? '-'}</p>
+                      <p className="text-slate-500 text-xs">อายุเฉลี่ย (ปี)</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-800">{registeredUsers.length}</p>
-                <p className="text-slate-500 text-xs">ผู้ใช้ทั้งหมด</p>
+
+              {/* gender breakdown */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="bg-blue-50 rounded-2xl p-4 flex flex-col items-center gap-1">
+                  <span className="text-2xl">♂</span>
+                  <p className="text-xl font-bold text-blue-700">{male}</p>
+                  <p className="text-blue-500 text-xs">ชาย</p>
+                </div>
+                <div className="bg-pink-50 rounded-2xl p-4 flex flex-col items-center gap-1">
+                  <span className="text-2xl">♀</span>
+                  <p className="text-xl font-bold text-pink-700">{female}</p>
+                  <p className="text-pink-500 text-xs">หญิง</p>
+                </div>
+                <div className="bg-purple-50 rounded-2xl p-4 flex flex-col items-center gap-1">
+                  <span className="text-2xl">🏳️‍🌈</span>
+                  <p className="text-xl font-bold text-purple-700">{lgbt}</p>
+                  <p className="text-purple-500 text-xs">LGBTQ+</p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <User size={20} className="text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-800">
-                  {registeredUsers.length > 0
-                    ? Math.round(registeredUsers.reduce((s, u) => s + u.age, 0) / registeredUsers.length)
-                    : '-'}
-                </p>
-                <p className="text-slate-500 text-xs">อายุเฉลี่ย (ปี)</p>
-              </div>
-            </div>
-          </div>
-        </div>
+            </>
+          )
+        })()}
 
         {/* user list */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -209,7 +244,14 @@ export default function Admin() {
                       <p className="font-semibold text-slate-800 truncate">
                         {u.firstName} {u.lastName}
                       </p>
-                      <p className="text-slate-500 text-xs mt-0.5">อายุ {u.age} ปี</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-slate-500 text-xs">อายุ {u.age} ปี</span>
+                        {u.gender && GENDER_STYLE[u.gender] && (
+                          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${GENDER_STYLE[u.gender].bg} ${GENDER_STYLE[u.gender].text}`}>
+                            {GENDER_STYLE[u.gender].emoji} {u.gender}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* index + expand */}
@@ -251,6 +293,19 @@ export default function Admin() {
                               <div>
                                 <p className="text-xs text-slate-400">อายุ</p>
                                 <p className="text-sm font-semibold text-slate-800">{u.age} ปี</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="text-slate-400 mt-0.5 flex-shrink-0 text-sm leading-none">⚥</span>
+                              <div>
+                                <p className="text-xs text-slate-400">เพศ</p>
+                                {u.gender && GENDER_STYLE[u.gender] ? (
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${GENDER_STYLE[u.gender].bg} ${GENDER_STYLE[u.gender].text}`}>
+                                    {GENDER_STYLE[u.gender].emoji} {u.gender}
+                                  </span>
+                                ) : (
+                                  <p className="text-sm font-semibold text-slate-800">-</p>
+                                )}
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
