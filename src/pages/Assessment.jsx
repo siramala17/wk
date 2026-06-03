@@ -203,7 +203,7 @@ function StepWater({ data, setData }) {
   )
 }
 
-function ResultScreen({ result, onShare }) {
+function ResultScreen({ result, onShare, pointsEarned, alreadyToday }) {
   const level = getHealthLevel(result.overallScore)
   const breakdown = [
     { label: 'การนอนหลับ', score: result.sleepScore, emoji: '🌙' },
@@ -225,6 +225,25 @@ function ResultScreen({ result, onShare }) {
         </div>
         <p className={`text-lg font-bold ${level.color}`}>{level.label}</p>
       </div>
+
+      {/* แต้มที่ได้รับ */}
+      {alreadyToday ? (
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <span className="text-2xl">🔒</span>
+          <div>
+            <p className="text-sm font-semibold text-slate-600">ประเมินแล้ววันนี้</p>
+            <p className="text-xs text-slate-400">ข้อมูลถูกอัปเดตแล้ว แต้มจะได้รับวันละ 1 ครั้งเท่านั้น</p>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <span className="text-2xl">⭐</span>
+          <div>
+            <p className="text-sm font-semibold text-yellow-700">ได้รับ {pointsEarned} แต้ม!</p>
+            <p className="text-xs text-yellow-500">ประเมินอีกครั้งได้พรุ่งนี้</p>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         {breakdown.map(b => (
@@ -264,6 +283,7 @@ export default function Assessment() {
   const [step, setStep] = useState(0)
   const [data, setData] = useState(defaultData)
   const [result, setResult] = useState(null)
+  const [earnInfo, setEarnInfo] = useState({ pointsEarned: 0, alreadyToday: false })
   const { saveAssessment } = useHealth()
   const navigate = useNavigate()
 
@@ -290,7 +310,8 @@ export default function Assessment() {
         sleepScore: sl, screenScore: sc, stressScore: st, exerciseScore: ex, waterScore: wa,
         overallScore: overall,
       }
-      saveAssessment(assessment)
+      const info = saveAssessment(assessment)
+      setEarnInfo(info)
       setResult(assessment)
     }
   }
@@ -311,7 +332,7 @@ export default function Assessment() {
           <h1 className="text-xl font-bold text-slate-800">ผลการประเมิน</h1>
           <button onClick={() => navigate('/recommendations')} className="text-sm text-blue-600 font-medium">ดูคำแนะนำ →</button>
         </div>
-        <ResultScreen result={result} onShare={handleShare} />
+        <ResultScreen result={result} onShare={handleShare} pointsEarned={earnInfo.pointsEarned} alreadyToday={earnInfo.alreadyToday} />
       </div>
     )
   }

@@ -100,8 +100,10 @@ export function HealthProvider({ children }) {
   }
 
   function saveAssessment(data) {
-    setLatestAssessment(data)
     const todayStr = new Date().toISOString().split('T')[0]
+    const alreadyToday = history.some(h => h.fullDate === todayStr)
+
+    setLatestAssessment(data)
     const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
     const entry = {
       date: days[new Date().getDay()],
@@ -117,9 +119,14 @@ export function HealthProvider({ children }) {
       const filtered = prev.filter(h => h.fullDate !== todayStr)
       return [...filtered.slice(-6), entry]
     })
-    const pts = Math.floor(data.overallScore / 10) * 5 + 10
-    setUser(prev => ({ ...prev, points: prev.points + pts, streak: prev.streak + 1 }))
+
+    let pointsEarned = 0
+    if (!alreadyToday) {
+      pointsEarned = Math.floor(data.overallScore / 10) * 5 + 10
+      setUser(prev => ({ ...prev, points: prev.points + pointsEarned, streak: prev.streak + 1 }))
+    }
     setCompletedTips([])
+    return { pointsEarned, alreadyToday }
   }
 
   function saveBmi(data) {
