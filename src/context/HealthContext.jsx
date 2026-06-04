@@ -43,12 +43,18 @@ export function HealthProvider({ children }) {
     catch { return [] }
   })
 
+  const [calorieLog, setCalorieLog] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('hc_calories')) ?? {} }
+    catch { return {} }
+  })
+
   useEffect(() => { localStorage.setItem('hc_user', JSON.stringify(user)) }, [user])
   useEffect(() => { if (latestAssessment) localStorage.setItem('hc_latest', JSON.stringify(latestAssessment)) }, [latestAssessment])
   useEffect(() => { localStorage.setItem('hc_history', JSON.stringify(history)) }, [history])
   useEffect(() => { if (bmiData) localStorage.setItem('hc_bmi', JSON.stringify(bmiData)) }, [bmiData])
   useEffect(() => { localStorage.setItem('hc_tips', JSON.stringify(completedTips)) }, [completedTips])
   useEffect(() => { localStorage.setItem('hc_users', JSON.stringify(registeredUsers)) }, [registeredUsers])
+  useEffect(() => { localStorage.setItem('hc_calories', JSON.stringify(calorieLog)) }, [calorieLog])
 
   function login(userId, pin) {
     const found = registeredUsers.find(u => u.id === userId)
@@ -163,6 +169,14 @@ export function HealthProvider({ children }) {
     )
   }
 
+  function addCalorieEntry(date, entry) {
+    setCalorieLog(prev => ({ ...prev, [date]: [...(prev[date] || []), entry] }))
+  }
+
+  function deleteCalorieEntry(date, id) {
+    setCalorieLog(prev => ({ ...prev, [date]: (prev[date] || []).filter(e => e.id !== id) }))
+  }
+
   return (
     <HealthContext.Provider value={{
       isLoggedIn, login, loginByName, logout,
@@ -175,6 +189,7 @@ export function HealthProvider({ children }) {
       bmiData, saveBmi,
       completedTips, toggleTip,
       registerUser,
+      calorieLog, addCalorieEntry, deleteCalorieEntry,
     }}>
       {children}
     </HealthContext.Provider>

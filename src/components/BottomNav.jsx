@@ -1,11 +1,11 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, ClipboardList, BookOpen, Camera, Award, UserCircle } from 'lucide-react'
+import { Home, ClipboardList, Flame, Camera, Award, UserCircle } from 'lucide-react'
 
 const tabs = [
   { to: '/', icon: Home, label: 'หลัก' },
   { to: '/assessment', icon: ClipboardList, label: 'ประเมิน' },
-  { to: '/knowledge', icon: BookOpen, label: 'ความรู้' },
+  { to: '/nubcal', icon: Flame, label: 'แคลอรี่' },
   { to: '/activity', icon: Camera, label: 'ส่งภาพ' },
   { to: '/rewards', icon: Award, label: 'แต้ม' },
   { to: '/profile', icon: UserCircle, label: 'บัญชี' },
