@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { pushUserToCloud, claimApprovedPoints } from '../services/userSync'
+import { pushUserToCloud, claimApprovedPoints, submitRedemption, claimRedemptionRefunds } from '../services/userSync'
 
 const HealthContext = createContext(null)
 
@@ -183,6 +183,39 @@ export function HealthProvider({ children }) {
     )
   }
 
+  async function redeemReward(reward) {
+    if (user.points < reward.cost) throw new Error('แต้มไม่เพียงพอ')
+    if ((user.streak || 0) < 7) throw new Error('Streak ไม่ครบ 7 วัน')
+    const entry = {
+      id: Date.now(),
+      userId: user.id,
+      userName: `${user.firstName} ${user.lastName}`.trim(),
+      userRole: user.role || '',
+      gradeLevel: user.gradeLevel || '',
+      rewardId: reward.id,
+      rewardName: reward.name,
+      rewardEmoji: reward.emoji,
+      pointsCost: reward.cost,
+      status: 'pending',
+      adminNote: '',
+      refundPending: false,
+      refundClaimed: false,
+      requestedAt: new Date().toISOString(),
+      reviewedAt: null,
+    }
+    await submitRedemption(entry)
+    setUser(prev => ({ ...prev, points: prev.points - reward.cost }))
+  }
+
+  async function claimRefunds() {
+    if (!user.id) return 0
+    try {
+      const pts = await claimRedemptionRefunds(user.id)
+      if (pts > 0) setUser(prev => ({ ...prev, points: prev.points + pts }))
+      return pts
+    } catch { return 0 }
+  }
+
   function updateProfileImage(imageData) {
     setUser(prev => {
       const updated = { ...prev, faceImage: imageData }
@@ -219,6 +252,7 @@ export function HealthProvider({ children }) {
       completedTips, toggleTip,
       registerUser,
       calorieLog, addCalorieEntry, deleteCalorieEntry,
+      redeemReward, claimRefunds,
       updateProfileImage,
       deleteUser,
     }}>

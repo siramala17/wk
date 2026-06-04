@@ -5,3 +5,7 @@ export const SUBMISSIONS_BIN_ID = '6a1ff59cda38895dfe7fffb9'
 export const SUBMISSIONS_URL = `https://api.jsonbin.io/v3/b/${SUBMISSIONS_BIN_ID}`
 export const SURVEYS_BIN_ID = '6a2148ffda38895dfe85927b'
 export const SURVEYS_URL = `https://api.jsonbin.io/v3/b/${SURVEYS_BIN_ID}`
+export const REDEMPTIONS_BIN_ID = '6a215910f5f4af5e29b76446'
+export const REDEMPTIONS_URL = `https://api.jsonbin.io/v3/b/${REDEMPTIONS_BIN_ID}`
+export const REWARD_CATALOG_BIN_ID = '6a215c5eda38895dfe85f01e'
+export const REWARD_CATALOG_URL = `https://api.jsonbin.io/v3/b/${REWARD_CATALOG_BIN_ID}`

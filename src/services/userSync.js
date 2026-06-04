@@ -1,4 +1,4 @@
-import { JSONBIN_KEY, JSONBIN_URL, SUBMISSIONS_URL, SURVEYS_URL } from '../config/jsonbin'
+import { JSONBIN_KEY, JSONBIN_URL, SUBMISSIONS_URL, SURVEYS_URL, REDEMPTIONS_URL, REWARD_CATALOG_URL } from '../config/jsonbin'
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -119,6 +119,91 @@ export async function deleteSurvey(surveyId) {
     body: JSON.stringify({ surveys: existing.filter(s => s.id !== surveyId) }),
   })
   if (!res.ok) throw new Error('delete survey failed')
+}
+
+// ── Reward Catalog ───────────────────────────────────────
+
+export async function fetchRewardCatalog() {
+  const res = await fetch(`${REWARD_CATALOG_URL}/latest`, { headers: HEADERS })
+  if (!res.ok) throw new Error('fetch failed')
+  return (await res.json()).record.rewards || []
+}
+
+async function saveRewardCatalog(rewards) {
+  const res = await fetch(REWARD_CATALOG_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ rewards }),
+  })
+  if (!res.ok) throw new Error('save failed')
+}
+
+export async function addReward(reward) {
+  const existing = await fetchRewardCatalog()
+  await saveRewardCatalog([...existing, reward])
+}
+
+export async function updateReward(updated) {
+  const existing = await fetchRewardCatalog()
+  await saveRewardCatalog(existing.map(r => r.id === updated.id ? updated : r))
+}
+
+export async function deleteReward(id) {
+  const existing = await fetchRewardCatalog()
+  await saveRewardCatalog(existing.filter(r => r.id !== id))
+}
+
+// ── Redemptions ──────────────────────────────────────────
+
+export async function fetchRedemptions() {
+  const res = await fetch(`${REDEMPTIONS_URL}/latest`, { headers: HEADERS })
+  if (!res.ok) throw new Error('fetch failed')
+  return (await res.json()).record.redemptions || []
+}
+
+export async function submitRedemption(item) {
+  const existing = await fetchRedemptions()
+  const res = await fetch(REDEMPTIONS_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ redemptions: [...existing, item] }),
+  })
+  if (!res.ok) throw new Error('submit failed')
+}
+
+export async function updateRedemptionStatus(id, status, adminNote = '') {
+  const existing = await fetchRedemptions()
+  const updated = existing.map(r =>
+    r.id !== id ? r : {
+      ...r, status, adminNote, reviewedAt: new Date().toISOString(),
+      ...(status === 'rejected' ? { refundPending: true, refundClaimed: false } : {}),
+    }
+  )
+  const res = await fetch(REDEMPTIONS_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ redemptions: updated }),
+  })
+  if (!res.ok) throw new Error('update failed')
+}
+
+export async function claimRedemptionRefunds(userId) {
+  const all = await fetchRedemptions()
+  const unclaimed = all.filter(
+    r => r.userId === userId && r.status === 'rejected' && r.refundPending && !r.refundClaimed
+  )
+  if (unclaimed.length === 0) return 0
+  const total = unclaimed.reduce((s, r) => s + (r.pointsCost || 0), 0)
+  const now = new Date().toISOString()
+  const updated = all.map(r =>
+    unclaimed.some(u => u.id === r.id) ? { ...r, refundClaimed: true, refundClaimedAt: now } : r
+  )
+  await fetch(REDEMPTIONS_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ redemptions: updated }),
+  })
+  return total
 }
 
 export async function deleteCloudUser(userId) {

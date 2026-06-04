@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward } from '../services/userSync'
 import { useHealth } from '../context/HealthContext'
 
 const ADMIN_PASSWORD = '2569'
@@ -84,6 +84,20 @@ export default function Admin() {
   const [surveyLoading, setSurveyLoading] = useState(false)
   const [deletingSurveyId, setDeletingSurveyId] = useState(null)
 
+  // redemptions tab
+  const [redemptions, setRedemptions] = useState([])
+  const [redeemLoading, setRedeemLoading] = useState(false)
+  const [reviewingRedeemId, setReviewingRedeemId] = useState(null)
+  const [redeemNoteInputs, setRedeemNoteInputs] = useState({})
+  const [redeemSubTab, setRedeemSubTab] = useState('requests') // 'requests' | 'catalog'
+
+  // reward catalog management
+  const [catalog, setCatalog] = useState([])
+  const [catalogLoading, setCatalogLoading] = useState(false)
+  const [catalogSaving, setCatalogSaving] = useState(false)
+  const [editingReward, setEditingReward] = useState(null) // null=closed, {}=new, {id,...}=edit
+  const [deletingRewardId, setDeletingRewardId] = useState(null)
+
   // delete user
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleting, setDeleting] = useState(false)
@@ -114,15 +128,64 @@ export default function Admin() {
     finally { setSurveyLoading(false) }
   }, [])
 
+  const loadRedemptions = useCallback(async () => {
+    setRedeemLoading(true)
+    try { setRedemptions((await fetchRedemptions()).reverse()) }
+    catch { /* silent */ }
+    finally { setRedeemLoading(false) }
+  }, [])
+
+  const loadCatalog = useCallback(async () => {
+    setCatalogLoading(true)
+    try { setCatalog(await fetchRewardCatalog()) }
+    catch { /* silent */ }
+    finally { setCatalogLoading(false) }
+  }, [])
+
   useEffect(() => {
-    if (authenticated) { loadUsers(); loadSubmissions(); loadSurveys() }
-  }, [authenticated, loadUsers, loadSubmissions, loadSurveys])
+    if (authenticated) { loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions(); loadCatalog() }
+  }, [authenticated, loadUsers, loadSubmissions, loadSurveys, loadRedemptions, loadCatalog])
 
   async function handleReview(id, status) {
     setReviewingId(id)
     try { await updateSubmissionStatus(id, status, noteInputs[id] || ''); await loadSubmissions() }
     catch { /* silent */ }
     finally { setReviewingId(null) }
+  }
+
+  async function handleSaveReward(form) {
+    setCatalogSaving(true)
+    try {
+      if (form.id) {
+        await updateReward(form)
+      } else {
+        await addReward({ ...form, id: `r_${Date.now()}`, active: true })
+      }
+      await loadCatalog()
+      setEditingReward(null)
+    } catch { /* silent */ }
+    finally { setCatalogSaving(false) }
+  }
+
+  async function handleDeleteReward(id) {
+    setDeletingRewardId(id)
+    try { await deleteReward(id); await loadCatalog() }
+    catch { /* silent */ }
+    finally { setDeletingRewardId(null) }
+  }
+
+  async function handleToggleReward(r) {
+    await updateReward({ ...r, active: !r.active })
+    await loadCatalog()
+  }
+
+  async function handleReviewRedemption(id, status) {
+    setReviewingRedeemId(id)
+    try {
+      await updateRedemptionStatus(id, status, redeemNoteInputs[id] || '')
+      await loadRedemptions()
+    } catch { /* silent */ }
+    finally { setReviewingRedeemId(null) }
   }
 
   async function handleDeleteSurvey(id) {
@@ -231,9 +294,9 @@ export default function Admin() {
           <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
             <ArrowLeft size={16} /> หน้าหลัก
           </button>
-          <button onClick={() => { loadUsers(); loadSubmissions(); loadSurveys() }} disabled={loading || subLoading || surveyLoading}
+          <button onClick={() => { loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions() }} disabled={loading || subLoading || surveyLoading || redeemLoading}
             className="flex items-center gap-1.5 text-slate-400 hover:text-blue-300 text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-40">
-            <RefreshCw size={16} className={(loading || subLoading || surveyLoading) ? 'animate-spin' : ''} /> รีเฟรช
+            <RefreshCw size={16} className={(loading || subLoading || surveyLoading || redeemLoading) ? 'animate-spin' : ''} /> รีเฟรช
           </button>
           <button onClick={handleLogout} className="flex items-center gap-1.5 text-slate-400 hover:text-red-400 text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
             <LogOut size={16} /> ออกจากระบบ
@@ -251,26 +314,23 @@ export default function Admin() {
         )}
 
         {/* tab selector */}
-        <div className="flex bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
-          <button onClick={() => setAdminTab('users')}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${adminTab === 'users' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
-            👥 ผู้ใช้งาน
-          </button>
-          <button onClick={() => setAdminTab('submissions')}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all relative ${adminTab === 'submissions' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
-            📸 ตรวจสอบภาพ
-            {pendingCount > 0 && (
-              <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
-            )}
-          </button>
-          <button onClick={() => setAdminTab('surveys')}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all relative ${adminTab === 'surveys' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
-            📊 ความพึงพอใจ
-            {surveys.length > 0 && (
-              <span className="ml-1 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{surveys.length}</span>
-            )}
-          </button>
+        <div className="grid grid-cols-4 bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
+          {[
+            { key: 'users',       label: '👥 ผู้ใช้',    badge: null },
+            { key: 'submissions', label: '📸 ภาพ',        badge: pendingCount > 0 ? pendingCount : null },
+            { key: 'redemptions', label: '🎁 แลกรางวัล',  badge: redemptions.filter(r => r.status === 'pending').length || null },
+            { key: 'surveys',     label: '📊 พึงพอใจ',   badge: null },
+          ].map(({ key, label, badge }) => (
+            <button key={key} onClick={() => setAdminTab(key)}
+              className={`relative py-2.5 rounded-xl text-xs font-semibold transition-all ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
+              {label}
+              {badge != null && (
+                <span className="ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{badge}</span>
+              )}
+            </button>
+          ))}
         </div>
+
 
         {/* ══ TAB: ผู้ใช้งาน ══ */}
         {adminTab === 'users' && (
@@ -517,6 +577,29 @@ export default function Admin() {
           </>
         )}
 
+        {/* ══ TAB: แลกรางวัล ══ */}
+        {adminTab === 'redemptions' && (
+          <RedemptionTab
+            redemptions={redemptions}
+            loading={redeemLoading}
+            noteInputs={redeemNoteInputs}
+            setNoteInputs={setRedeemNoteInputs}
+            reviewingId={reviewingRedeemId}
+            onReview={handleReviewRedemption}
+            subTab={redeemSubTab}
+            setSubTab={setRedeemSubTab}
+            catalog={catalog}
+            catalogLoading={catalogLoading}
+            catalogSaving={catalogSaving}
+            editingReward={editingReward}
+            setEditingReward={setEditingReward}
+            onSaveReward={handleSaveReward}
+            onDeleteReward={handleDeleteReward}
+            onToggleReward={handleToggleReward}
+            deletingRewardId={deletingRewardId}
+          />
+        )}
+
         {/* ══ TAB: ความพึงพอใจ ══ */}
         {adminTab === 'surveys' && (
           <SurveyTab
@@ -600,6 +683,280 @@ export default function Admin() {
             </div>
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+// ── Redemption Tab Component ────────────────────────────────
+
+const REDEEM_STATUS_CFG = {
+  pending:  { label: 'รอการอนุมัติ', emoji: '⏳', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
+  approved: { label: 'อนุมัติแล้ว',  emoji: '✅', bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200' },
+  rejected: { label: 'ไม่อนุมัติ',   emoji: '❌', bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200' },
+}
+
+// ── Reward edit form ──────────────────────────────────────
+
+const BLANK_REWARD = { id: '', name: '', emoji: '🎁', cost: 500, desc: '', active: true }
+
+function RewardEditModal({ initial, onSave, onClose, saving }) {
+  const [form, setForm] = useState(initial || BLANK_REWARD)
+  const isNew = !initial?.id
+
+  function set(k, v) { setForm(p => ({ ...p, [k]: v })) }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <h3 className="font-bold text-slate-800">{isNew ? 'เพิ่มของรางวัลใหม่' : 'แก้ไขของรางวัล'}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="flex gap-3">
+            <div className="w-20">
+              <label className="text-xs text-slate-500 mb-1 block">Emoji</label>
+              <input
+                className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-2xl text-center focus:outline-none focus:border-blue-400"
+                value={form.emoji} maxLength={4}
+                onChange={e => set('emoji', e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="text-xs text-slate-500 mb-1 block">ชื่อของรางวัล <span className="text-red-400">*</span></label>
+              <input
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+                value={form.name} placeholder="เช่น บัตรกำนัล 50 บาท"
+                onChange={e => set('name', e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 mb-1 block">คำอธิบาย</label>
+            <input
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              value={form.desc} placeholder="รายละเอียดของรางวัล..."
+              onChange={e => set('desc', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 mb-1 block">ราคา (แต้ม) <span className="text-red-400">*</span></label>
+            <input
+              type="number" min="1"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              value={form.cost}
+              onChange={e => set('cost', parseInt(e.target.value) || 0)}
+            />
+          </div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div onClick={() => set('active', !form.active)}
+              className={`w-11 h-6 rounded-full transition-colors relative ${form.active ? 'bg-blue-500' : 'bg-slate-300'}`}>
+              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.active ? 'left-6' : 'left-1'}`} />
+            </div>
+            <span className="text-sm font-medium text-slate-700">{form.active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
+          </label>
+          <div className="flex gap-2 pt-1">
+            <button onClick={onClose} disabled={saving}
+              className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 disabled:opacity-50">
+              ยกเลิก
+            </button>
+            <button
+              onClick={() => { if (form.name.trim() && form.cost > 0) onSave(form) }}
+              disabled={saving || !form.name.trim() || form.cost <= 0}
+              className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              {saving
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> บันทึก...</>
+                : <><Check size={15} /> บันทึก</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Redemption Tab ────────────────────────────────────────
+
+function RedemptionTab({
+  redemptions, loading, noteInputs, setNoteInputs, reviewingId, onReview,
+  subTab, setSubTab, catalog, catalogLoading, catalogSaving,
+  editingReward, setEditingReward, onSaveReward, onDeleteReward, onToggleReward, deletingRewardId,
+}) {
+  const [filter, setFilter] = useState('pending')
+  const filtered = filter === 'all' ? redemptions : redemptions.filter(r => r.status === filter)
+  const pendingCount = redemptions.filter(r => r.status === 'pending').length
+
+  return (
+    <div className="space-y-4">
+      {/* sub-tab */}
+      <div className="flex bg-white rounded-2xl p-1 gap-1 shadow-sm">
+        <button onClick={() => setSubTab('requests')}
+          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all relative ${subTab === 'requests' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
+          📋 คำขอแลก
+          {pendingCount > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>}
+        </button>
+        <button onClick={() => setSubTab('catalog')}
+          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${subTab === 'catalog' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
+          🎁 จัดการรางวัล
+        </button>
+      </div>
+
+      {/* ── คำขอแลก ── */}
+      {subTab === 'requests' && (
+        <>
+          {loading ? (
+            <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'รอการอนุมัติ', count: redemptions.filter(r => r.status === 'pending').length,  bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-700' },
+                  { label: 'อนุมัติแล้ว',  count: redemptions.filter(r => r.status === 'approved').length, bg: 'bg-green-50 border-green-200',   text: 'text-green-700' },
+                  { label: 'ไม่อนุมัติ',   count: redemptions.filter(r => r.status === 'rejected').length, bg: 'bg-red-50 border-red-200',       text: 'text-red-600' },
+                ].map(s => (
+                  <div key={s.label} className={`${s.bg} border rounded-2xl p-3 text-center`}>
+                    <p className={`text-2xl font-black ${s.text}`}>{s.count}</p>
+                    <p className={`text-xs font-medium ${s.text} opacity-80`}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                {[['pending','รอ'],['approved','อนุมัติ'],['rejected','ไม่ผ่าน'],['all','ทั้งหมด']].map(([v, l]) => (
+                  <button key={v} onClick={() => setFilter(v)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                      filter === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                    }`}>
+                    {l} {v !== 'all' && <span className="opacity-60">({redemptions.filter(r => r.status === v).length})</span>}
+                  </button>
+                ))}
+              </div>
+              {filtered.length === 0 ? (
+                <div className="text-center py-12 text-slate-400">
+                  <span className="text-4xl block mb-2">🎁</span>
+                  <p className="text-sm">ไม่มีรายการในหมวดนี้</p>
+                </div>
+              ) : filtered.map(r => {
+                const st = REDEEM_STATUS_CFG[r.status] || REDEEM_STATUS_CFG.pending
+                return (
+                  <div key={r.id} className={`${st.bg} border ${st.border} rounded-2xl overflow-hidden`}>
+                    <div className="flex items-center gap-3 p-4">
+                      <span className="text-3xl flex-shrink-0">{r.rewardEmoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-800 text-sm">{r.rewardName}</p>
+                        <p className="text-xs text-slate-500 truncate">
+                          {r.userName}{r.gradeLevel ? ` — ${r.gradeLevel}` : r.userRole ? ` — ${r.userRole}` : ''}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                          <span className={`text-xs font-semibold ${st.text}`}>{st.emoji} {st.label}</span>
+                          <span className="text-xs text-slate-500 font-semibold">-{r.pointsCost?.toLocaleString()} แต้ม</span>
+                          <span className="text-xs text-slate-400">
+                            {new Date(r.requestedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        {r.adminNote && r.status !== 'pending' && (
+                          <p className="text-xs text-slate-600 mt-1 bg-white/60 rounded-lg px-2 py-1">💬 {r.adminNote}</p>
+                        )}
+                      </div>
+                    </div>
+                    {r.status === 'pending' && (
+                      <div className="px-4 pb-4 space-y-2">
+                        <textarea
+                          value={noteInputs[r.id] || ''}
+                          onChange={e => setNoteInputs(p => ({ ...p, [r.id]: e.target.value }))}
+                          placeholder="หมายเหตุถึงผู้ขอแลก (ไม่บังคับ)..."
+                          rows={2}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none bg-white"
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={() => onReview(r.id, 'approved')} disabled={reviewingId === r.id}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold text-sm disabled:opacity-50">
+                            {reviewingId === r.id
+                              ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              : <><Check size={15} /> อนุมัติ</>}
+                          </button>
+                          <button onClick={() => onReview(r.id, 'rejected')} disabled={reviewingId === r.id}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold text-sm disabled:opacity-50">
+                            <X size={15} /> ไม่อนุมัติ
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ── จัดการรางวัล ── */}
+      {subTab === 'catalog' && (
+        <>
+          <button onClick={() => setEditingReward({ ...BLANK_REWARD })}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold text-sm transition-colors">
+            + เพิ่มของรางวัลใหม่
+          </button>
+
+          {catalogLoading ? (
+            <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
+          ) : catalog.length === 0 ? (
+            <div className="text-center py-12 text-slate-400">
+              <span className="text-4xl block mb-2">🎁</span>
+              <p className="text-sm">ยังไม่มีของรางวัล — กดเพิ่มด้านบน</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {catalog.map(r => (
+                <div key={r.id} className={`bg-white rounded-2xl border-2 p-3.5 flex items-center gap-3 ${
+                  r.active ? 'border-slate-200' : 'border-slate-100 opacity-60'
+                }`}>
+                  <span className="text-3xl flex-shrink-0">{r.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-slate-800 text-sm">{r.name}</p>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        r.active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+                      }`}>{r.active ? 'เปิด' : 'ปิด'}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">{r.desc}</p>
+                    <p className="text-xs font-bold text-yellow-600 mt-0.5">⭐ {r.cost?.toLocaleString()} แต้ม</p>
+                  </div>
+                  <div className="flex flex-col gap-1.5 flex-shrink-0">
+                    <button onClick={() => setEditingReward({ ...r })}
+                      className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-semibold transition-colors">
+                      แก้ไข
+                    </button>
+                    <button onClick={() => onToggleReward(r)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        r.active
+                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                          : 'bg-green-50 hover:bg-green-100 text-green-600'
+                      }`}>
+                      {r.active ? 'ปิด' : 'เปิด'}
+                    </button>
+                    <button
+                      onClick={() => onDeleteReward(r.id)}
+                      disabled={deletingRewardId === r.id}
+                      className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40">
+                      {deletingRewardId === r.id ? '...' : 'ลบ'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* reward edit modal */}
+      {editingReward && (
+        <RewardEditModal
+          initial={editingReward.id ? editingReward : null}
+          onSave={onSaveReward}
+          onClose={() => setEditingReward(null)}
+          saving={catalogSaving}
+        />
       )}
     </div>
   )
