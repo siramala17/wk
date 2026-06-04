@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HealthProvider, useHealth } from './context/HealthContext'
 import Navbar from './components/Navbar'
+import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
 import Register from './pages/Register'
 import Login from './pages/Login'
@@ -31,7 +32,8 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-blue-50">
       <Navbar />
-      <main className="pt-14 pb-20 md:pb-6">
+      <Sidebar />
+      <main className="pt-14 pb-20 md:ml-56 md:pb-6">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/assessment" element={<Assessment />} />

@@ -77,7 +77,7 @@ export default function BMI() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-6 space-y-5 animate-fade-in">
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-5 animate-fade-in">
       <div className="flex items-center gap-3 mb-2">
         <div className="w-10 h-10 bg-yellow-400 rounded-2xl flex items-center justify-center">
           <Scale size={22} className="text-yellow-900" />

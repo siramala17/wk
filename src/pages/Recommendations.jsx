@@ -120,7 +120,7 @@ export default function Recommendations() {
 
   if (!latestAssessment) {
     return (
-      <div className="max-w-lg mx-auto px-4 pt-10 text-center">
+      <div className="max-w-2xl mx-auto px-4 pt-10 text-center">
         <p className="text-6xl mb-4">🤔</p>
         <h2 className="text-xl font-bold text-slate-800 mb-2">ยังไม่มีข้อมูลการประเมิน</h2>
         <p className="text-sm text-slate-500 mb-6">ทำแบบประเมินสุขภาพก่อนเพื่อรับคำแนะนำ AI ส่วนตัว</p>
@@ -136,7 +136,7 @@ export default function Recommendations() {
   const totalTips = recs.reduce((s, r) => s + r.tips.length, 0)
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-6 space-y-4 animate-fade-in">
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-4 animate-fade-in">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-yellow-400 rounded-2xl flex items-center justify-center">
           <Lightbulb size={20} className="text-yellow-900" />

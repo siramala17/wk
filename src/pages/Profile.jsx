@@ -21,7 +21,7 @@ export default function Profile() {
   const gs = GENDER_STYLE[gender]
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="max-w-xl mx-auto px-4 py-6">
       {/* card หลัก */}
       <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
 

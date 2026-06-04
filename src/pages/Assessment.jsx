@@ -218,7 +218,7 @@ export default function Assessment() {
   // หน้าผลลัพธ์
   if (result) {
     return (
-      <div className="max-w-lg mx-auto px-4 pt-4 pb-6">
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-slate-800">ผลการประเมิน</h1>
           <button onClick={() => navigate('/recommendations')} className="text-sm text-blue-600 font-medium">
@@ -236,7 +236,7 @@ export default function Assessment() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-24">
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
 
       {/* progress bar */}
       <div className="mb-5">
