@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Scale, ArrowRight, RefreshCw } from 'lucide-react'
+import { Scale, ArrowRight, RefreshCw, Star, Clock } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { calcBmiScore, getBmiCategory } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
@@ -54,16 +54,26 @@ function IdealWeightCard({ height }) {
   )
 }
 
+function getNextMonthDate() {
+  const d = new Date()
+  return new Date(d.getFullYear(), d.getMonth() + 1, 1)
+    .toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
 export default function BMI() {
   const { saveBmi, bmiData } = useHealth()
   const [height, setHeight] = useState(165)
   const [weight, setWeight] = useState(60)
   const [result, setResult] = useState(null)
   const [unit, setUnit] = useState('metric')
+  const [pointsEarned, setPointsEarned] = useState(null) // null=ยังไม่คำนวณ true/false=ผลล่าสุด
 
   useEffect(() => {
     if (bmiData) setResult(bmiData)
   }, [])
+
+  const currentMonthKey = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
+  const alreadyEarnedThisMonth = bmiData?.lastBmiPointsMonth === currentMonthKey
 
   function calculate() {
     const h = unit === 'metric' ? height : height * 2.54
@@ -73,7 +83,8 @@ export default function BMI() {
     const score = calcBmiScore(bmiVal)
     const res = { bmi: bmiVal, category: cat.label, advice: cat.advice, color: cat.color, bg: cat.bg, score, height: h, weight: w }
     setResult(res)
-    saveBmi(res)
+    const earned = saveBmi(res)
+    setPointsEarned(earned)
   }
 
   return (
@@ -136,12 +147,42 @@ export default function BMI() {
           </div>
         </div>
 
+        {/* monthly points status */}
+        {alreadyEarnedThisMonth ? (
+          <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-500">
+            <Clock size={16} className="text-slate-400 flex-shrink-0" />
+            <span>ได้รับแต้มจาก BMI ในเดือนนี้แล้ว — รับได้อีกครั้ง <span className="font-semibold text-slate-700">{getNextMonthDate()}</span></span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2.5 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-sm text-yellow-700">
+            <Star size={16} className="text-yellow-500 fill-yellow-400 flex-shrink-0" />
+            <span>คำนวณครั้งนี้จะได้รับ <span className="font-bold">+15 แต้ม</span> (1 ครั้ง/เดือน)</span>
+          </div>
+        )}
+
         <button onClick={calculate}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors">
           <Scale size={18} />
           คำนวณ BMI
         </button>
       </div>
+
+      {/* Points banner */}
+      {pointsEarned === true && (
+        <div className="flex items-center gap-3 bg-yellow-400 rounded-2xl px-4 py-3 shadow-md shadow-yellow-200 animate-bounce">
+          <Star size={22} className="text-yellow-900 fill-yellow-700 flex-shrink-0" />
+          <div>
+            <p className="font-bold text-yellow-900">ได้รับ +15 แต้ม!</p>
+            <p className="text-yellow-800 text-xs">รางวัลการคำนวณ BMI ประจำเดือน</p>
+          </div>
+        </div>
+      )}
+      {pointsEarned === false && (
+        <div className="flex items-center gap-3 bg-slate-100 rounded-2xl px-4 py-3 text-slate-500 text-sm">
+          <Clock size={18} className="flex-shrink-0" />
+          <span>ไม่ได้รับแต้มเพิ่ม — สามารถรับได้อีกครั้ง <span className="font-semibold text-slate-700">{getNextMonthDate()}</span></span>
+        </div>
+      )}
 
       {/* Result */}
       {result && (

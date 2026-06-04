@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey } from '../services/userSync'
 import { useHealth } from '../context/HealthContext'
 
 const ADMIN_PASSWORD = '2569'
@@ -79,6 +79,11 @@ export default function Admin() {
   const [expandedSub, setExpandedSub] = useState(null)
   const [filterStatus, setFilterStatus] = useState('all')
 
+  // surveys tab
+  const [surveys, setSurveys] = useState([])
+  const [surveyLoading, setSurveyLoading] = useState(false)
+  const [deletingSurveyId, setDeletingSurveyId] = useState(null)
+
   // delete user
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleting, setDeleting] = useState(false)
@@ -102,15 +107,29 @@ export default function Admin() {
     finally { setSubLoading(false) }
   }, [])
 
+  const loadSurveys = useCallback(async () => {
+    setSurveyLoading(true)
+    try { setSurveys((await fetchSurveys()).reverse()) }
+    catch { /* silent */ }
+    finally { setSurveyLoading(false) }
+  }, [])
+
   useEffect(() => {
-    if (authenticated) { loadUsers(); loadSubmissions() }
-  }, [authenticated, loadUsers, loadSubmissions])
+    if (authenticated) { loadUsers(); loadSubmissions(); loadSurveys() }
+  }, [authenticated, loadUsers, loadSubmissions, loadSurveys])
 
   async function handleReview(id, status) {
     setReviewingId(id)
     try { await updateSubmissionStatus(id, status, noteInputs[id] || ''); await loadSubmissions() }
     catch { /* silent */ }
     finally { setReviewingId(null) }
+  }
+
+  async function handleDeleteSurvey(id) {
+    setDeletingSurveyId(id)
+    try { await deleteSurvey(id); await loadSurveys() }
+    catch { /* silent */ }
+    finally { setDeletingSurveyId(null) }
   }
 
   async function handleDeleteUser() {
@@ -212,9 +231,9 @@ export default function Admin() {
           <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
             <ArrowLeft size={16} /> หน้าหลัก
           </button>
-          <button onClick={() => { loadUsers(); loadSubmissions() }} disabled={loading || subLoading}
+          <button onClick={() => { loadUsers(); loadSubmissions(); loadSurveys() }} disabled={loading || subLoading || surveyLoading}
             className="flex items-center gap-1.5 text-slate-400 hover:text-blue-300 text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-40">
-            <RefreshCw size={16} className={(loading || subLoading) ? 'animate-spin' : ''} /> รีเฟรช
+            <RefreshCw size={16} className={(loading || subLoading || surveyLoading) ? 'animate-spin' : ''} /> รีเฟรช
           </button>
           <button onClick={handleLogout} className="flex items-center gap-1.5 text-slate-400 hover:text-red-400 text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
             <LogOut size={16} /> ออกจากระบบ
@@ -242,6 +261,13 @@ export default function Admin() {
             📸 ตรวจสอบภาพ
             {pendingCount > 0 && (
               <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
+            )}
+          </button>
+          <button onClick={() => setAdminTab('surveys')}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all relative ${adminTab === 'surveys' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
+            📊 ความพึงพอใจ
+            {surveys.length > 0 && (
+              <span className="ml-1 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{surveys.length}</span>
             )}
           </button>
         </div>
@@ -491,6 +517,16 @@ export default function Admin() {
           </>
         )}
 
+        {/* ══ TAB: ความพึงพอใจ ══ */}
+        {adminTab === 'surveys' && (
+          <SurveyTab
+            surveys={surveys}
+            loading={surveyLoading}
+            onDelete={handleDeleteSurvey}
+            deletingId={deletingSurveyId}
+          />
+        )}
+
       </div>
 
       {/* ── Delete confirmation modal ── */}
@@ -565,6 +601,204 @@ export default function Admin() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ── Survey Tab Component ────────────────────────────────────
+
+const FEATURE_LABELS = {
+  assessment: '📋 ประเมินสุขภาพ',
+  bmi:        '⚖️ คำนวณ BMI',
+  nubcal:     '🔥 บันทึกแคลอรี่',
+  analytics:  '📊 กราฟสุขภาพ',
+  ai:         '🤖 คำแนะนำ AI',
+  rewards:    '🏆 แต้มสะสม',
+  knowledge:  '📚 ใบความรู้',
+  activity:   '📸 ส่งภาพกิจกรรม',
+}
+
+const RATING_KEYS = [
+  { key: 'overall',    label: 'ภาพรวม' },
+  { key: 'easeOfUse',  label: 'ใช้งานง่าย' },
+  { key: 'design',     label: 'ดีไซน์' },
+  { key: 'usefulness', label: 'ประโยชน์' },
+]
+
+function StarDisplay({ value }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1,2,3,4,5].map(n => (
+        <svg key={n} width="14" height="14" viewBox="0 0 24 24" fill={n <= value ? '#facc15' : '#e2e8f0'}>
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        </svg>
+      ))}
+      <span className="text-xs font-bold text-slate-700 ml-1">{value}</span>
+    </div>
+  )
+}
+
+function SurveyTab({ surveys, loading, onDelete, deletingId }) {
+  const [expandedId, setExpandedId] = useState(null)
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (surveys.length === 0) {
+    return (
+      <div className="text-center py-16 text-slate-400">
+        <span className="text-5xl block mb-3">📋</span>
+        <p className="text-sm">ยังไม่มีผลการประเมิน</p>
+      </div>
+    )
+  }
+
+  // คำนวณค่าเฉลี่ย
+  const avg = (key) => {
+    const vals = surveys.map(s => s.ratings?.[key] ?? 0).filter(Boolean)
+    return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '-'
+  }
+
+  // นับฟีเจอร์ยอดนิยม
+  const featureCount = {}
+  surveys.forEach(s => (s.favorites || []).forEach(f => { featureCount[f] = (featureCount[f] || 0) + 1 }))
+  const topFeatures = Object.entries(featureCount).sort((a, b) => b[1] - a[1]).slice(0, 4)
+
+  return (
+    <div className="space-y-4">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white rounded-2xl p-4 shadow-sm col-span-2">
+          <p className="text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wide">คะแนนเฉลี่ย ({surveys.length} คน)</p>
+          <div className="grid grid-cols-2 gap-3">
+            {RATING_KEYS.map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-2">
+                <span className="text-sm text-slate-600">{label}</span>
+                <StarDisplay value={Math.round(parseFloat(avg(key)) || 0)} />
+              </div>
+            ))}
+          </div>
+        </div>
+        {topFeatures.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm col-span-2">
+            <p className="text-xs text-slate-500 mb-2 font-semibold uppercase tracking-wide">ฟีเจอร์ยอดนิยม</p>
+            <div className="space-y-2">
+              {topFeatures.map(([feat, count]) => (
+                <div key={feat} className="flex items-center gap-2">
+                  <span className="text-sm text-slate-700 flex-1">{FEATURE_LABELS[feat] || feat}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 bg-blue-400 rounded-full" style={{ width: `${Math.round((count / surveys.length) * 80)}px`, minWidth: '8px' }} />
+                    <span className="text-xs font-bold text-slate-500">{count}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Response list */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <p className="font-bold text-slate-700 text-sm">รายการทั้งหมด</p>
+          <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full">{surveys.length} รายการ</span>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {surveys.map(s => {
+            const isOpen = expandedId === s.id
+            const avgScore = s.ratings
+              ? (Object.values(s.ratings).reduce((a, b) => a + b, 0) / 4).toFixed(1)
+              : '-'
+            return (
+              <div key={s.id}>
+                <button
+                  onClick={() => setExpandedId(isOpen ? null : s.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 text-base">
+                    {s.userRole === 'นักเรียน' ? '🎒' : s.userRole === 'ครู' ? '👩‍🏫' : '👤'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-800 text-sm truncate">
+                      {s.userName || 'ไม่ระบุชื่อ'}
+                      {s.gradeLevel && <span className="text-slate-400 font-normal"> — {s.gradeLevel}</span>}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {new Date(s.submittedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-0.5">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="#facc15">
+                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                      </svg>
+                      <span className="text-sm font-bold text-slate-700">{avgScore}</span>
+                    </div>
+                    {isOpen ? <ChevronUp size={15} className="text-slate-400" /> : <ChevronDown size={15} className="text-slate-400" />}
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div className="px-4 pb-4 bg-slate-50 space-y-3">
+                    {/* ratings */}
+                    <div className="bg-white rounded-xl p-3 space-y-2">
+                      {RATING_KEYS.map(({ key, label }) => (
+                        <div key={key} className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500">{label}</span>
+                          <StarDisplay value={s.ratings?.[key] ?? 0} />
+                        </div>
+                      ))}
+                    </div>
+                    {/* favorites */}
+                    {s.favorites?.length > 0 && (
+                      <div className="bg-white rounded-xl p-3">
+                        <p className="text-xs text-slate-400 mb-2">ฟีเจอร์ที่ชอบ</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {s.favorites.map(f => (
+                            <span key={f} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                              {FEATURE_LABELS[f] || f}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* suggestion */}
+                    {s.suggestion && (
+                      <div className="bg-white rounded-xl p-3">
+                        <p className="text-xs text-slate-400 mb-1">อยากให้ปรับปรุง</p>
+                        <p className="text-sm text-slate-700">{s.suggestion}</p>
+                      </div>
+                    )}
+                    {/* comment */}
+                    {s.comment && (
+                      <div className="bg-white rounded-xl p-3">
+                        <p className="text-xs text-slate-400 mb-1">ความคิดเห็น</p>
+                        <p className="text-sm text-slate-700">{s.comment}</p>
+                      </div>
+                    )}
+                    {/* delete */}
+                    <button
+                      onClick={() => onDelete(s.id)}
+                      disabled={deletingId === s.id}
+                      className="w-full flex items-center justify-center gap-2 py-2 text-xs text-red-500 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-40 border border-red-100"
+                    >
+                      {deletingId === s.id
+                        ? <><span className="w-3 h-3 border-2 border-red-300 border-t-red-500 rounded-full animate-spin" /> กำลังลบ...</>
+                        : <><Trash2 size={13} /> ลบการประเมินนี้</>
+                      }
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

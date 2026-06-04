@@ -1,4 +1,4 @@
-import { JSONBIN_KEY, JSONBIN_URL, SUBMISSIONS_URL } from '../config/jsonbin'
+import { JSONBIN_KEY, JSONBIN_URL, SUBMISSIONS_URL, SURVEYS_URL } from '../config/jsonbin'
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -90,6 +90,35 @@ export async function updateSubmissionStatus(id, status, adminNote = '') {
     body: JSON.stringify({ submissions: updated }),
   })
   if (!res.ok) throw new Error('update failed')
+}
+
+// ── Surveys ─────────────────────────────────────────────
+
+export async function fetchSurveys() {
+  const res = await fetch(`${SURVEYS_URL}/latest`, { headers: HEADERS })
+  if (!res.ok) throw new Error('fetch surveys failed')
+  const data = await res.json()
+  return data.record.surveys || []
+}
+
+export async function submitSurvey(survey) {
+  const existing = await fetchSurveys()
+  const res = await fetch(SURVEYS_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ surveys: [...existing, survey] }),
+  })
+  if (!res.ok) throw new Error('submit survey failed')
+}
+
+export async function deleteSurvey(surveyId) {
+  const existing = await fetchSurveys()
+  const res = await fetch(SURVEYS_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ surveys: existing.filter(s => s.id !== surveyId) }),
+  })
+  if (!res.ok) throw new Error('delete survey failed')
 }
 
 export async function deleteCloudUser(userId) {

@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Home, ClipboardList, Scale, TrendingUp, Lightbulb,
-  Award, UserCircle, BookOpen, Camera, LogOut, Star, Shield, Flame,
+  Award, UserCircle, BookOpen, Camera, LogOut, Star, Shield, Flame, ClipboardCheck,
 } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
@@ -16,6 +16,7 @@ const links = [
   { to: '/knowledge',      icon: BookOpen,      label: 'ใบความรู้' },
   { to: '/nubcal',          icon: Flame,         label: 'nubcal แคลอรี่' },
   { to: '/activity',       icon: Camera,        label: 'ส่งภาพกิจกรรม' },
+  { to: '/survey',          icon: ClipboardCheck,label: 'แบบประเมินความพึงพอใจ' },
   { to: '/profile',        icon: UserCircle,    label: 'บัญชีของฉัน' },
 ]
 

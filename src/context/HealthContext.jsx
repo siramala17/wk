@@ -161,8 +161,20 @@ export function HealthProvider({ children }) {
   }
 
   function saveBmi(data) {
-    setBmiData(data)
-    setUser(prev => ({ ...prev, points: prev.points + 15 }))
+    const now = new Date()
+    const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`
+    const canEarn = bmiData?.lastBmiPointsMonth !== monthKey
+
+    setBmiData({
+      ...data,
+      lastBmiPointsMonth: canEarn ? monthKey : (bmiData?.lastBmiPointsMonth ?? null),
+      calculatedAt: now.toISOString(),
+    })
+
+    if (canEarn) {
+      setUser(prev => ({ ...prev, points: prev.points + 15 }))
+    }
+    return canEarn
   }
 
   function toggleTip(id) {

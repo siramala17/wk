@@ -17,6 +17,7 @@ import Profile from './pages/Profile'
 import Knowledge from './pages/Knowledge'
 import ActivitySubmit from './pages/ActivitySubmit'
 import NubCal from './pages/NubCal'
+import Survey from './pages/Survey'
 
 function AppContent() {
   const { isLoggedIn, registeredUsers, showRegister } = useHealth()
@@ -46,6 +47,7 @@ function AppContent() {
           <Route path="/knowledge" element={<Knowledge />} />
           <Route path="/activity" element={<ActivitySubmit />} />
           <Route path="/nubcal" element={<NubCal />} />
+          <Route path="/survey" element={<Survey />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
