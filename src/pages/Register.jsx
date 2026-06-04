@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Camera, User, ChevronRight, Check, RefreshCw, AlertCircle, Lock } from 'lucide-react'
+import { Camera, User, ChevronRight, Check, RefreshCw, AlertCircle, Lock, Upload } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 export default function Register() {
@@ -17,6 +17,7 @@ export default function Register() {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const streamRef = useRef(null)
+  const uploadRef = useRef(null)
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState(null)
   const [scanning, setScanning] = useState(false)
@@ -133,6 +134,18 @@ export default function Register() {
     setCaptured(null)
     setCameraReady(false)
     startCamera()
+  }
+
+  function handleUpload(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => {
+      setCaptured(ev.target.result)
+      stopCamera()
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
   }
 
   function handleRegister() {
@@ -509,14 +522,28 @@ export default function Register() {
                       ลองอีกครั้ง
                     </button>
                   ) : (
-                    <button
-                      onClick={startScan}
-                      disabled={!cameraReady || scanning}
-                      className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Camera size={18} />
-                      {scanning ? 'กำลังสแกน...' : 'สแกนใบหน้า'}
-                    </button>
+                    <>
+                      <button
+                        onClick={startScan}
+                        disabled={!cameraReady || scanning}
+                        className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Camera size={18} />
+                        {scanning ? 'กำลังสแกน...' : 'สแกนใบหน้า'}
+                      </button>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-px bg-slate-200" />
+                        <span className="text-xs text-slate-400">หรือ</span>
+                        <div className="flex-1 h-px bg-slate-200" />
+                      </div>
+                      <button
+                        onClick={() => uploadRef.current?.click()}
+                        className="w-full border-2 border-dashed border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-500 hover:text-blue-600 py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <Upload size={16} /> อัปโหลดรูปจากเครื่อง
+                      </button>
+                      <input ref={uploadRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                    </>
                   )}
                 </div>
               </>

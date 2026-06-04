@@ -171,6 +171,16 @@ export function HealthProvider({ children }) {
     )
   }
 
+  function updateProfileImage(imageData) {
+    setUser(prev => {
+      const updated = { ...prev, faceImage: imageData }
+      setRegisteredUsers(rPrev =>
+        rPrev.map(u => u.id === prev.id ? { ...u, faceImage: imageData } : u)
+      )
+      return updated
+    })
+  }
+
   function deleteUser(userId) {
     setRegisteredUsers(prev => prev.filter(u => u.id !== userId))
     if (user.id === userId) logout()
@@ -197,6 +207,7 @@ export function HealthProvider({ children }) {
       completedTips, toggleTip,
       registerUser,
       calorieLog, addCalorieEntry, deleteCalorieEntry,
+      updateProfileImage,
       deleteUser,
     }}>
       {children}
