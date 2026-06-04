@@ -3,7 +3,7 @@ import { pushUserToCloud, claimApprovedPoints } from '../services/userSync'
 
 const HealthContext = createContext(null)
 
-const BLANK_USER = { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, gender: '', points: 0, streak: 0, faceImage: null }
+const BLANK_USER = { name: 'ผู้ใช้งาน', firstName: '', lastName: '', age: 18, gender: '', role: '', gradeLevel: '', points: 0, streak: 0, faceImage: null }
 
 export function HealthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(() =>
@@ -96,7 +96,7 @@ export function HealthProvider({ children }) {
     localStorage.removeItem('hc_tips')
   }
 
-  function registerUser({ firstName, lastName, age, gender, pin, faceImage }) {
+  function registerUser({ firstName, lastName, age, gender, role, gradeLevel, pin, faceImage }) {
     const name = firstName
     const newEntry = {
       id: Date.now(),
@@ -104,6 +104,8 @@ export function HealthProvider({ children }) {
       lastName,
       age,
       gender,
+      role: role || '',
+      gradeLevel: gradeLevel || '',
       pin,
       faceImage,
       registeredAt: new Date().toISOString(),
@@ -169,6 +171,11 @@ export function HealthProvider({ children }) {
     )
   }
 
+  function deleteUser(userId) {
+    setRegisteredUsers(prev => prev.filter(u => u.id !== userId))
+    if (user.id === userId) logout()
+  }
+
   function addCalorieEntry(date, entry) {
     setCalorieLog(prev => ({ ...prev, [date]: [...(prev[date] || []), entry] }))
   }
@@ -190,6 +197,7 @@ export function HealthProvider({ children }) {
       completedTips, toggleTip,
       registerUser,
       calorieLog, addCalorieEntry, deleteCalorieEntry,
+      deleteUser,
     }}>
       {children}
     </HealthContext.Provider>

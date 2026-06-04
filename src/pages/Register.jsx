@@ -5,7 +5,7 @@ import { useHealth } from '../context/HealthContext'
 export default function Register() {
   const { registerUser } = useHealth()
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '', pin: '', confirmPin: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '', role: '', gradeLevel: '', pin: '', confirmPin: '' })
   const [errors, setErrors] = useState({})
 
   // step 2 — age verification
@@ -63,6 +63,8 @@ export default function Register() {
     const age = parseInt(form.age)
     if (!form.age || isNaN(age) || age < 1 || age > 120) e.age = 'กรุณากรอกอายุที่ถูกต้อง (1-120 ปี)'
     if (!form.gender) e.gender = 'กรุณาเลือกเพศ'
+    if (!form.role) e.role = 'กรุณาเลือกสถานะของคุณ'
+    if (form.role === 'นักเรียน' && !form.gradeLevel) e.gradeLevel = 'กรุณาเลือกระดับชั้น'
     if (!form.pin || form.pin.length !== 4) e.pin = 'กรุณาตั้ง PIN 4 หลัก'
     if (form.pin && form.confirmPin !== form.pin) e.confirmPin = 'PIN ไม่ตรงกัน'
     setErrors(e)
@@ -139,6 +141,8 @@ export default function Register() {
       lastName: form.lastName.trim(),
       age: parseInt(form.age),
       gender: form.gender,
+      role: form.role,
+      gradeLevel: form.role === 'นักเรียน' ? form.gradeLevel : '',
       pin: form.pin,
       faceImage: captured,
     })
@@ -251,6 +255,83 @@ export default function Register() {
               </div>
               {errors.gender && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} />{errors.gender}</p>}
             </div>
+
+            {/* Role */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">สถานะ</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'นักเรียน',     emoji: '🎒', color: 'blue' },
+                  { value: 'ครู',           emoji: '👩‍🏫', color: 'green' },
+                  { value: 'บุคคลทั่วไป', emoji: '👤', color: 'slate' },
+                ].map(({ value, emoji, color }) => {
+                  const active = form.role === value
+                  const styles = {
+                    blue:  { active: 'bg-blue-50 border-blue-400 text-blue-700 ring-blue-400',   inactive: '' },
+                    green: { active: 'bg-green-50 border-green-400 text-green-700 ring-green-400', inactive: '' },
+                    slate: { active: 'bg-slate-100 border-slate-500 text-slate-700 ring-slate-400', inactive: '' },
+                  }
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setForm(p => ({ ...p, role: value, gradeLevel: '' }))
+                        setErrors(p => ({ ...p, role: undefined, gradeLevel: undefined }))
+                      }}
+                      className={`flex flex-col items-center gap-1 py-3 px-1 rounded-xl border-2 font-semibold text-sm transition-all active:scale-95 ${
+                        active
+                          ? `${styles[color].active} ring-2 ring-offset-1`
+                          : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="text-xl">{emoji}</span>
+                      <span className="text-xs leading-tight text-center">{value}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              {errors.role && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} />{errors.role}</p>}
+            </div>
+
+            {/* Grade level — only for นักเรียน */}
+            {form.role === 'นักเรียน' && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">ระดับชั้น</label>
+                <div className="space-y-2">
+                  {[
+                    { group: 'ประถมศึกษา', grades: ['ป.1','ป.2','ป.3','ป.4','ป.5','ป.6'] },
+                    { group: 'มัธยมศึกษาตอนต้น', grades: ['ม.1','ม.2','ม.3'] },
+                    { group: 'มัธยมศึกษาตอนปลาย', grades: ['ม.4','ม.5','ม.6'] },
+                    { group: 'อาชีวศึกษา', grades: ['ปวช.1','ปวช.2','ปวช.3','ปวส.1','ปวส.2'] },
+                  ].map(({ group, grades }) => (
+                    <div key={group}>
+                      <p className="text-[11px] text-slate-400 font-medium mb-1.5 uppercase tracking-wide">{group}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {grades.map(g => (
+                          <button
+                            key={g}
+                            type="button"
+                            onClick={() => {
+                              setForm(p => ({ ...p, gradeLevel: g }))
+                              setErrors(p => ({ ...p, gradeLevel: undefined }))
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all active:scale-95 ${
+                              form.gradeLevel === g
+                                ? 'bg-blue-600 border-blue-600 text-white'
+                                : 'border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
+                            }`}
+                          >
+                            {g}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {errors.gradeLevel && <p className="text-red-500 text-xs mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.gradeLevel}</p>}
+              </div>
+            )}
 
             {/* PIN */}
             <div>

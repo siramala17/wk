@@ -92,6 +92,28 @@ export async function updateSubmissionStatus(id, status, adminNote = '') {
   if (!res.ok) throw new Error('update failed')
 }
 
+export async function deleteCloudUser(userId) {
+  const existing = await fetchCloudUsers()
+  const updated = existing.filter(u => u.id !== userId)
+  const res = await fetch(JSONBIN_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ users: updated }),
+  })
+  if (!res.ok) throw new Error('ลบผู้ใช้จาก cloud ไม่สำเร็จ')
+}
+
+export async function deleteUserSubmissions(userId) {
+  const existing = await fetchSubmissions()
+  const updated = existing.filter(s => s.userId !== userId)
+  const res = await fetch(SUBMISSIONS_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ submissions: updated }),
+  })
+  if (!res.ok) throw new Error('ลบภาพกิจกรรมไม่สำเร็จ')
+}
+
 export async function claimApprovedPoints(userId) {
   const all = await fetchSubmissions()
   const unclaimed = all.filter(

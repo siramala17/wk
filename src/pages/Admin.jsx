@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X } from 'lucide-react'
+import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions } from '../services/userSync'
+import { useHealth } from '../context/HealthContext'
 
 const ADMIN_PASSWORD = '2569'
 
@@ -55,6 +56,7 @@ function GenderBadge({ gender, small }) {
 
 export default function Admin() {
   const navigate = useNavigate()
+  const { deleteUser: deleteLocalUser } = useHealth()
 
   // auth
   const [password, setPassword] = useState('')
@@ -76,6 +78,12 @@ export default function Admin() {
   const [reviewingId, setReviewingId] = useState(null)
   const [expandedSub, setExpandedSub] = useState(null)
   const [filterStatus, setFilterStatus] = useState('all')
+
+  // delete user
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [deleteSuccess, setDeleteSuccess] = useState('')
 
   // tab
   const [adminTab, setAdminTab] = useState('users')
@@ -103,6 +111,27 @@ export default function Admin() {
     try { await updateSubmissionStatus(id, status, noteInputs[id] || ''); await loadSubmissions() }
     catch { /* silent */ }
     finally { setReviewingId(null) }
+  }
+
+  async function handleDeleteUser() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      deleteLocalUser(deleteTarget.id)
+      await deleteCloudUser(deleteTarget.id)
+      await deleteUserSubmissions(deleteTarget.id)
+      setDeleteSuccess(`ลบ "${deleteTarget.firstName} ${deleteTarget.lastName}" เรียบร้อยแล้ว`)
+      setDeleteTarget(null)
+      setExpandedId(null)
+      await loadUsers()
+      await loadSubmissions()
+      setTimeout(() => setDeleteSuccess(''), 4000)
+    } catch (err) {
+      setDeleteError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   function handleLogin(e) {
@@ -154,11 +183,15 @@ export default function Admin() {
   }
 
   // ── DASHBOARD ──
-  const total  = cloudUsers.length
-  const avgAge = total > 0 ? Math.round(cloudUsers.reduce((s, u) => s + (u.age || 0), 0) / total) : null
-  const male   = cloudUsers.filter(u => u.gender === 'ชาย').length
-  const female = cloudUsers.filter(u => u.gender === 'หญิง').length
-  const lgbt   = cloudUsers.filter(u => u.gender === 'LGBTQ+').length
+  // (deleteTarget modal rendered at end of component)
+  const total     = cloudUsers.length
+  const avgAge    = total > 0 ? Math.round(cloudUsers.reduce((s, u) => s + (u.age || 0), 0) / total) : null
+  const male      = cloudUsers.filter(u => u.gender === 'ชาย').length
+  const female    = cloudUsers.filter(u => u.gender === 'หญิง').length
+  const lgbt      = cloudUsers.filter(u => u.gender === 'LGBTQ+').length
+  const students  = cloudUsers.filter(u => u.role === 'นักเรียน').length
+  const teachers  = cloudUsers.filter(u => u.role === 'ครู').length
+  const general   = cloudUsers.filter(u => u.role === 'บุคคลทั่วไป').length
   const pendingCount = submissions.filter(s => s.status === 'pending').length
 
   const filteredSubs = filterStatus === 'all' ? submissions : submissions.filter(s => s.status === filterStatus)
@@ -190,6 +223,13 @@ export default function Admin() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
+
+        {/* success banner */}
+        {deleteSuccess && (
+          <div className="mb-4 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-green-700 text-sm font-medium">
+            <Check size={16} className="flex-shrink-0" /> {deleteSuccess}
+          </div>
+        )}
 
         {/* tab selector */}
         <div className="flex bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
@@ -238,10 +278,15 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-3 gap-3 mb-3">
                   <div className="bg-blue-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">♂</span><p className="text-xl font-bold text-blue-700">{male}</p><p className="text-blue-500 text-xs">ชาย</p></div>
                   <div className="bg-pink-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">♀</span><p className="text-xl font-bold text-pink-700">{female}</p><p className="text-pink-500 text-xs">หญิง</p></div>
                   <div className="bg-purple-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">🏳️‍🌈</span><p className="text-xl font-bold text-purple-700">{lgbt}</p><p className="text-purple-500 text-xs">LGBTQ+</p></div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="bg-sky-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">🎒</span><p className="text-xl font-bold text-sky-700">{students}</p><p className="text-sky-500 text-xs">นักเรียน</p></div>
+                  <div className="bg-emerald-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">👩‍🏫</span><p className="text-xl font-bold text-emerald-700">{teachers}</p><p className="text-emerald-500 text-xs">ครู</p></div>
+                  <div className="bg-slate-100 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">👤</span><p className="text-xl font-bold text-slate-700">{general}</p><p className="text-slate-500 text-xs">ทั่วไป</p></div>
                 </div>
 
                 {/* user list */}
@@ -262,9 +307,15 @@ export default function Admin() {
                             <Avatar src={u.avatar} size="md" />
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-slate-800 truncate">{u.firstName} {u.lastName}</p>
-                              <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                 <span className="text-slate-500 text-xs">อายุ {u.age} ปี</span>
                                 <GenderBadge gender={u.gender} small />
+                                {u.role && (
+                                  <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">
+                                    {u.role === 'นักเรียน' ? '🎒' : u.role === 'ครู' ? '👩‍🏫' : '👤'}
+                                    {u.gradeLevel ? ` ${u.gradeLevel}` : ` ${u.role}`}
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -283,6 +334,27 @@ export default function Admin() {
                                   <div className="flex items-start gap-2"><Hash size={14} className="text-slate-400 mt-0.5 flex-shrink-0" /><div><p className="text-xs text-slate-400">อายุ</p><p className="text-sm font-semibold text-slate-800">{u.age} ปี</p></div></div>
                                   <div className="flex items-start gap-2"><span className="text-slate-400 mt-0.5 flex-shrink-0 text-sm leading-none">⚥</span><div><p className="text-xs text-slate-400">เพศ</p><GenderBadge gender={u.gender} />{!u.gender && <p className="text-sm font-semibold text-slate-800">-</p>}</div></div>
                                   <div className="flex items-start gap-2"><Calendar size={14} className="text-slate-400 mt-0.5 flex-shrink-0" /><div><p className="text-xs text-slate-400">ลงทะเบียนเมื่อ</p><p className="text-sm font-semibold text-slate-800">{formatDate(u.registeredAt)}</p></div></div>
+                                  {u.role && (
+                                    <div className="flex items-start gap-2">
+                                      <span className="text-slate-400 mt-0.5 flex-shrink-0 text-sm leading-none">
+                                        {u.role === 'นักเรียน' ? '🎒' : u.role === 'ครู' ? '👩‍🏫' : '👤'}
+                                      </span>
+                                      <div>
+                                        <p className="text-xs text-slate-400">สถานะ</p>
+                                        <p className="text-sm font-semibold text-slate-800">
+                                          {u.role}{u.gradeLevel ? ` — ${u.gradeLevel}` : ''}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-red-100">
+                                  <button
+                                    onClick={() => { setDeleteTarget(u); setDeleteError('') }}
+                                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-semibold text-sm transition-colors border border-red-200"
+                                  >
+                                    <Trash2 size={15} /> ลบผู้ใช้งานนี้
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -420,6 +492,79 @@ export default function Admin() {
         )}
 
       </div>
+
+      {/* ── Delete confirmation modal ── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+            {/* modal header */}
+            <div className="bg-red-50 border-b border-red-100 px-5 py-4 flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={20} className="text-red-600" />
+              </div>
+              <div>
+                <p className="font-bold text-red-700">ยืนยันการลบผู้ใช้งาน</p>
+                <p className="text-xs text-red-500">การดำเนินการนี้ไม่สามารถยกเลิกได้</p>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* user preview */}
+              <div className="flex items-center gap-3 bg-slate-50 rounded-2xl p-3">
+                <Avatar src={deleteTarget.avatar} size="md" />
+                <div>
+                  <p className="font-bold text-slate-800">{deleteTarget.firstName} {deleteTarget.lastName}</p>
+                  <p className="text-sm text-slate-500">อายุ {deleteTarget.age} ปี • {deleteTarget.gender || '-'}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">ลงทะเบียน {formatDate(deleteTarget.registeredAt)}</p>
+                </div>
+              </div>
+
+              {/* what gets deleted */}
+              <div className="bg-red-50 rounded-2xl p-3 space-y-1.5">
+                <p className="text-xs font-semibold text-red-600 mb-2">ข้อมูลที่จะถูกลบ:</p>
+                {[
+                  'ข้อมูลโปรไฟล์ใน cloud',
+                  'ภาพกิจกรรมที่ส่งทั้งหมด',
+                  'บัญชีในอุปกรณ์นี้',
+                ].map(item => (
+                  <div key={item} className="flex items-center gap-2 text-xs text-red-700">
+                    <X size={12} className="flex-shrink-0" /> {item}
+                  </div>
+                ))}
+              </div>
+
+              {/* error */}
+              {deleteError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600 flex items-center gap-2">
+                  <AlertTriangle size={14} /> {deleteError}
+                </div>
+              )}
+
+              {/* buttons */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => { setDeleteTarget(null); setDeleteError('') }}
+                  disabled={deleting}
+                  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handleDeleteUser}
+                  disabled={deleting}
+                  className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {deleting ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> กำลังลบ...</>
+                  ) : (
+                    <><Trash2 size={15} /> ยืนยันลบ</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
