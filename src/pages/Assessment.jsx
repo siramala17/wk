@@ -236,7 +236,7 @@ export default function Assessment() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-6">
 
       {/* progress bar */}
       <div className="mb-5">
@@ -317,7 +317,7 @@ export default function Assessment() {
       </div>
 
       {/* ปุ่มนำทาง */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 flex gap-3 md:static md:border-none md:bg-transparent md:mt-6 md:px-0">
+      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 flex gap-3 pb-safe md:static md:bottom-auto md:border-none md:bg-transparent md:mt-6 md:px-0 md:pb-0">
         {step > 0 && (
           <button
             onClick={() => { setStep(s => s - 1); window.scrollTo(0, 0) }}
