@@ -25,7 +25,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center"
+    <div className="min-h-dvh relative overflow-hidden flex items-center justify-center"
       style={{ background: '#0a1535' }}>
 
       {/* ── พื้นหลัง diagonal ── */}

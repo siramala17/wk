@@ -14,7 +14,7 @@ const tabs = [
 export default function BottomNav() {
   const { pathname } = useLocation()
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-blue-100 shadow-lg">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-blue-100 shadow-lg pb-safe">
       <div className="grid grid-cols-6 h-16">
         {tabs.map(({ to, icon: Icon, label }) => {
           const active = pathname === to

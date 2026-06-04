@@ -150,7 +150,7 @@ export default function Register() {
     } focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 placeholder-slate-400`
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex items-center justify-center p-4">
+    <div className="min-h-dvh bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
 
         {/* icon + title */}

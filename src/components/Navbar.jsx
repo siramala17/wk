@@ -20,7 +20,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-blue-100 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-blue-100 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="px-4 h-14 flex items-center justify-between">
 
         {/* Desktop: App branding | Mobile: user avatar + name */}

@@ -33,7 +33,7 @@ function AppContent() {
     <div className="min-h-screen bg-blue-50">
       <Navbar />
       <Sidebar />
-      <main className="pt-14 pb-20 md:ml-56 md:pb-6">
+      <main className="pb-24 md:ml-56 md:pb-8 pl-safe pr-safe" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/assessment" element={<Assessment />} />

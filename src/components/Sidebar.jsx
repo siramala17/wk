@@ -23,7 +23,7 @@ export default function Sidebar() {
   const { user, logout } = useHealth()
 
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-14 bottom-0 w-56 bg-white border-r border-blue-100 z-40 shadow-sm">
+    <aside className="hidden md:flex flex-col fixed left-0 bottom-0 w-56 bg-white border-r border-blue-100 z-40 shadow-sm" style={{ top: 'calc(3.5rem + env(safe-area-inset-top))' }}>
 
       {/* User profile card */}
       <div className="px-4 py-4 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
