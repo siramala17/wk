@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle } from 'lucide-react'
+import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward } from '../services/userSync'
 import { useHealth } from '../context/HealthContext'
+import { firebaseReady } from '../config/firebase'
 
 const ADMIN_PASSWORD = '2569'
 
@@ -71,6 +72,7 @@ export default function Admin() {
   const [cloudUsers, setCloudUsers] = useState([])
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState(false)
+  const [fetchErrorMsg, setFetchErrorMsg] = useState('')
 
   // submissions tab
   const [submissions, setSubmissions] = useState([])
@@ -109,9 +111,9 @@ export default function Admin() {
   const [adminTab, setAdminTab] = useState('users')
 
   const loadUsers = useCallback(async () => {
-    setLoading(true); setFetchError(false)
+    setLoading(true); setFetchError(false); setFetchErrorMsg('')
     try { setCloudUsers(await fetchCloudUsers()) }
-    catch { setFetchError(true) }
+    catch (e) { setFetchError(true); setFetchErrorMsg(e?.message || '') }
     finally { setLoading(false) }
   }, [])
 
@@ -308,6 +310,9 @@ export default function Admin() {
 
       <div className="max-w-3xl mx-auto px-4 py-6">
 
+        {/* Firebase not configured banner */}
+        {!firebaseReady && <FirebaseSetupGuide />}
+
         {/* success banner */}
         {deleteSuccess && (
           <div className="mb-4 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-green-700 text-sm font-medium">
@@ -344,10 +349,23 @@ export default function Admin() {
               </div>
             )}
             {fetchError && !loading && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 mb-4 text-red-600 text-sm flex items-center gap-2">
-                ไม่สามารถเชื่อมต่อ cloud ได้
-                <button onClick={loadUsers} className="ml-auto underline hover:text-red-700">ลองใหม่</button>
-              </div>
+              !firebaseReady || fetchErrorMsg.includes('ยังไม่ได้ตั้งค่า') ? (
+                <FirebaseSetupGuide />
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 mb-4 text-red-600 text-sm space-y-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={16} className="flex-shrink-0" />
+                    <span className="font-semibold">ไม่สามารถเชื่อมต่อ Firestore ได้</span>
+                    <button onClick={loadUsers} className="ml-auto text-xs underline hover:text-red-700 flex-shrink-0">ลองใหม่</button>
+                  </div>
+                  {fetchErrorMsg && (
+                    <p className="text-xs text-red-500 bg-red-100 rounded-lg px-3 py-2 font-mono break-all">{fetchErrorMsg}</p>
+                  )}
+                  <p className="text-xs text-red-500">
+                    ตรวจสอบ: Firestore Security Rules, การเชื่อมต่ออินเทอร์เน็ต, หรือสถานะ Firebase Console
+                  </p>
+                </div>
+              )
             )}
             {!loading && !fetchError && (
               <>
@@ -1010,6 +1028,49 @@ function StarDisplay({ value }) {
         </svg>
       ))}
       <span className="text-xs font-bold text-slate-700 ml-1">{value}</span>
+    </div>
+  )
+}
+
+// ── Firebase Setup Guide ──────────────────────────────────────
+
+function FirebaseSetupGuide() {
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden mb-4">
+      <div className="flex items-center gap-3 px-5 py-4 bg-amber-100 border-b border-amber-200">
+        <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0">
+          <AlertTriangle size={18} className="text-white" />
+        </div>
+        <div>
+          <p className="font-bold text-amber-800 text-sm">Firebase ยังไม่ได้ตั้งค่า</p>
+          <p className="text-amber-600 text-xs">ระบบฐานข้อมูล Firestore ยังไม่พร้อมใช้งาน</p>
+        </div>
+      </div>
+      <div className="px-5 py-4 space-y-3">
+        <p className="text-sm font-semibold text-amber-800">วิธีตั้งค่า Firebase (ทำครั้งเดียว)</p>
+        <ol className="space-y-2 text-sm text-amber-700">
+          {[
+            <>ไปที่ <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-xs">console.firebase.google.com</span> แล้วสร้าง project ใหม่</>,
+            <>เข้า project → <strong>Project Settings</strong> → แท็บ <strong>Your apps</strong> → กดไอคอน <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-xs">&lt;/&gt;</span></>,
+            <>ลงทะเบียน Web app แล้วคัดลอก <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-xs">firebaseConfig</span></>,
+            <>เปิด <strong>Build → Firestore Database → Create database</strong> (เลือก Test mode)</>,
+            <>แก้ไขไฟล์ <span className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-xs">src/config/firebase.js</span> ใส่ค่า config ที่ copy มา</>,
+          ].map((step, i) => (
+            <li key={i} className="flex gap-2.5">
+              <span className="w-5 h-5 rounded-full bg-amber-400 text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+        <a
+          href="https://console.firebase.google.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-semibold text-sm transition-colors mt-2"
+        >
+          <ExternalLink size={14} /> เปิด Firebase Console
+        </a>
+      </div>
     </div>
   )
 }
