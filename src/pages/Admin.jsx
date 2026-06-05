@@ -67,6 +67,7 @@ export default function Admin() {
 
   // users tab
   const [expandedId, setExpandedId] = useState(null)
+  const [filterRole, setFilterRole] = useState('all')
   const [cloudUsers, setCloudUsers] = useState([])
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState(false)
@@ -274,6 +275,7 @@ export default function Admin() {
   const students  = cloudUsers.filter(u => u.role === 'นักเรียน').length
   const teachers  = cloudUsers.filter(u => u.role === 'ครู').length
   const general   = cloudUsers.filter(u => u.role === 'บุคคลทั่วไป').length
+  const filteredCloudUsers = filterRole === 'all' ? cloudUsers : cloudUsers.filter(u => u.role === filterRole)
   const pendingCount = submissions.filter(s => s.status === 'pending').length
 
   const filteredSubs = filterStatus === 'all' ? submissions : submissions.filter(s => s.status === filterStatus)
@@ -375,18 +377,35 @@ export default function Admin() {
                   <div className="bg-slate-100 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">👤</span><p className="text-xl font-bold text-slate-700">{general}</p><p className="text-slate-500 text-xs">ทั่วไป</p></div>
                 </div>
 
+                {/* role filter */}
+                <div className="flex gap-2 mb-4 flex-wrap">
+                  {[
+                    { key: 'all',          label: 'ทั้งหมด',       count: total },
+                    { key: 'นักเรียน',     label: '🎒 นักเรียน',   count: students },
+                    { key: 'ครู',           label: '👩‍🏫 ครู',       count: teachers },
+                    { key: 'บุคคลทั่วไป', label: '👤 ทั่วไป',      count: general },
+                  ].map(({ key, label, count }) => (
+                    <button key={key} onClick={() => { setFilterRole(key); setExpandedId(null) }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                        filterRole === key ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                      }`}>
+                      {label} <span className="opacity-70">({count})</span>
+                    </button>
+                  ))}
+                </div>
+
                 {/* user list */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
                     <Users size={18} className="text-slate-500" />
                     <h2 className="font-bold text-slate-700">รายชื่อผู้ใช้งาน</h2>
-                    <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">{total} คน</span>
+                    <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">{filteredCloudUsers.length} คน</span>
                   </div>
-                  {total === 0 ? (
-                    <div className="py-16 text-center text-slate-400"><Users size={40} className="mx-auto mb-3 opacity-30" /><p className="text-sm">ยังไม่มีผู้ลงทะเบียน</p></div>
+                  {filteredCloudUsers.length === 0 ? (
+                    <div className="py-16 text-center text-slate-400"><Users size={40} className="mx-auto mb-3 opacity-30" /><p className="text-sm">{filterRole === 'all' ? 'ยังไม่มีผู้ลงทะเบียน' : 'ไม่มีผู้ใช้ในกลุ่มนี้'}</p></div>
                   ) : (
                     <div className="divide-y divide-slate-100">
-                      {cloudUsers.map((u, i) => (
+                      {filteredCloudUsers.map((u, i) => (
                         <div key={u.id}>
                           <button onClick={() => setExpandedId(expandedId === u.id ? null : u.id)}
                             className="w-full px-5 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left">
