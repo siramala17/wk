@@ -81,6 +81,8 @@ export default function Register() {
   const [lang, setLang] = useState('th')
   const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '', role: '', gradeLevel: '', pin: '', confirmPin: '' })
   const [errors, setErrors] = useState({})
+  const [registering, setRegistering] = useState(false)
+  const [registerError, setRegisterError] = useState(null)
 
   const t = LANG[lang]
 
@@ -224,17 +226,24 @@ export default function Register() {
     e.target.value = ''
   }
 
-  function handleRegister() {
-    registerUser({
-      firstName: form.firstName.trim(),
-      lastName: form.lastName.trim(),
-      age: parseInt(form.age),
-      gender: form.gender,
-      role: form.role,
-      gradeLevel: form.role === 'นักเรียน' ? form.gradeLevel : '',
-      pin: form.pin,
-      faceImage: captured,
-    })
+  async function handleRegister(faceImage = captured) {
+    setRegistering(true)
+    setRegisterError(null)
+    try {
+      await registerUser({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        age: parseInt(form.age),
+        gender: form.gender,
+        role: form.role,
+        gradeLevel: form.role === 'นักเรียน' ? form.gradeLevel : '',
+        pin: form.pin,
+        faceImage: faceImage ?? null,
+      })
+    } catch {
+      setRegisterError('เกิดข้อผิดพลาด กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต')
+      setRegistering(false)
+    }
   }
 
   const inputClass = (field) =>
@@ -584,29 +593,49 @@ export default function Register() {
                   </p>
                 )}
 
+                {registerError && (
+                  <p className="text-red-500 text-xs text-center flex items-center justify-center gap-1">
+                    <AlertCircle size={13} />{registerError}
+                  </p>
+                )}
+
                 <div className="space-y-3">
                   {captured ? (
                     <>
                       <button
-                        onClick={handleRegister}
-                        className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all"
+                        onClick={() => handleRegister(captured)}
+                        disabled={registering}
+                        className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-70"
                       >
-                        <Check size={18} /> {t.getStarted}
+                        {registering
+                          ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> กำลังสมัคร...</>
+                          : <><Check size={18} /> {t.getStarted}</>}
                       </button>
                       <button
                         onClick={retake}
-                        className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"
+                        disabled={registering}
+                        className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors disabled:opacity-50"
                       >
                         <RefreshCw size={15} /> {t.retake}
                       </button>
                     </>
                   ) : cameraError ? (
-                    <button
-                      onClick={() => { setCameraError(null); startCamera() }}
-                      className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                      {t.tryAgain}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => { setCameraError(null); startCamera() }}
+                        className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        {t.tryAgain}
+                      </button>
+                      <button
+                        onClick={() => handleRegister(null)}
+                        disabled={registering}
+                        className="w-full py-3 rounded-xl border border-slate-200 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      >
+                        <ChevronRight size={15} />
+                        {lang === 'th' ? 'ข้ามขั้นตอนนี้ (ไม่มีรูปโปรไฟล์)' : 'Skip (no profile photo)'}
+                      </button>
+                    </>
                   ) : (
                     <>
                       <button
@@ -629,6 +658,19 @@ export default function Register() {
                         <Upload size={16} /> {t.upload}
                       </button>
                       <input ref={uploadRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-px bg-slate-100" />
+                        <span className="text-xs text-slate-300">{t.or}</span>
+                        <div className="flex-1 h-px bg-slate-100" />
+                      </div>
+                      <button
+                        onClick={() => handleRegister(null)}
+                        disabled={registering}
+                        className="w-full py-3 rounded-xl border border-slate-200 text-slate-400 text-sm font-medium hover:bg-slate-50 hover:text-slate-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      >
+                        <ChevronRight size={15} />
+                        {lang === 'th' ? 'ข้ามขั้นตอนนี้ (เพิ่มรูปภายหลังได้)' : 'Skip for now (add photo later)'}
+                      </button>
                     </>
                   )}
                 </div>

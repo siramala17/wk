@@ -10,12 +10,15 @@ export default function Login() {
   const [remember, setRemember] = useState(false)
   const [error, setError] = useState('')
   const [shake, setShake] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault()
     if (!username.trim()) { setError('กรุณากรอกชื่อผู้ใช้'); return }
     if (!pin) { setError('กรุณากรอกรหัสผ่าน'); return }
-    const ok = loginByName(username, pin)
+    setLoading(true)
+    const ok = await loginByName(username, pin)
+    setLoading(false)
     if (!ok) {
       setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
       setShake(true)
@@ -140,10 +143,13 @@ export default function Login() {
             {/* ปุ่มเข้าสู่ระบบ */}
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl font-bold text-white text-base tracking-wide transition-all active:scale-[0.98] shadow-lg hover:shadow-xl"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl font-bold text-white text-base tracking-wide transition-all active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-70 flex items-center justify-center gap-2"
               style={{ background: '#0a1535' }}
             >
-              เข้าสู่ระบบ
+              {loading
+                ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> กำลังตรวจสอบ...</>
+                : 'เข้าสู่ระบบ'}
             </button>
           </form>
 

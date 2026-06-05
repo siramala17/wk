@@ -1,6 +1,8 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HealthProvider, useHealth } from './context/HealthContext'
+import ErrorBoundary from './components/ErrorBoundary'
+import OfflineBanner from './components/OfflineBanner'
 import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
@@ -20,15 +22,13 @@ import NubCal from './pages/NubCal'
 import Survey from './pages/Survey'
 
 function AppContent() {
-  const { isLoggedIn, registeredUsers, showRegister } = useHealth()
+  const { isLoggedIn, showRegister } = useHealth()
   const { pathname } = useLocation()
 
   if (pathname === '/admin') return <Admin />
 
-  // ยังไม่มีบัญชีหรือกดสมัครใหม่
-  if (registeredUsers.length === 0 || showRegister) return <Register />
+  if (showRegister) return <Register />
 
-  // มีบัญชีแต่ยังไม่ได้ login
   if (!isLoggedIn) return <Login />
 
   return (
@@ -58,10 +58,13 @@ function AppContent() {
 
 export default function App() {
   return (
-    <HealthProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </HealthProvider>
+    <ErrorBoundary>
+      <OfflineBanner />
+      <HealthProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </HealthProvider>
+    </ErrorBoundary>
   )
 }

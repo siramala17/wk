@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { pushUserToCloud, claimApprovedPoints, submitRedemption, claimRedemptionRefunds } from '../services/userSync'
+import {
+  pushUserToCloud, loginUserFromCloud, syncUserPointsToCloud, updateUserAvatarInCloud,
+  claimApprovedPoints, submitRedemption, claimRedemptionRefunds,
+} from '../services/userSync'
 
 const HealthContext = createContext(null)
 
@@ -33,11 +36,6 @@ export function HealthProvider({ children }) {
     catch { return null }
   })
 
-  const [registeredUsers, setRegisteredUsers] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('hc_users')) ?? [] }
-    catch { return [] }
-  })
-
   const [completedTips, setCompletedTips] = useState(() => {
     try { return JSON.parse(localStorage.getItem('hc_tips')) ?? [] }
     catch { return [] }
@@ -48,38 +46,56 @@ export function HealthProvider({ children }) {
     catch { return {} }
   })
 
+  // ลบ hc_users เก่าออกเพื่อเพิ่มพื้นที่ localStorage
+  useEffect(() => { localStorage.removeItem('hc_users') }, [])
+
   useEffect(() => { localStorage.setItem('hc_user', JSON.stringify(user)) }, [user])
   useEffect(() => { if (latestAssessment) localStorage.setItem('hc_latest', JSON.stringify(latestAssessment)) }, [latestAssessment])
   useEffect(() => { localStorage.setItem('hc_history', JSON.stringify(history)) }, [history])
   useEffect(() => { if (bmiData) localStorage.setItem('hc_bmi', JSON.stringify(bmiData)) }, [bmiData])
   useEffect(() => { localStorage.setItem('hc_tips', JSON.stringify(completedTips)) }, [completedTips])
-  useEffect(() => { localStorage.setItem('hc_users', JSON.stringify(registeredUsers)) }, [registeredUsers])
   useEffect(() => { localStorage.setItem('hc_calories', JSON.stringify(calorieLog)) }, [calorieLog])
 
-  function login(userId, pin) {
-    const found = registeredUsers.find(u => u.id === userId)
-    if (!found || found.pin !== pin) return false
-    const { pin: _, ...safeUser } = found
-    setUser(safeUser)
-    setIsLoggedIn(true)
-    setShowRegister(false)
-    localStorage.setItem('hc_session', 'true')
-    localStorage.setItem('hc_user', JSON.stringify(safeUser))
-    return true
+  // sync points/streak ไป Firestore เมื่อเปลี่ยนแปลง
+  useEffect(() => {
+    if (user.id && isLoggedIn) {
+      syncUserPointsToCloud(user.id, user.points, user.streak).catch(() => {})
+    }
+  }, [user.points, user.streak]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function loginByName(firstName, pin) {
+    try {
+      const found = await loginUserFromCloud(firstName, pin)
+      if (!found) return false
+      setUser(found)
+      setIsLoggedIn(true)
+      setShowRegister(false)
+      localStorage.setItem('hc_session', 'true')
+      localStorage.setItem('hc_user', JSON.stringify(found))
+      return true
+    } catch {
+      return false
+    }
   }
 
-  function loginByName(firstName, pin) {
-    const found = registeredUsers.find(
-      u => u.firstName.trim().toLowerCase() === firstName.trim().toLowerCase() && u.pin === pin
-    )
-    if (!found) return false
-    const { pin: _, ...safeUser } = found
-    setUser(safeUser)
-    setIsLoggedIn(true)
-    setShowRegister(false)
-    localStorage.setItem('hc_session', 'true')
-    localStorage.setItem('hc_user', JSON.stringify(safeUser))
-    return true
+  async function login(userId, pin) {
+    try {
+      // ค้นหาจาก Firestore โดย id ตรงๆ ไม่ได้ จึงใช้ session ปัจจุบันถ้า id ตรง
+      const cached = localStorage.getItem('hc_user')
+      if (cached) {
+        const u = JSON.parse(cached)
+        if (String(u.id) === String(userId) && u.pin === pin) {
+          const { pin: _, ...safe } = u
+          setUser(safe)
+          setIsLoggedIn(true)
+          localStorage.setItem('hc_session', 'true')
+          return true
+        }
+      }
+      return false
+    } catch {
+      return false
+    }
   }
 
   function logout() {
@@ -96,10 +112,10 @@ export function HealthProvider({ children }) {
     localStorage.removeItem('hc_tips')
   }
 
-  function registerUser({ firstName, lastName, age, gender, role, gradeLevel, pin, faceImage }) {
-    const name = firstName
+  async function registerUser({ firstName, lastName, age, gender, role, gradeLevel, pin, faceImage }) {
+    const id = Date.now()
     const newEntry = {
-      id: Date.now(),
+      id,
       firstName,
       lastName,
       age,
@@ -112,13 +128,13 @@ export function HealthProvider({ children }) {
       points: 0,
       streak: 0,
     }
-    setRegisteredUsers(prev => [...prev, newEntry])
-    const { pin: _, ...safeUser } = newEntry
-    setUser({ ...safeUser, name })
+    await pushUserToCloud(newEntry)
+    const { pin: _, faceImage: __, ...safeUser } = newEntry
+    setUser({ ...safeUser, name: firstName })
     setIsLoggedIn(true)
     setShowRegister(false)
     localStorage.setItem('hc_session', 'true')
-    pushUserToCloud(newEntry).catch(() => {})
+    localStorage.setItem('hc_user', JSON.stringify({ ...safeUser, name: firstName }))
   }
 
   function saveAssessment(data) {
@@ -216,19 +232,15 @@ export function HealthProvider({ children }) {
     } catch { return 0 }
   }
 
-  function updateProfileImage(imageData) {
-    setUser(prev => {
-      const updated = { ...prev, faceImage: imageData }
-      setRegisteredUsers(rPrev =>
-        rPrev.map(u => u.id === prev.id ? { ...u, faceImage: imageData } : u)
-      )
-      return updated
-    })
+  async function updateProfileImage(imageData) {
+    setUser(prev => ({ ...prev, faceImage: imageData }))
+    if (user.id) {
+      try { await updateUserAvatarInCloud(user.id, imageData) } catch {}
+    }
   }
 
   function deleteUser(userId) {
-    setRegisteredUsers(prev => prev.filter(u => u.id !== userId))
-    if (user.id === userId) logout()
+    if (String(user.id) === String(userId)) logout()
   }
 
   function addCalorieEntry(date, entry) {
@@ -244,7 +256,6 @@ export function HealthProvider({ children }) {
       isLoggedIn, login, loginByName, logout,
       claimActivityPoints,
       showRegister, setShowRegister,
-      registeredUsers,
       user, setUser,
       latestAssessment, saveAssessment,
       history,

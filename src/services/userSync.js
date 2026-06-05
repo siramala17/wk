@@ -1,4 +1,9 @@
-import { JSONBIN_KEY, JSONBIN_URL, SUBMISSIONS_URL, SURVEYS_URL, REDEMPTIONS_URL, REWARD_CATALOG_URL } from '../config/jsonbin'
+import { JSONBIN_KEY, SUBMISSIONS_URL, SURVEYS_URL, REDEMPTIONS_URL, REWARD_CATALOG_URL } from '../config/jsonbin'
+import {
+  collection, doc, getDocs, setDoc, deleteDoc, updateDoc,
+  query, where, orderBy,
+} from 'firebase/firestore'
+import { db } from '../config/firebase'
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -25,29 +30,68 @@ function resizeImage(dataUrl, size = 64, quality = 0.4) {
   })
 }
 
-// ── Users ──────────────────────────────────────────────
+// ── Users (Firestore) ────────────────────────────────────────
+
+function requireDb() {
+  if (!db) throw new Error('Firebase ยังไม่ได้ตั้งค่า — กรุณาแก้ไข src/config/firebase.js')
+}
 
 export async function fetchCloudUsers() {
-  const res = await fetch(`${JSONBIN_URL}/latest`, { headers: HEADERS })
-  if (!res.ok) throw new Error('fetch failed')
-  const data = await res.json()
-  return data.record.users || []
+  requireDb()
+  const snap = await getDocs(query(collection(db, 'users'), orderBy('registeredAt', 'desc')))
+  return snap.docs.map(d => {
+    const data = d.data()
+    return { ...data, id: data.id ?? d.id }
+  })
 }
 
 export async function pushUserToCloud(user) {
+  requireDb()
   const { faceImage, ...meta } = user
   const avatar = await resizeImage(faceImage, 64, 0.4)
-  const existing = await fetchCloudUsers()
-  if (existing.some(u => u.id === meta.id)) return
-  const res = await fetch(JSONBIN_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ users: [...existing, { ...meta, avatar }] }),
+  await setDoc(doc(db, 'users', String(user.id)), {
+    ...meta,
+    firstName_lower: (meta.firstName || '').trim().toLowerCase(),
+    avatar: avatar ?? null,
   })
-  if (!res.ok) throw new Error('push failed')
 }
 
-// ── Activity Submissions ────────────────────────────────
+export async function loginUserFromCloud(firstName, pin) {
+  requireDb()
+  const q = query(
+    collection(db, 'users'),
+    where('firstName_lower', '==', firstName.trim().toLowerCase())
+  )
+  const snap = await getDocs(q)
+  for (const d of snap.docs) {
+    const u = d.data()
+    if (u.pin === pin) {
+      const { pin: _, ...safe } = u
+      return { ...safe, id: u.id ?? d.id }
+    }
+  }
+  return null
+}
+
+export async function syncUserPointsToCloud(userId, points, streak) {
+  if (!db) return
+  try {
+    await updateDoc(doc(db, 'users', String(userId)), { points, streak })
+  } catch { /* silent — offline or doc not found */ }
+}
+
+export async function updateUserAvatarInCloud(userId, faceImage) {
+  requireDb()
+  const avatar = await resizeImage(faceImage, 64, 0.4)
+  if (avatar) await updateDoc(doc(db, 'users', String(userId)), { avatar })
+}
+
+export async function deleteCloudUser(userId) {
+  requireDb()
+  await deleteDoc(doc(db, 'users', String(userId)))
+}
+
+// ── Activity Submissions ─────────────────────────────────────
 
 export async function fetchSubmissions() {
   const res = await fetch(`${SUBMISSIONS_URL}/latest`, { headers: HEADERS })
@@ -57,7 +101,6 @@ export async function fetchSubmissions() {
 }
 
 export async function addSubmission(submission) {
-  // บีบรูปให้เล็กก่อน upload (300x300 @ 50%)
   const photo = await resizeImage(submission.photo, 300, 0.5)
   const existing = await fetchSubmissions()
   const newEntry = { ...submission, photo, status: 'pending', submittedAt: new Date().toISOString() }
@@ -92,7 +135,18 @@ export async function updateSubmissionStatus(id, status, adminNote = '') {
   if (!res.ok) throw new Error('update failed')
 }
 
-// ── Surveys ─────────────────────────────────────────────
+export async function deleteUserSubmissions(userId) {
+  const existing = await fetchSubmissions()
+  const updated = existing.filter(s => String(s.userId) !== String(userId))
+  const res = await fetch(SUBMISSIONS_URL, {
+    method: 'PUT',
+    headers: HEADERS,
+    body: JSON.stringify({ submissions: updated }),
+  })
+  if (!res.ok) throw new Error('ลบภาพกิจกรรมไม่สำเร็จ')
+}
+
+// ── Surveys ──────────────────────────────────────────────────
 
 export async function fetchSurveys() {
   const res = await fetch(`${SURVEYS_URL}/latest`, { headers: HEADERS })
@@ -121,7 +175,7 @@ export async function deleteSurvey(surveyId) {
   if (!res.ok) throw new Error('delete survey failed')
 }
 
-// ── Reward Catalog ───────────────────────────────────────
+// ── Reward Catalog ────────────────────────────────────────────
 
 export async function fetchRewardCatalog() {
   const res = await fetch(`${REWARD_CATALOG_URL}/latest`, { headers: HEADERS })
@@ -153,7 +207,7 @@ export async function deleteReward(id) {
   await saveRewardCatalog(existing.filter(r => r.id !== id))
 }
 
-// ── Redemptions ──────────────────────────────────────────
+// ── Redemptions ───────────────────────────────────────────────
 
 export async function fetchRedemptions() {
   const res = await fetch(`${REDEMPTIONS_URL}/latest`, { headers: HEADERS })
@@ -190,7 +244,7 @@ export async function updateRedemptionStatus(id, status, adminNote = '') {
 export async function claimRedemptionRefunds(userId) {
   const all = await fetchRedemptions()
   const unclaimed = all.filter(
-    r => r.userId === userId && r.status === 'rejected' && r.refundPending && !r.refundClaimed
+    r => String(r.userId) === String(userId) && r.status === 'rejected' && r.refundPending && !r.refundClaimed
   )
   if (unclaimed.length === 0) return 0
   const total = unclaimed.reduce((s, r) => s + (r.pointsCost || 0), 0)
@@ -206,32 +260,10 @@ export async function claimRedemptionRefunds(userId) {
   return total
 }
 
-export async function deleteCloudUser(userId) {
-  const existing = await fetchCloudUsers()
-  const updated = existing.filter(u => u.id !== userId)
-  const res = await fetch(JSONBIN_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ users: updated }),
-  })
-  if (!res.ok) throw new Error('ลบผู้ใช้จาก cloud ไม่สำเร็จ')
-}
-
-export async function deleteUserSubmissions(userId) {
-  const existing = await fetchSubmissions()
-  const updated = existing.filter(s => s.userId !== userId)
-  const res = await fetch(SUBMISSIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ submissions: updated }),
-  })
-  if (!res.ok) throw new Error('ลบภาพกิจกรรมไม่สำเร็จ')
-}
-
 export async function claimApprovedPoints(userId) {
   const all = await fetchSubmissions()
   const unclaimed = all.filter(
-    s => s.userId === userId && s.status === 'approved' && !s.pointsClaimed && (s.pointsValue || 0) > 0
+    s => String(s.userId) === String(userId) && s.status === 'approved' && !s.pointsClaimed && (s.pointsValue || 0) > 0
   )
   if (unclaimed.length === 0) return 0
 

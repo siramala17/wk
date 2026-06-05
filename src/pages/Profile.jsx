@@ -162,28 +162,40 @@ export default function Profile() {
         {/* avatar + name */}
         <div className="flex flex-col items-center -mt-12 px-6 pb-6">
           {/* avatar with edit overlay */}
-          <div className="relative group">
-            <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-blue-100 flex items-center justify-center">
-              {user.faceImage
-                ? <img src={user.faceImage} alt="avatar" className="w-full h-full object-cover" />
-                : <User size={40} className="text-blue-400" />
-              }
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-blue-100 flex items-center justify-center">
+                {user.faceImage
+                  ? <img src={user.faceImage} alt="avatar" className="w-full h-full object-cover" />
+                  : <User size={40} className="text-blue-400" />
+                }
+              </div>
+              <button
+                onClick={openModal}
+                className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                title="เปลี่ยนรูปโปรไฟล์"
+              >
+                <Pencil size={20} className="text-white" />
+              </button>
+              {/* always-visible edit badge */}
+              <button
+                onClick={openModal}
+                className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full border-2 border-white flex items-center justify-center shadow transition-colors"
+                title="เปลี่ยนรูปโปรไฟล์"
+              >
+                <Pencil size={13} className="text-white" />
+              </button>
             </div>
-            <button
-              onClick={openModal}
-              className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              title="เปลี่ยนรูปโปรไฟล์"
-            >
-              <Pencil size={20} className="text-white" />
-            </button>
-            {/* always-visible edit badge */}
-            <button
-              onClick={openModal}
-              className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full border-2 border-white flex items-center justify-center shadow transition-colors"
-              title="เปลี่ยนรูปโปรไฟล์"
-            >
-              <Pencil size={13} className="text-white" />
-            </button>
+
+            {/* CTA เมื่อยังไม่มีรูปโปรไฟล์ */}
+            {!user.faceImage && (
+              <button
+                onClick={openModal}
+                className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors border border-blue-200"
+              >
+                <Camera size={13} /> เพิ่มรูปโปรไฟล์
+              </button>
+            )}
           </div>
 
           <h1 className="mt-3 text-2xl font-bold text-slate-800">
