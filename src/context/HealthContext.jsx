@@ -128,13 +128,20 @@ export function HealthProvider({ children }) {
       points: 0,
       streak: 0,
     }
-    await pushUserToCloud(newEntry)
+
+    // Login ทันที — ไม่รอ cloud sync
     const { pin: _, faceImage: __, ...safeUser } = newEntry
-    setUser({ ...safeUser, name: firstName })
+    const userObj = { ...safeUser, name: firstName }
+    setUser(userObj)
     setIsLoggedIn(true)
     setShowRegister(false)
     localStorage.setItem('hc_session', 'true')
-    localStorage.setItem('hc_user', JSON.stringify({ ...safeUser, name: firstName }))
+    localStorage.setItem('hc_user', JSON.stringify(userObj))
+
+    // Sync Firestore ใน background — ถ้า fail ไม่กระทบการใช้งาน
+    pushUserToCloud(newEntry).catch(e =>
+      console.warn('[Register] Firestore sync failed:', e?.message)
+    )
   }
 
   function saveAssessment(data) {

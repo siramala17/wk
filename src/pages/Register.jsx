@@ -82,7 +82,6 @@ export default function Register() {
   const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '', role: '', gradeLevel: '', pin: '', confirmPin: '' })
   const [errors, setErrors] = useState({})
   const [registering, setRegistering] = useState(false)
-  const [registerError, setRegisterError] = useState(null)
 
   const t = LANG[lang]
 
@@ -228,7 +227,6 @@ export default function Register() {
 
   async function handleRegister(faceImage = captured) {
     setRegistering(true)
-    setRegisterError(null)
     try {
       await registerUser({
         firstName: form.firstName.trim(),
@@ -240,8 +238,7 @@ export default function Register() {
         pin: form.pin,
         faceImage: faceImage ?? null,
       })
-    } catch {
-      setRegisterError('เกิดข้อผิดพลาด กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต')
+    } finally {
       setRegistering(false)
     }
   }
@@ -590,12 +587,6 @@ export default function Register() {
                 {captured && (
                   <p className="text-center text-green-600 text-sm font-medium -mt-2">
                     {t.faceCaptured}
-                  </p>
-                )}
-
-                {registerError && (
-                  <p className="text-red-500 text-xs text-center flex items-center justify-center gap-1">
-                    <AlertCircle size={13} />{registerError}
                   </p>
                 )}
 

@@ -30,14 +30,26 @@ function resizeImage(dataUrl, size = 64, quality = 0.4) {
   })
 }
 
-// ── Users (Firestore) ────────────────────────────────────────
+// ── localStorage fallback (ใช้เมื่อ Firebase ยังไม่ตั้งค่า) ────
 
-function requireDb() {
-  if (!db) throw new Error('Firebase ยังไม่ได้ตั้งค่า — กรุณาแก้ไข src/config/firebase.js')
+const LOCAL_USERS_KEY = 'hc_cloud_users'
+
+function getLocalUsers() {
+  try { return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || '[]') } catch { return [] }
 }
 
+function saveLocalUsers(users) {
+  try { localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users)) } catch {}
+}
+
+// ── Users ────────────────────────────────────────────────────
+
 export async function fetchCloudUsers() {
-  requireDb()
+  if (!db) {
+    return [...getLocalUsers()].sort((a, b) =>
+      (b.registeredAt || '').localeCompare(a.registeredAt || '')
+    )
+  }
   const snap = await getDocs(query(collection(db, 'users'), orderBy('registeredAt', 'desc')))
   return snap.docs.map(d => {
     const data = d.data()
@@ -46,9 +58,17 @@ export async function fetchCloudUsers() {
 }
 
 export async function pushUserToCloud(user) {
-  requireDb()
   const { faceImage, ...meta } = user
   const avatar = await resizeImage(faceImage, 64, 0.4)
+
+  if (!db) {
+    const existing = getLocalUsers()
+    if (!existing.some(u => String(u.id) === String(meta.id))) {
+      saveLocalUsers([...existing, { ...meta, avatar: avatar ?? null }])
+    }
+    return
+  }
+
   await setDoc(doc(db, 'users', String(user.id)), {
     ...meta,
     firstName_lower: (meta.firstName || '').trim().toLowerCase(),
@@ -57,7 +77,17 @@ export async function pushUserToCloud(user) {
 }
 
 export async function loginUserFromCloud(firstName, pin) {
-  requireDb()
+  if (!db) {
+    const users = getLocalUsers()
+    const found = users.find(u =>
+      (u.firstName || '').trim().toLowerCase() === firstName.trim().toLowerCase() &&
+      u.pin === pin
+    )
+    if (!found) return null
+    const { pin: _, ...safe } = found
+    return safe
+  }
+
   const q = query(
     collection(db, 'users'),
     where('firstName_lower', '==', firstName.trim().toLowerCase())
@@ -74,20 +104,35 @@ export async function loginUserFromCloud(firstName, pin) {
 }
 
 export async function syncUserPointsToCloud(userId, points, streak) {
-  if (!db) return
+  if (!db) {
+    saveLocalUsers(getLocalUsers().map(u =>
+      String(u.id) === String(userId) ? { ...u, points, streak } : u
+    ))
+    return
+  }
   try {
     await updateDoc(doc(db, 'users', String(userId)), { points, streak })
-  } catch { /* silent — offline or doc not found */ }
+  } catch { /* silent — offline */ }
 }
 
 export async function updateUserAvatarInCloud(userId, faceImage) {
-  requireDb()
   const avatar = await resizeImage(faceImage, 64, 0.4)
-  if (avatar) await updateDoc(doc(db, 'users', String(userId)), { avatar })
+  if (!avatar) return
+
+  if (!db) {
+    saveLocalUsers(getLocalUsers().map(u =>
+      String(u.id) === String(userId) ? { ...u, avatar } : u
+    ))
+    return
+  }
+  await updateDoc(doc(db, 'users', String(userId)), { avatar })
 }
 
 export async function deleteCloudUser(userId) {
-  requireDb()
+  if (!db) {
+    saveLocalUsers(getLocalUsers().filter(u => String(u.id) !== String(userId)))
+    return
+  }
   await deleteDoc(doc(db, 'users', String(userId)))
 }
 
@@ -118,13 +163,9 @@ export async function updateSubmissionStatus(id, status, adminNote = '') {
   const updated = existing.map(s => {
     if (s.id !== id) return s
     return {
-      ...s,
-      status,
-      adminNote,
+      ...s, status, adminNote,
       reviewedAt: new Date().toISOString(),
-      ...(status === 'approved'
-        ? { pointsValue: 5, pointsClaimed: false }
-        : {}),
+      ...(status === 'approved' ? { pointsValue: 5, pointsClaimed: false } : {}),
     }
   })
   const res = await fetch(SUBMISSIONS_URL, {

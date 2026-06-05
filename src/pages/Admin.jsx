@@ -310,8 +310,8 @@ export default function Admin() {
 
       <div className="max-w-3xl mx-auto px-4 py-6">
 
-        {/* Firebase not configured banner */}
-        {!firebaseReady && <FirebaseSetupGuide />}
+        {/* Storage mode banner */}
+        {!firebaseReady ? <LocalModeBanner /> : null}
 
         {/* success banner */}
         {deleteSuccess && (
@@ -349,23 +349,19 @@ export default function Admin() {
               </div>
             )}
             {fetchError && !loading && (
-              !firebaseReady || fetchErrorMsg.includes('ยังไม่ได้ตั้งค่า') ? (
-                <FirebaseSetupGuide />
-              ) : (
-                <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 mb-4 text-red-600 text-sm space-y-2">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle size={16} className="flex-shrink-0" />
-                    <span className="font-semibold">ไม่สามารถเชื่อมต่อ Firestore ได้</span>
-                    <button onClick={loadUsers} className="ml-auto text-xs underline hover:text-red-700 flex-shrink-0">ลองใหม่</button>
-                  </div>
-                  {fetchErrorMsg && (
-                    <p className="text-xs text-red-500 bg-red-100 rounded-lg px-3 py-2 font-mono break-all">{fetchErrorMsg}</p>
-                  )}
-                  <p className="text-xs text-red-500">
-                    ตรวจสอบ: Firestore Security Rules, การเชื่อมต่ออินเทอร์เน็ต, หรือสถานะ Firebase Console
-                  </p>
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 mb-4 text-red-600 text-sm space-y-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={16} className="flex-shrink-0" />
+                  <span className="font-semibold">ไม่สามารถเชื่อมต่อ Firestore ได้</span>
+                  <button onClick={loadUsers} className="ml-auto text-xs underline hover:text-red-700 flex-shrink-0">ลองใหม่</button>
                 </div>
-              )
+                {fetchErrorMsg && (
+                  <p className="text-xs text-red-500 bg-red-100 rounded-lg px-3 py-2 font-mono break-all">{fetchErrorMsg}</p>
+                )}
+                <p className="text-xs text-red-500">
+                  ตรวจสอบ: Firestore Security Rules, การเชื่อมต่ออินเทอร์เน็ต, หรือสถานะ Firebase Console
+                </p>
+              </div>
             )}
             {!loading && !fetchError && (
               <>
@@ -1032,11 +1028,32 @@ function StarDisplay({ value }) {
   )
 }
 
+// ── Local Mode Banner ─────────────────────────────────────────
+
+function LocalModeBanner() {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-2xl overflow-hidden mb-4">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-base">💾</div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-blue-800 text-sm">โหมดเก็บข้อมูลในเครื่อง</p>
+          <p className="text-blue-600 text-xs">ข้อมูลผู้ใช้ถูกเก็บใน localStorage — ใช้งานได้ปกติในอุปกรณ์นี้</p>
+        </div>
+        <button onClick={() => setExpanded(p => !p)} className="text-blue-500 hover:text-blue-700 flex-shrink-0 text-xs underline">
+          {expanded ? 'ซ่อน' : 'อัปเกรด →'}
+        </button>
+      </div>
+      {expanded && <FirebaseSetupGuide compact />}
+    </div>
+  )
+}
+
 // ── Firebase Setup Guide ──────────────────────────────────────
 
-function FirebaseSetupGuide() {
+function FirebaseSetupGuide({ compact } = {}) {
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden mb-4">
+    <div className={compact ? 'bg-amber-50 border-t border-amber-200' : 'bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden mb-4'}>
       <div className="flex items-center gap-3 px-5 py-4 bg-amber-100 border-b border-amber-200">
         <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0">
           <AlertTriangle size={18} className="text-white" />
