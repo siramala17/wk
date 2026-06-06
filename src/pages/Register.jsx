@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Camera, User, ChevronRight, Check, RefreshCw, AlertCircle, Lock, Upload } from 'lucide-react'
+import { Camera, User, ChevronRight, Check, RefreshCw, AlertCircle, Lock, Upload, Shield } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useHealth } from '../context/HealthContext'
 
 const LANG = {
@@ -77,6 +78,7 @@ const LANG = {
 
 export default function Register() {
   const { registerUser } = useHealth()
+  const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [lang, setLang] = useState('th')
   const [form, setForm] = useState({ firstName: '', lastName: '', age: '', gender: '', role: '', gradeLevel: '', pin: '', confirmPin: '' })
@@ -473,6 +475,18 @@ export default function Register() {
               className="w-full mt-2 bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all"
             >
               {t.next} <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+
+        {/* admin link — step 1 only */}
+        {step === 1 && (
+          <div className="text-center mt-4 pt-3 border-t border-slate-100">
+            <button
+              onClick={() => navigate('/admin')}
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <Shield size={12} /> สำหรับผู้ดูแลระบบ
             </button>
           </div>
         )}
