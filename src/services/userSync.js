@@ -1,7 +1,7 @@
 import { JSONBIN_KEY, SUBMISSIONS_URL, SURVEYS_URL, REDEMPTIONS_URL, REWARD_CATALOG_URL } from '../config/jsonbin'
 import {
   collection, doc, getDocs, setDoc, deleteDoc, updateDoc,
-  query, where, orderBy,
+  query, where,
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
@@ -46,28 +46,47 @@ function saveLocalUsers(users) {
 
 export async function fetchCloudUsers() {
   if (!db) {
-    return [...getLocalUsers()].sort((a, b) =>
-      (b.registeredAt || '').localeCompare(a.registeredAt || '')
-    )
+    const stored = getLocalUsers()
+    try {
+      const session = JSON.parse(localStorage.getItem('hc_user') || 'null')
+      if (session?.id && !stored.some(u => String(u.id) === String(session.id))) {
+        stored.push({ ...session, registeredAt: session.registeredAt || new Date().toISOString() })
+      }
+    } catch {}
+    return stored.sort((a, b) => (b.registeredAt || '').localeCompare(a.registeredAt || ''))
   }
-  const snap = await getDocs(query(collection(db, 'users'), orderBy('registeredAt', 'desc')))
-  return snap.docs.map(d => {
+
+  // ไม่ใช้ orderBy เพราะ Firestore จะข้าม document ที่ไม่มี field registeredAt
+  const snap = await getDocs(collection(db, 'users'))
+  const firestoreUsers = snap.docs.map(d => {
     const data = d.data()
     return { ...data, id: data.id ?? d.id }
   })
+
+  // รวม user จาก localStorage ที่อาจยังไม่ sync ขึ้น Firestore
+  const localUsers = getLocalUsers()
+  for (const lu of localUsers) {
+    if (!firestoreUsers.some(fu => String(fu.id) === String(lu.id))) {
+      firestoreUsers.push(lu)
+      pushUserToCloud(lu).catch(() => {})
+    }
+  }
+
+  return firestoreUsers.sort((a, b) => (b.registeredAt || '').localeCompare(a.registeredAt || ''))
 }
 
 export async function pushUserToCloud(user) {
   const { faceImage, ...meta } = user
   const avatar = await resizeImage(faceImage, 64, 0.4)
+  const userRecord = { ...meta, avatar: avatar ?? null }
 
-  if (!db) {
-    const existing = getLocalUsers()
-    if (!existing.some(u => String(u.id) === String(meta.id))) {
-      saveLocalUsers([...existing, { ...meta, avatar: avatar ?? null }])
-    }
-    return
+  // บันทึกลง localStorage เสมอเป็น backup (ทั้ง Firebase mode และ local mode)
+  const existing = getLocalUsers()
+  if (!existing.some(u => String(u.id) === String(meta.id))) {
+    saveLocalUsers([...existing, userRecord])
   }
+
+  if (!db) return
 
   await setDoc(doc(db, 'users', String(user.id)), {
     ...meta,

@@ -49,6 +49,18 @@ export function HealthProvider({ children }) {
   // ลบ hc_users เก่าออกเพื่อเพิ่มพื้นที่ localStorage
   useEffect(() => { localStorage.removeItem('hc_users') }, [])
 
+  // migrate: ถ้า user ล็อกอินอยู่แต่ยังไม่มีใน hc_cloud_users ให้เพิ่มเข้าไป
+  useEffect(() => {
+    if (!isLoggedIn || !user.id) return
+    try {
+      const KEY = 'hc_cloud_users'
+      const existing = JSON.parse(localStorage.getItem(KEY) || '[]')
+      if (!existing.some(u => String(u.id) === String(user.id))) {
+        localStorage.setItem(KEY, JSON.stringify([...existing, { ...user, registeredAt: user.registeredAt || new Date().toISOString() }]))
+      }
+    } catch {}
+  }, [isLoggedIn, user.id]) // eslint-disable-line
+
   useEffect(() => { localStorage.setItem('hc_user', JSON.stringify(user)) }, [user])
   useEffect(() => { if (latestAssessment) localStorage.setItem('hc_latest', JSON.stringify(latestAssessment)) }, [latestAssessment])
   useEffect(() => { localStorage.setItem('hc_history', JSON.stringify(history)) }, [history])
