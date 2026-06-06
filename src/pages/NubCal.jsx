@@ -6,6 +6,9 @@ import {
 import { useHealth } from '../context/HealthContext'
 import { FOOD_DB, FOOD_CATS as CATS } from '../data/foodDb'
 
+const CIRCLE_R = 60
+const CIRC = 2 * Math.PI * CIRCLE_R
+
 function CalorieRing({ value, goal }) {
   const pct = Math.min(value / Math.max(goal, 1), 1)
   const dash = pct * CIRC
