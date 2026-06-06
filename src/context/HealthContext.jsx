@@ -150,10 +150,14 @@ export function HealthProvider({ children }) {
     localStorage.setItem('hc_session', 'true')
     localStorage.setItem('hc_user', JSON.stringify(userObj))
 
-    // Sync Firestore ใน background — ถ้า fail ไม่กระทบการใช้งาน
-    pushUserToCloud(newEntry).catch(e =>
+    // Sync Firestore ใน background
+    pushUserToCloud(newEntry).catch(e => {
       console.warn('[Register] Firestore sync failed:', e?.message)
-    )
+      // เก็บ flag ให้ admin รู้ว่า Firestore อาจมีปัญหา
+      try {
+        localStorage.setItem('hc_sync_failed', JSON.stringify({ at: new Date().toISOString(), error: e?.message || 'unknown' }))
+      } catch {}
+    })
   }
 
   function saveAssessment(data) {

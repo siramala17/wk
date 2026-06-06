@@ -1,7 +1,7 @@
 import { JSONBIN_KEY, SUBMISSIONS_URL, SURVEYS_URL, REDEMPTIONS_URL, REWARD_CATALOG_URL } from '../config/jsonbin'
 import {
   collection, doc, getDocs, setDoc, deleteDoc, updateDoc,
-  query, where,
+  query, where, getDoc,
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
@@ -40,6 +40,24 @@ function getLocalUsers() {
 
 function saveLocalUsers(users) {
   try { localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users)) } catch {}
+}
+
+// ── Firestore Diagnostics ────────────────────────────────────
+
+export async function testFirestoreAccess() {
+  if (!db) return { ok: false, reason: 'no_db' }
+  const testId = '__admin_test__'
+  try {
+    await setDoc(doc(db, 'users', testId), { _test: true, _at: new Date().toISOString() })
+    await deleteDoc(doc(db, 'users', testId))
+    return { ok: true }
+  } catch (e) {
+    const msg = e?.message || ''
+    if (msg.includes('permission') || msg.includes('PERMISSION_DENIED')) {
+      return { ok: false, reason: 'permission_denied', message: msg }
+    }
+    return { ok: false, reason: 'unknown', message: msg }
+  }
 }
 
 // ── Users ────────────────────────────────────────────────────

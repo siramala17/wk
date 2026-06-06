@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess } from '../services/userSync'
 import { useHealth } from '../context/HealthContext'
 import { firebaseReady } from '../config/firebase'
 
@@ -55,6 +55,53 @@ function GenderBadge({ gender, small }) {
   )
 }
 
+function FirestoreRulesWarning() {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="mb-4 bg-red-50 border border-red-200 rounded-2xl overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="w-8 h-8 bg-red-500 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-base">🔒</div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-red-800 text-sm">Firestore Security Rules บล็อกการบันทึกข้อมูล</p>
+          <p className="text-red-600 text-xs">ผู้ใช้ลงทะเบียนแล้ว แต่ข้อมูลถูกบล็อกไม่ให้บันทึกลง Cloud</p>
+        </div>
+        <button onClick={() => setShow(p => !p)} className="text-red-500 hover:text-red-700 flex-shrink-0 text-xs underline">
+          {show ? 'ซ่อน' : 'วิธีแก้ไข →'}
+        </button>
+      </div>
+      {show && (
+        <div className="bg-red-50 border-t border-red-200 px-5 py-4 space-y-3">
+          <p className="text-sm font-semibold text-red-800">วิธีแก้ไข Firestore Security Rules</p>
+          <ol className="space-y-2 text-sm text-red-700">
+            {[
+              <>ไปที่ <span className="font-mono bg-red-100 px-1.5 py-0.5 rounded text-xs">console.firebase.google.com</span></>,
+              <>เลือก project → <strong>Build → Firestore Database → Rules</strong></>,
+              <>แทนที่ rules ทั้งหมดด้วยโค้ดด้านล่าง แล้วกด <strong>Publish</strong></>,
+            ].map((step, i) => (
+              <li key={i} className="flex gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-red-400 text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+          <pre className="bg-white border border-red-200 rounded-xl p-3 text-xs text-slate-700 overflow-x-auto whitespace-pre">{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`}</pre>
+          <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold text-sm transition-colors mt-2">
+            <ExternalLink size={14} /> เปิด Firebase Console
+          </a>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Admin() {
   const navigate = useNavigate()
   const { deleteUser: deleteLocalUser } = useHealth()
@@ -65,6 +112,9 @@ export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false)
   const [loginError, setLoginError] = useState(false)
   const [shake, setShake] = useState(false)
+
+  // firestore diagnostic
+  const [firestoreStatus, setFirestoreStatus] = useState(null) // null | 'ok' | 'permission_denied' | 'unknown'
 
   // users tab
   const [expandedId, setExpandedId] = useState(null)
@@ -112,7 +162,16 @@ export default function Admin() {
 
   const loadUsers = useCallback(async () => {
     setLoading(true); setFetchError(false); setFetchErrorMsg('')
-    try { setCloudUsers(await fetchCloudUsers()) }
+    try {
+      const users = await fetchCloudUsers()
+      setCloudUsers(users)
+      if (users.length === 0 && firebaseReady) {
+        const result = await testFirestoreAccess()
+        setFirestoreStatus(result.ok ? 'ok' : result.reason)
+      } else {
+        setFirestoreStatus(null)
+      }
+    }
     catch (e) { setFetchError(true); setFetchErrorMsg(e?.message || '') }
     finally { setLoading(false) }
   }, [])
@@ -312,6 +371,15 @@ export default function Admin() {
 
         {/* Storage mode banner */}
         {!firebaseReady ? <LocalModeBanner /> : null}
+
+        {/* Firestore permission warning */}
+        {firestoreStatus === 'permission_denied' && <FirestoreRulesWarning />}
+        {firestoreStatus === 'unknown' && (
+          <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3 text-yellow-800 text-sm">
+            <p className="font-semibold">⚠️ Firestore ตอบสนองผิดปกติ</p>
+            <p className="text-xs mt-1 text-yellow-700">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต หรือสถานะ Firebase Console</p>
+          </div>
+        )}
 
         {/* success banner */}
         {deleteSuccess && (
