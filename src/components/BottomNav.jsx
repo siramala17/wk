@@ -3,33 +3,44 @@ import { Link, useLocation } from 'react-router-dom'
 import { Home, ClipboardList, Flame, Camera, Award, UserCircle } from 'lucide-react'
 
 const tabs = [
-  { to: '/', icon: Home, label: 'หลัก' },
-  { to: '/assessment', icon: ClipboardList, label: 'ประเมิน' },
-  { to: '/nubcal', icon: Flame, label: 'แคลอรี่' },
-  { to: '/activity', icon: Camera, label: 'ส่งภาพ' },
-  { to: '/rewards', icon: Award, label: 'แต้ม' },
-  { to: '/profile', icon: UserCircle, label: 'บัญชี' },
+  { to: '/',           icon: Home,          label: 'หลัก' },
+  { to: '/assessment', icon: ClipboardList,  label: 'ประเมิน' },
+  { to: '/nubcal',     icon: Flame,          label: 'แคลอรี่' },
+  { to: '/activity',   icon: Camera,         label: 'ส่งภาพ' },
+  { to: '/rewards',    icon: Award,          label: 'แต้ม' },
+  { to: '/profile',    icon: UserCircle,     label: 'บัญชี' },
 ]
 
 export default function BottomNav() {
   const { pathname } = useLocation()
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-blue-100 shadow-lg pb-safe">
-      <div className="grid grid-cols-6 h-16">
+    <nav className="md:hidden fixed bottom-3 left-3 right-3 z-50 nav-float pb-safe"
+      style={{ borderRadius: '1.25rem', background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+      <div className="grid grid-cols-6 h-[60px] px-1">
         {tabs.map(({ to, icon: Icon, label }) => {
           const active = pathname === to
           return (
             <Link
               key={to}
               to={to}
-              className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
-                active ? 'text-blue-600' : 'text-slate-400 hover:text-blue-500'
-              }`}
+              className="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90"
             >
-              <div className={`p-1.5 rounded-lg ${active ? 'bg-blue-100' : ''}`}>
-                <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
+              <div className={`flex items-center justify-center w-9 h-7 rounded-xl transition-all duration-200 ${
+                active
+                  ? 'bg-gradient-to-br from-violet-500 to-indigo-600 shadow-glow-violet'
+                  : ''
+              }`}>
+                <Icon
+                  size={17}
+                  strokeWidth={active ? 2.5 : 1.8}
+                  className={active ? 'text-white' : 'text-slate-400'}
+                />
               </div>
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className={`text-[9px] font-semibold transition-colors ${
+                active ? 'text-violet-600' : 'text-slate-400'
+              }`}>
+                {label}
+              </span>
             </Link>
           )
         })}
