@@ -39,8 +39,10 @@ export default function Profile() {
   useEffect(() => {
     if (showModal && mode === 'scan' && !preview) startCamera()
     if (!showModal || mode === 'upload') stopCamera()
-    return () => { if (!showModal) stopCamera() }
+    return () => { stopCamera() }
   }, [showModal, mode])
+
+  useEffect(() => { return () => stopCamera() }, [])
 
   function stopCamera() {
     if (streamRef.current) {

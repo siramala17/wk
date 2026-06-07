@@ -14,7 +14,6 @@ const links = [
   { to: '/knowledge',      icon: BookOpen,      label: 'ใบความรู้' },
   { to: '/nubcal',          icon: Flame,         label: 'nubcal แคลอรี่' },
   { to: '/survey',          icon: ClipboardCheck,label: 'แบบประเมินความพึงพอใจ' },
-  { to: '/profile',        icon: UserCircle,    label: 'บัญชีของฉัน' },
   { to: '/school-dashboard', icon: LayoutDashboard, label: 'Dashboard โรงเรียน' },
 ]
 

@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Moon, Smartphone, Brain, Dumbbell, Droplets, Scale, Zap, ChevronRight } from 'lucide-react'
+import { Moon, Smartphone, Brain, Dumbbell, Droplets, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { getHealthLevel } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import Profile from './Profile'
 
 const STAT_CONFIG = [
   { key: 'sleep',    icon: Moon,       label: 'นอนหลับ',    unit: 'ชม.',           max: 9,  color: '#3b82f6', bg: '#eff6ff', getVal: a => a.sleepHours },
@@ -64,12 +65,39 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const { latestAssessment, history, bmiData, user } = useHealth()
+  const [mainTab, setMainTab] = useState('home')
   const score = latestAssessment?.overallScore ?? (history.length ? history[history.length - 1].score : null)
   const level = getHealthLevel(score)
   const hasData = score !== null
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-4 animate-fade-in">
+    <>
+      {/* Top-level tab switcher */}
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
+          <button
+            onClick={() => setMainTab('home')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              mainTab === 'home' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Home size={15} /> หน้าหลัก
+          </button>
+          <button
+            onClick={() => setMainTab('profile')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              mainTab === 'profile' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <UserCircle size={15} /> บัญชีของฉัน
+          </button>
+        </div>
+      </div>
+
+      {mainTab === 'profile' && <Profile />}
+
+      {mainTab === 'home' && (
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-4 animate-fade-in">
 
       {/* ── Hero ── */}
       <div className="relative rounded-3xl p-5 text-white overflow-hidden"
@@ -215,5 +243,8 @@ export default function Dashboard() {
       </div>
 
     </div>
+      )}
+    </>
   )
 }
+

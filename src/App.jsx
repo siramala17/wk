@@ -13,7 +13,6 @@ import Dashboard from './pages/Dashboard'
 import Assessment from './pages/Assessment'
 import Analytics from './pages/Analytics'
 import Rewards from './pages/Rewards'
-import Profile from './pages/Profile'
 import Knowledge from './pages/Knowledge'
 import NubCal from './pages/NubCal'
 import Survey from './pages/Survey'
@@ -42,7 +41,7 @@ function AppContent() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/recommendations" element={<Navigate to="/analytics" replace />} />
           <Route path="/rewards" element={<Rewards />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<Navigate to="/" replace />} />
           <Route path="/knowledge" element={<Knowledge />} />
           <Route path="/activity" element={<Navigate to="/rewards" replace />} />
           <Route path="/nubcal" element={<NubCal />} />

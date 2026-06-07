@@ -1,13 +1,12 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, ClipboardList, Flame, Award, UserCircle } from 'lucide-react'
+import { Home, ClipboardList, Flame, Award } from 'lucide-react'
 
 const tabs = [
   { to: '/',           icon: Home,         label: 'หลัก' },
   { to: '/assessment', icon: ClipboardList, label: 'ประเมิน' },
   { to: '/nubcal',     icon: Flame,         label: 'แคลอรี่' },
   { to: '/rewards',    icon: Award,         label: 'แต้ม' },
-  { to: '/profile',    icon: UserCircle,    label: 'บัญชี' },
 ]
 
 export default function BottomNav() {
@@ -22,7 +21,7 @@ export default function BottomNav() {
         WebkitBackdropFilter: 'blur(20px)',
       }}
     >
-      <div className="grid grid-cols-5 h-[60px] px-1">
+      <div className="grid grid-cols-4 h-[60px] px-1">
         {tabs.map(({ to, icon: Icon, label }) => {
           const active = pathname === to
           return (
