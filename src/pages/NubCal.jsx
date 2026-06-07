@@ -8,7 +8,7 @@ import { FOOD_DB, FOOD_CATS as CATS } from '../data/foodDb'
 
 const CIRCLE_R = 60
 const CIRC = 2 * Math.PI * CIRCLE_R
-const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
+const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || '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'
 
 function CalorieRing({ value, goal }) {
   const pct = Math.min(value / Math.max(goal, 1), 1)
