@@ -251,8 +251,54 @@ export default function Register() {
     } focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 placeholder-slate-400`
 
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
+    <div style={{
+      minHeight:'100dvh', position:'relative', overflow:'hidden',
+      display:'flex', alignItems:'center', justifyContent:'center', padding:'16px',
+      background:'#0b1a5e',
+    }}>
+      {/* ── Gym BG overlay ── */}
+      <div style={{ position:'absolute', inset:0, background:'linear-gradient(160deg,#081245 0%,#0d2080 40%,#0b1a6e 100%)', opacity:.95 }} />
+
+      {/* ── Diagonal yellow stripes ── */}
+      <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none' }}>
+        {/* top-left stripe cluster */}
+        <div style={{ position:'absolute', top:'-8%', left:'-5%', width:'60%', height:'55%',
+          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #2563eb 52%,#2563eb 58%, transparent 58%)',
+          opacity:.75, transform:'skewY(-2deg)' }} />
+        {/* bottom-right stripe cluster */}
+        <div style={{ position:'absolute', bottom:'-8%', right:'-5%', width:'60%', height:'55%',
+          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #2563eb 52%,#2563eb 58%, transparent 58%)',
+          opacity:.75, transform:'skewY(-2deg)' }} />
+        {/* shine dots */}
+        {[{top:'8%',left:'12%'},{top:'15%',right:'18%'},{bottom:'20%',left:'8%'},{bottom:'12%',right:'12%'}].map((p,i)=>(
+          <div key={i} style={{ position:'absolute', ...p, width:6, height:6, borderRadius:'50%', background:'#93c5fd', opacity:.6 }} />
+        ))}
+      </div>
+
+      {/* ── Left character area ── */}
+      <div style={{ position:'absolute', left:0, bottom:0, width:'18%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', paddingBottom:0, pointerEvents:'none', userSelect:'none' }}>
+        <div style={{ fontSize:'clamp(60px,10vw,120px)', lineHeight:1, filter:'drop-shadow(0 0 20px rgba(59,130,246,.5))' }}>🏃</div>
+        <div style={{ width:'90%', height:3, background:'linear-gradient(90deg,transparent,#3b82f6,transparent)', marginTop:4 }} />
+      </div>
+
+      {/* ── Right character area ── */}
+      <div style={{ position:'absolute', right:0, bottom:0, width:'18%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', paddingBottom:0, pointerEvents:'none', userSelect:'none' }}>
+        <div style={{ fontSize:'clamp(60px,10vw,120px)', lineHeight:1, filter:'drop-shadow(0 0 20px rgba(251,191,36,.5))', transform:'scaleX(-1)' }}>💪</div>
+        <div style={{ width:'90%', height:3, background:'linear-gradient(90deg,transparent,#fbbf24,transparent)', marginTop:4 }} />
+      </div>
+
+      {/* ── White brush-stroke center panel ── */}
+      <div style={{ position:'absolute', inset:'5% 14%', background:'rgba(255,255,255,.06)', borderRadius:32,
+        clipPath:'polygon(2% 0%,98% 0%,100% 100%,0% 100%)', pointerEvents:'none' }} />
+
+      {/* ── Logo top center ── */}
+      <div style={{ position:'absolute', top:18, left:'50%', transform:'translateX(-50%)', display:'flex', alignItems:'center', gap:8, zIndex:20 }}>
+        <div style={{ width:32, height:32, background:'linear-gradient(135deg,#fbbf24,#f59e0b)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🏥</div>
+        <span style={{ fontSize:15, fontWeight:800, color:'#fff', letterSpacing:'.5px', textShadow:'0 2px 8px rgba(0,0,0,.4)' }}>W.K. Health</span>
+      </div>
+
+      {/* ── Form card ── */}
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8" style={{ position:'relative', zIndex:10, marginTop:16 }}>
 
         {/* language toggle */}
         <div className="flex justify-end mb-2">
@@ -692,7 +738,7 @@ export default function Register() {
             )}
           </div>
         )}
-      </div>
+      </div>{/* end form card */}
     </div>
   )
 }
