@@ -162,14 +162,85 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare }) {
   )
 }
 
+// ── หน้าคู่มือแนะนำ ──
+function GuideScreen({ onStart }) {
+  const items = [
+    { emoji: '🌙', label: 'การนอนหลับ', desc: 'คุณภาพและปริมาณการนอน' },
+    { emoji: '💧', label: 'การดื่มน้ำ', desc: 'ปริมาณและชนิดเครื่องดื่ม' },
+    { emoji: '🏃', label: 'การออกกำลังกาย', desc: 'ความสม่ำเสมอและความหนัก' },
+    { emoji: '📱', label: 'การใช้สื่อดิจิทัล', desc: 'เวลาหน้าจอและพฤติกรรม' },
+    { emoji: '🧘', label: 'ความเครียด', desc: 'การรับมือและผ่อนคลาย' },
+  ]
+  return (
+    <div className="max-w-2xl mx-auto px-4 pt-6 pb-36 md:pb-8 space-y-5">
+      {/* Header */}
+      <div className="text-center">
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <span className="text-3xl">📋</span>
+        </div>
+        <h1 className="text-2xl font-extrabold text-blue-700">แบบประเมินสุขภาพ</h1>
+        <p className="text-slate-500 text-sm mt-1">ประเมินพฤติกรรมสุขภาพของคุณใน 5 ด้าน</p>
+      </div>
+
+      {/* วิธีตอบ */}
+      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-2">
+        <p className="font-bold text-blue-700 text-sm">📌 วิธีตอบคำถาม</p>
+        <p className="text-slate-600 text-sm leading-relaxed">แต่ละข้อให้เลือกระดับที่ตรงกับพฤติกรรม <span className="font-semibold">จริงๆ ของคุณในช่วง 1 เดือนที่ผ่านมา</span> มากที่สุด ไม่มีคำตอบถูกหรือผิด</p>
+        <div className="grid grid-cols-5 gap-1 pt-1">
+          {[['1','ไม่เคยเลย'],['2','นานๆ ครั้ง'],['3','บางครั้ง'],['4','บ่อยครั้ง'],['5','ประจำ']].map(([v, l]) => (
+            <div key={v} className="text-center">
+              <div className="w-8 h-8 rounded-full bg-white border-2 border-blue-200 flex items-center justify-center mx-auto text-sm font-bold text-blue-600">{v}</div>
+              <p className="text-[10px] text-slate-500 mt-1 leading-tight">{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* หัวข้อที่ประเมิน */}
+      <div className="bg-white rounded-2xl shadow-sm p-4">
+        <p className="font-bold text-slate-700 text-sm mb-3">📊 หัวข้อที่ประเมิน (5 ด้าน รวม 20 ข้อ)</p>
+        <div className="space-y-2">
+          {items.map((it, i) => (
+            <div key={i} className="flex items-center gap-3 py-1.5 border-b border-slate-50 last:border-0">
+              <span className="text-xl w-7 text-center">{it.emoji}</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">{it.label}</p>
+                <p className="text-xs text-slate-400">{it.desc}</p>
+              </div>
+              <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">4 ข้อ</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* หมายเหตุ */}
+      <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4">
+        <p className="font-bold text-yellow-700 text-sm mb-1">⏱ ใช้เวลาประมาณ 3–5 นาที</p>
+        <p className="text-slate-500 text-xs leading-relaxed">ผลประเมินจะช่วยให้คุณเห็นภาพรวมพฤติกรรมสุขภาพและรับคำแนะนำเฉพาะสำหรับคุณ สามารถประเมินซ้ำได้ทุกวันเพื่อติดตามพัฒนาการ</p>
+      </div>
+
+      <button onClick={onStart}
+        className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-md shadow-blue-200 transition-all active:scale-95"
+        style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>
+        เริ่มประเมิน →
+      </button>
+    </div>
+  )
+}
+
 // ── หน้าแบบประเมินหลัก ──
 export default function Assessment() {
+  const [showGuide, setShowGuide] = useState(true)
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
   const [earnInfo, setEarnInfo] = useState({ pointsEarned: 0, alreadyToday: false })
   const { saveAssessment, history } = useHealth()
   const navigate = useNavigate()
+
+  if (showGuide) {
+    return <GuideScreen onStart={() => setShowGuide(false)} />
+  }
 
   const domain = DOMAINS[step]
   const progress = ((step) / DOMAINS.length) * 100
