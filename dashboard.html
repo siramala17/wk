@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W.K. Health Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:#0a1628;color:#e2e8f0;min-height:100vh;overflow-x:hidden;font-size:13px}
+
+/* ── HEADER ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo-box{width:34px;height:34px;background:linear-gradient(135deg,#f59e0b,#fbbf24);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.hd-title{font-size:17px;font-weight:800;color:#f1f5f9}
+.hd-sub{font-size:11px;color:#64748b;margin-top:1px}
+.time-tabs{display:flex;gap:2px;background:rgba(255,255,255,.06);padding:4px;border-radius:8px}
+.time-tab{padding:4px 12px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;color:#64748b;transition:.15s;letter-spacing:.3px}
+.time-tab.active,.time-tab:hover{background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff}
+.header-right{display:flex;align-items:center;gap:10px}
+.hbtn{padding:6px 14px;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:.2s}
+.hbtn-outline{background:rgba(255,255,255,.07);color:#94a3b8;border:1px solid rgba(255,255,255,.12)}
+.hbtn-outline:hover{background:rgba(255,255,255,.12);color:#f1f5f9}
+.hbtn-yellow{background:linear-gradient(135deg,#d97706,#f59e0b);color:white;box-shadow:0 3px 10px rgba(245,158,11,.3)}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:210px 1fr 310px;gap:10px;padding:12px 16px 16px;align-items:start}
+
+/* ── CARD BASE ── */
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px 16px;position:relative;overflow:hidden}
+.card-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.card-icon{position:absolute;right:14px;top:14px;width:26px;height:26px;background:rgba(255,255,255,.06);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:#64748b}
+.card-icon:hover{background:rgba(255,255,255,.12);color:#f1f5f9}
+
+/* ── LEFT COLUMN ── */
+.col-left{display:flex;flex-direction:column;gap:9px}
+.kpi-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:13px 15px;transition:.2s;cursor:default}
+.kpi-card:hover{background:rgba(255,255,255,.07);transform:translateX(2px)}
+.kpi-label-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.kpi-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.kpi-lbl{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.kpi-big{font-size:26px;font-weight:800;line-height:1;margin-bottom:3px}
+.kpi-row2{display:flex;align-items:center;justify-content:space-between}
+.kpi-sub{font-size:10px;color:#475569}
+.kpi-badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:12px}
+.badge-up{background:rgba(16,185,129,.15);color:#34d399}
+.badge-down{background:rgba(239,68,68,.15);color:#f87171}
+.badge-neu{background:rgba(245,158,11,.15);color:#fbbf24}
+.spark-row{display:flex;align-items:flex-end;gap:2px;margin-top:7px;height:20px}
+.spark-bar{flex:1;border-radius:2px 2px 0 0;opacity:.65}
+
+/* ── CENTER COLUMN ── */
+.col-center{display:flex;flex-direction:column;gap:9px}
+.center-top{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ring-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 18px}
+.ring-wrap{position:relative;width:176px;height:176px}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.ring-pct{font-size:34px;font-weight:800;color:#fff;line-height:1}
+.ring-lbl{font-size:10.5px;color:#64748b;margin-top:3px;font-weight:600}
+.ring-sub{font-size:9.5px;color:#34d399;margin-top:2px;font-weight:700}
+.ring-legend{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;justify-content:center}
+.rl-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#94a3b8;font-weight:600}
+.rl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.combo-card{display:flex;flex-direction:column}
+.mini-gauge-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mini-gauge{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s;cursor:default}
+.mini-gauge:hover{background:rgba(255,255,255,.08);transform:translateY(-2px)}
+.mini-gauge-ring{position:relative;width:50px;height:50px}
+.mini-gauge-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.mini-gauge-lbl{font-size:9.5px;color:#64748b;font-weight:700;text-align:center;line-height:1.3}
+.center-bot{display:grid;grid-template-columns:1.1fr .9fr;gap:9px}
+.area-card{display:flex;flex-direction:column}
+.table-card{overflow:hidden}
+.stbl{width:100%;border-collapse:collapse}
+.stbl thead th{font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;padding:5px 7px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+.stbl tbody td{padding:5px 7px;font-size:11px;color:#cbd5e1;border-bottom:1px solid rgba(255,255,255,.04)}
+.stbl tbody tr:hover td{background:rgba(255,255,255,.04)}
+.status-pill{padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700}
+.s-done{background:rgba(16,185,129,.15);color:#34d399}
+.s-mid{background:rgba(245,158,11,.15);color:#fbbf24}
+.s-low{background:rgba(239,68,68,.15);color:#f87171}
+.dom-bar{display:flex;align-items:center;gap:4px}
+.dom-track{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.dom-fill{height:100%;border-radius:2px}
+
+/* ── RIGHT COLUMN ── */
+.col-right{display:flex;flex-direction:column;gap:9px}
+.radar-card{display:flex;flex-direction:column}
+.gauge-big-card{display:flex;flex-direction:column;align-items:center;padding:14px 16px}
+.gauge-big-ring{position:relative;width:110px;height:110px}
+.gauge-big-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge-big-pct{font-size:20px;font-weight:800;color:#fff}
+.gauge-big-lbl{font-size:9px;color:#64748b;font-weight:700}
+.gauge-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;width:100%}
+.gauge-stat{background:rgba(255,255,255,.04);border-radius:8px;padding:7px 9px}
+.gauge-stat-lbl{font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.gauge-stat-val{font-size:14px;font-weight:800;color:#f1f5f9;margin-top:1px}
+.stacked-card{display:flex;flex-direction:column}
+.line2-card{display:flex;flex-direction:column}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-box">🏥</div>
+    <div><div class="hd-title">W.K. Health Dashboard</div><div class="hd-sub">ระบบติดตามสุขภาพนักเรียน · ปีการศึกษา 2567</div></div>
+  </div>
+  <div class="time-tabs">
+    <div class="time-tab active" onclick="switchTime(this)">วัน</div>
+    <div class="time-tab" onclick="switchTime(this)">สัปดาห์</div>
+    <div class="time-tab" onclick="switchTime(this)">เดือน</div>
+    <div class="time-tab" onclick="switchTime(this)">ปี</div>
+    <div class="time-tab" onclick="switchTime(this)">ทั้งหมด</div>
+  </div>
+  <div class="header-right">
+    <select onchange="applyGrade(this.value)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#94a3b8;padding:6px 10px;font-family:Sarabun,sans-serif;font-size:12px;outline:none;cursor:pointer">
+      <option value="all">ทุกระดับชั้น</option>
+      <option value="m1">ม.1</option><option value="m2">ม.2</option><option value="m3">ม.3</option>
+      <option value="m4">ม.4</option><option value="m5">ม.5</option><option value="m6">ม.6</option>
+    </select>
+    <button class="hbtn hbtn-outline" onclick="exportData()">⬇ Export</button>
+    <button class="hbtn hbtn-yellow" onclick="refreshAll()">🔄 อัปเดต</button>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="grid">
+
+  <!-- LEFT: KPI Cards -->
+  <div class="col-left">
+    <div class="kpi-card">
+      <div class="kpi-label-row"><div class="kpi-dot" style="background:#3b82f6"></div><div class="kpi-lbl">นักเรียนทั้งหมด</div></div>
+      <div class="kpi-big" style="color:#60a5fa">847</div>
+      <div class="kpi-row2"><div class="kpi-sub">ปีการศึกษา 2567</div><div class="kpi-badge badge-up">+12%</div></div>
+      <div class="spark-row" id="spark1"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label-row"><div class="kpi-dot" style="background:#f59e0b"></div><div class="kpi-lbl">คะแนนเฉลี่ยรวม</div></div>
+      <div class="kpi-big" style="color:#fbbf24">68.4</div>
+      <div class="kpi-row2"><div class="kpi-sub">จาก 100 คะแนน</div><div class="kpi-badge badge-up">+3.2</div></div>
+      <div class="spark-row" id="spark2"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label-row"><div class="kpi-dot" style="background:#10b981"></div><div class="kpi-lbl">อัตราผ่านเกณฑ์</div></div>
+      <div class="kpi-big" style="color:#34d399">78.3%</div>
+      <div class="kpi-row2"><div class="kpi-sub">คะแนน ≥ 50</div><div class="kpi-badge badge-up">+5.1%</div></div>
+      <div class="spark-row" id="spark3"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label-row"><div class="kpi-dot" style="background:#8b5cf6"></div><div class="kpi-lbl">ระดับดีเยี่ยม</div></div>
+      <div class="kpi-big" style="color:#a78bfa">23.1%</div>
+      <div class="kpi-row2"><div class="kpi-sub">คะแนน ≥ 81</div><div class="kpi-badge badge-neu">±0.2%</div></div>
+      <div class="spark-row" id="spark4"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label-row"><div class="kpi-dot" style="background:#ef4444"></div><div class="kpi-lbl">ต้องปรับปรุง</div></div>
+      <div class="kpi-big" style="color:#f87171">21.7%</div>
+      <div class="kpi-row2"><div class="kpi-sub">คะแนน ≤ 50</div><div class="kpi-badge badge-down">-2.3%</div></div>
+      <div class="spark-row" id="spark5"></div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="col-center">
+    <div class="center-top">
+      <!-- Big Ring -->
+      <div class="card ring-card">
+        <div class="card-title">ภาพรวมสุขภาพ</div>
+        <div class="ring-wrap">
+          <canvas id="bigDonut"></canvas>
+          <div class="ring-center">
+            <div class="ring-pct">68.4</div>
+            <div class="ring-lbl">คะแนนเฉลี่ย</div>
+            <div class="ring-sub">▲ Stable Growth</div>
+          </div>
+        </div>
+        <div class="ring-legend">
+          <div class="rl-item"><div class="rl-dot" style="background:#10b981"></div>ดีเยี่ยม</div>
+          <div class="rl-item"><div class="rl-dot" style="background:#3b82f6"></div>ดี</div>
+          <div class="rl-item"><div class="rl-dot" style="background:#f59e0b"></div>ปานกลาง</div>
+          <div class="rl-item"><div class="rl-dot" style="background:#ef4444"></div>ต้องปรับปรุง</div>
+        </div>
+      </div>
+      <!-- Combo Bar+Line -->
+      <div class="card combo-card">
+        <div class="card-title">ผลประเมินรายชั้นเรียน</div>
+        <div class="card-icon">⌄</div>
+        <canvas id="comboChart" style="max-height:210px"></canvas>
+      </div>
+    </div>
+
+    <!-- Mini Gauges -->
+    <div class="mini-gauge-row">
+      <div class="mini-gauge">
+        <div class="mini-gauge-ring"><canvas id="mg1"></canvas><div class="mini-gauge-val">66</div></div>
+        <div class="mini-gauge-lbl">🌙 นอนหลับ</div>
+        <div class="kpi-badge badge-up" style="font-size:9px">+1.2</div>
+      </div>
+      <div class="mini-gauge">
+        <div class="mini-gauge-ring"><canvas id="mg2"></canvas><div class="mini-gauge-val">73</div></div>
+        <div class="mini-gauge-lbl">💧 ดื่มน้ำ</div>
+        <div class="kpi-badge badge-up" style="font-size:9px">+0.8</div>
+      </div>
+      <div class="mini-gauge">
+        <div class="mini-gauge-ring"><canvas id="mg3"></canvas><div class="mini-gauge-val">59</div></div>
+        <div class="mini-gauge-lbl">🏃 ออกกำลัง</div>
+        <div class="kpi-badge badge-down" style="font-size:9px">-0.5</div>
+      </div>
+      <div class="mini-gauge">
+        <div class="mini-gauge-ring"><canvas id="mg4"></canvas><div class="mini-gauge-val">62</div></div>
+        <div class="mini-gauge-lbl">📱 สื่อดิจิทัล</div>
+        <div class="kpi-badge badge-up" style="font-size:9px">+1.5</div>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="center-bot">
+      <div class="card area-card">
+        <div class="card-title">แนวโน้มคะแนนรายเทอม</div>
+        <canvas id="areaChart" style="max-height:130px"></canvas>
+      </div>
+      <div class="card table-card">
+        <div class="card-title">สรุปรายด้านสุขภาพ</div>
+        <table class="stbl">
+          <thead><tr><th>ด้าน</th><th>คะแนน</th><th>ระดับ</th></tr></thead>
+          <tbody id="domainTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col-right">
+    <div class="card radar-card">
+      <div class="card-title">คะแนนรายสมรรถนะ</div>
+      <div class="card-icon">⌄</div>
+      <canvas id="radarChart" style="max-height:215px"></canvas>
+    </div>
+    <div class="card gauge-big-card">
+      <div class="card-title" style="align-self:flex-start">อัตราผ่านเกณฑ์รวม</div>
+      <div class="gauge-big-ring">
+        <canvas id="gaugeChart"></canvas>
+        <div class="gauge-big-val">
+          <div class="gauge-big-pct">78%</div>
+          <div class="gauge-big-lbl">Net Score</div>
+        </div>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge-stat"><div class="gauge-stat-lbl">คะแนนเฉลี่ย</div><div class="gauge-stat-val" style="color:#60a5fa">68.4</div></div>
+        <div class="gauge-stat"><div class="gauge-stat-lbl">ช่วงคะแนน</div><div class="gauge-stat-val" style="color:#a78bfa">22–96</div></div>
+        <div class="gauge-stat"><div class="gauge-stat-lbl">ค่าเบี่ยงเบน</div><div class="gauge-stat-val" style="color:#34d399">14.2</div></div>
+        <div class="gauge-stat"><div class="gauge-stat-lbl">ผ่านเกณฑ์</div><div class="gauge-stat-val" style="color:#fbbf24">78%</div></div>
+      </div>
+    </div>
+    <div class="card stacked-card">
+      <div class="card-title">สัดส่วนระดับแยกชั้น</div>
+      <canvas id="stackedChart" style="max-height:155px"></canvas>
+    </div>
+    <div class="card line2-card">
+      <div class="card-title">เปรียบเทียบ 3 ปีการศึกษา</div>
+      <canvas id="lineChart" style="max-height:130px"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const DOMAINS=['นอนหลับ','ดื่มน้ำ','ออกกำลังกาย','สื่อดิจิทัล','ความเครียด']
+const D_EMOJIS=['🌙','💧','🏃','📱','🧘']
+const D_SCORES=[66,73,59,62,70]
+const D_COLORS=['#3b82f6','#06b6d4','#10b981','#8b5cf6','#f59e0b']
+const GRADES=['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
+const TT={backgroundColor:'rgba(10,18,40,.96)',titleColor:'#f1f5f9',bodyColor:'#94a3b8',padding:10,cornerRadius:8,boxPadding:4,borderColor:'rgba(255,255,255,.08)',borderWidth:1}
+const GC='rgba(255,255,255,.05)'
+const TC='#475569'
+
+// Sparklines
+function spark(id,vals,color){
+  const el=document.getElementById(id),max=Math.max(...vals)
+  el.innerHTML=vals.map(v=>`<div class="spark-bar" style="height:${Math.round(v/max*100)}%;background:${color}40;border-top:2px solid ${color}"></div>`).join('')
+}
+spark('spark1',[700,720,735,748,760,780,810,830,847],'#3b82f6')
+spark('spark2',[64,64.5,65,65.8,66.5,67,67.8,68,68.4],'#f59e0b')
+spark('spark3',[70,71,72,73,74,75,76,77,78.3],'#10b981')
+spark('spark4',[22,22.2,22.5,22.8,23,23,23.1,23.1,23.1],'#8b5cf6')
+spark('spark5',[26,25.8,25.4,25,24.5,24,23.5,22.5,21.7],'#ef4444')
+
+// Big Donut
+new Chart(document.getElementById('bigDonut'),{
+  type:'doughnut',
+  data:{labels:['ดีเยี่ยม (≥81)','ดี (66–80)','ปานกลาง (51–65)','ต้องปรับปรุง (≤50)'],
+    datasets:[{data:[23,32,23,22],backgroundColor:['#10b981','#3b82f6','#f59e0b','#ef4444'],borderWidth:4,borderColor:'#0a1628',hoverOffset:6}]},
+  options:{responsive:true,maintainAspectRatio:true,cutout:'70%',
+    plugins:{tooltip:{...TT,callbacks:{label:c=>` ${c.label}: ${c.parsed}%`}},legend:{display:false}}}
+})
+
+// Combo
+new Chart(document.getElementById('comboChart'),{
+  type:'bar',
+  data:{labels:GRADES,datasets:[
+    {type:'bar',label:'คะแนนเฉลี่ย',data:[66,65,63,67,69,71],backgroundColor:['#3b82f655','#06b6d455','#10b98155','#8b5cf655','#f59e0b55','#34d39955'],borderRadius:5,borderSkipped:false},
+    {type:'line',label:'เป้าหมาย (80)',data:[80,80,80,80,80,80],borderColor:'rgba(245,158,11,.5)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false,tension:0},
+    {type:'line',label:'แนวโน้ม',data:[66,65,63,67,69,71],borderColor:'#e2e8f0',borderWidth:2,pointBackgroundColor:'#fff',pointBorderColor:'#1e40af',pointBorderWidth:2,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{tooltip:{...TT,mode:'index',intersect:false},legend:{display:true,position:'bottom',labels:{color:TC,font:{family:'Sarabun',size:10},boxWidth:10,padding:10,usePointStyle:true}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:10.5}}},y:{min:40,max:100,grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:10}}}}}
+})
+
+// Mini Gauges
+function miniG(id,val,col){
+  new Chart(document.getElementById(id),{type:'doughnut',
+    data:{datasets:[{data:[val,100-val],backgroundColor:[col,'rgba(255,255,255,.06)'],borderWidth:0,hoverOffset:0}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'73%',plugins:{tooltip:{enabled:false},legend:{display:false}},animation:{duration:900}}})
+}
+miniG('mg1',66,'#3b82f6');miniG('mg2',73,'#06b6d4');miniG('mg3',59,'#10b981');miniG('mg4',62,'#8b5cf6')
+
+// Area
+new Chart(document.getElementById('areaChart'),{
+  type:'line',
+  data:{labels:['ต้น 65','ปลาย 65','ต้น 66','ปลาย 66','ต้น 67','ปลาย 67'],
+    datasets:[
+      {label:'คะแนนเฉลี่ย',data:[63.5,64.2,65.1,66.3,67.8,68.4],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.12)',borderWidth:2,fill:true,tension:.4,pointBackgroundColor:'#f59e0b',pointRadius:3,pointHoverRadius:6},
+      {label:'เป้าหมาย',data:[70,70,70,70,70,70],borderColor:'rgba(255,255,255,.12)',borderWidth:1,borderDash:[4,3],pointRadius:0,fill:false}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{tooltip:{...TT,mode:'index',intersect:false},legend:{display:false}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:9.5}}},y:{min:58,max:75,grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:10}}}}}
+})
+
+// Domain Table
+function lvl(s){if(s>=80)return['ดีเยี่ยม','s-done'];if(s>=65)return['ดี','s-mid'];if(s>=50)return['ปานกลาง','s-mid'];return['ต้องปรับปรุง','s-low']}
+document.getElementById('domainTbody').innerHTML=D_SCORES.map((v,i)=>{
+  const[lbl,cls]=lvl(v)
+  return`<tr><td>${D_EMOJIS[i]} ${DOMAINS[i]}</td>
+  <td><div class="dom-bar"><div class="dom-track"><div class="dom-fill" style="width:${v}%;background:${D_COLORS[i]}"></div></div><b style="color:${D_COLORS[i]};min-width:22px;font-size:11px">${v}</b></div></td>
+  <td><span class="status-pill ${cls}">${lbl}</span></td></tr>`
+}).join('')
+
+// Radar
+new Chart(document.getElementById('radarChart'),{
+  type:'radar',
+  data:{labels:DOMAINS.map((l,i)=>D_EMOJIS[i]+' '+l),
+    datasets:[
+      {label:'2567',data:D_SCORES,backgroundColor:'rgba(59,130,246,.15)',borderColor:'#3b82f6',borderWidth:2,pointBackgroundColor:'#3b82f6',pointBorderColor:'#0a1628',pointBorderWidth:2,pointRadius:4,pointHoverRadius:6},
+      {label:'เป้าหมาย (80)',data:[80,80,80,80,80],backgroundColor:'rgba(245,158,11,.05)',borderColor:'rgba(245,158,11,.35)',borderWidth:1,borderDash:[4,3],pointRadius:0}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{tooltip:{...TT,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.r}`}},legend:{display:true,position:'bottom',labels:{color:TC,font:{family:'Sarabun',size:10},boxWidth:10,padding:8,usePointStyle:true}}},
+    scales:{r:{min:0,max:100,ticks:{stepSize:25,color:'#334155',backdropColor:'transparent',font:{family:'Sarabun',size:9}},grid:{color:'rgba(255,255,255,.07)'},angleLines:{color:'rgba(255,255,255,.07)'},pointLabels:{color:'#94a3b8',font:{family:'Sarabun',size:10}}}}}
+})
+
+// Big Gauge
+new Chart(document.getElementById('gaugeChart'),{
+  type:'doughnut',
+  data:{datasets:[{data:[78,22],backgroundColor:['#3b82f6','rgba(255,255,255,.06)'],borderWidth:0,hoverOffset:0}]},
+  options:{responsive:true,maintainAspectRatio:true,cutout:'75%',rotation:-90,circumference:180,plugins:{tooltip:{enabled:false},legend:{display:false}}}
+})
+
+// Stacked
+new Chart(document.getElementById('stackedChart'),{
+  type:'bar',
+  data:{labels:GRADES,datasets:[
+    {label:'ดีเยี่ยม',data:[20,19,18,22,25,28],backgroundColor:'#10b981',stack:'s',borderRadius:0},
+    {label:'ดี',data:[35,34,33,36,36,35],backgroundColor:'#3b82f6',stack:'s'},
+    {label:'ปานกลาง',data:[25,26,28,24,22,20],backgroundColor:'#f59e0b',stack:'s'},
+    {label:'ต้องปรับปรุง',data:[20,21,21,18,17,17],backgroundColor:'#ef4444',stack:'s'}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{tooltip:{...TT,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}%`}},legend:{display:true,position:'bottom',labels:{color:TC,font:{family:'Sarabun',size:9.5},boxWidth:10,padding:7}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{color:TC,font:{family:'Sarabun',size:10}}},y:{stacked:true,max:100,grid:{color:GC},ticks:{callback:v=>v+'%',color:TC,font:{family:'Sarabun',size:10}}}}}
+})
+
+// Line 3 years
+new Chart(document.getElementById('lineChart'),{
+  type:'line',
+  data:{labels:DOMAINS.map((l,i)=>D_EMOJIS[i]+l.slice(0,3)),
+    datasets:[
+      {label:'2565',data:[64,71,55,59,67],borderColor:'#475569',backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,tension:.3},
+      {label:'2566',data:[65,72,57,61,68],borderColor:'#93c5fd',backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,tension:.3},
+      {label:'2567',data:[66,73,59,62,70],borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.08)',borderWidth:2.5,fill:true,pointBackgroundColor:'#fbbf24',pointRadius:4,pointHoverRadius:6,tension:.3}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{tooltip:{...TT,mode:'index',intersect:false},legend:{display:true,position:'bottom',labels:{color:TC,font:{family:'Sarabun',size:10},boxWidth:10,padding:8,usePointStyle:true}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:9.5}}},y:{min:45,max:85,grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:10}}}}}
+})
+
+// Interactions
+function switchTime(el){document.querySelectorAll('.time-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+function applyGrade(v){refreshAll()}
+function refreshAll(){document.querySelectorAll('.kpi-big').forEach(el=>{el.style.opacity='.3';setTimeout(()=>el.style.opacity='1',350)})}
+function exportData(){
+  const rows=[['ด้านสุขภาพ','คะแนน'],...DOMAINS.map((l,i)=>[l,D_SCORES[i]])]
+  const a=document.createElement('a')
+  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(rows.map(r=>r.join(',')).join('\n'))
+  a.download='wk_health.csv';a.click()
+}
+</script>
+</body>
+</html>
