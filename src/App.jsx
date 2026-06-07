@@ -11,7 +11,6 @@ import Login from './pages/Login'
 import Admin from './pages/Admin'
 import Dashboard from './pages/Dashboard'
 import Assessment from './pages/Assessment'
-import BMI from './pages/BMI'
 import Analytics from './pages/Analytics'
 import Rewards from './pages/Rewards'
 import Profile from './pages/Profile'
@@ -40,7 +39,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/assessment" element={<Assessment />} />
-          <Route path="/bmi" element={<BMI />} />
+          <Route path="/bmi" element={<Navigate to="/assessment" replace />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/recommendations" element={<Navigate to="/analytics" replace />} />
           <Route path="/rewards" element={<Rewards />} />

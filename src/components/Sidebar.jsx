@@ -1,15 +1,14 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  Home, ClipboardList, Scale, TrendingUp,
+  Home, ClipboardList, TrendingUp,
   Award, UserCircle, BookOpen, Camera, LogOut, Star, Shield, Flame, ClipboardCheck, LayoutDashboard,
 } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 const links = [
   { to: '/',               icon: Home,          label: 'หน้าหลัก' },
-  { to: '/assessment',     icon: ClipboardList, label: 'ประเมินสุขภาพ' },
-  { to: '/bmi',            icon: Scale,         label: 'คำนวณ BMI' },
+  { to: '/assessment',     icon: ClipboardList, label: 'ประเมิน & BMI' },
   { to: '/analytics',      icon: TrendingUp,    label: 'กราฟ & คำแนะนำ AI' },
   { to: '/rewards',        icon: Award,         label: 'แต้มสะสม' },
   { to: '/knowledge',      icon: BookOpen,      label: 'ใบความรู้' },

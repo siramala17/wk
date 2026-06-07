@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, ChevronLeft, Check, AlertCircle } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Check, AlertCircle, ClipboardList, Scale } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import ScoreRing from '../components/ScoreRing'
+import BMI from './BMI'
 
-// ข้อคำถามและการตั้งค่า
 const DOMAINS = [
   {
     key: 'sleep', label: 'การนอนหลับ', emoji: '🌙',
@@ -66,14 +66,12 @@ const SCALE = [
   { value: 5, label: 'ประจำ' },
 ]
 
-// คะแนนกลับลบ: 5→1, 4→2, 3→3, 2→4, 1→5
 function applyScore(raw, reverse) {
   return reverse ? (6 - raw) : raw
 }
 
 function calcDomainScore(answers, domain) {
   const raw = domain.questions.reduce((s, q) => s + applyScore(answers[q.id] ?? 3, q.reverse), 0)
-  // raw 4-20 → 0-100
   return Math.round(((raw - 4) / 16) * 100)
 }
 
@@ -89,19 +87,13 @@ function getLevel(total) {
   return { label: 'ต้องปรับปรุงด่วน', emoji: '⚠️', color: 'text-red-600', bg: 'bg-red-50', ring: '#EF4444', desc: 'พฤติกรรมเสี่ยงต่อการเกิดโรคเรื้อรัง ควรเริ่มปรับเปลี่ยนพฤติกรรมทีละด้าน' }
 }
 
-// ── หน้าผลลัพธ์ ──
 function ResultScreen({ answers, pointsEarned, alreadyToday, onShare }) {
   const total = calcTotal(answers)
   const level = getLevel(total)
-
-  const domainScores = DOMAINS.map(d => ({
-    ...d,
-    score: calcDomainScore(answers, d),
-  }))
+  const domainScores = DOMAINS.map(d => ({ ...d, score: calcDomainScore(answers, d) }))
 
   return (
     <div className="space-y-5">
-      {/* คะแนนรวม */}
       <div className={`${level.bg} rounded-3xl p-6 text-center`}>
         <p className="text-4xl mb-2">{level.emoji}</p>
         <p className="text-sm text-slate-500 mb-2">คะแนนสุขภาพรวม (เต็ม 100)</p>
@@ -115,7 +107,6 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare }) {
         <p className="text-xs text-slate-500 mt-1">{level.desc}</p>
       </div>
 
-      {/* แต้มสะสม */}
       {alreadyToday ? (
         <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">🔒</span>
@@ -134,7 +125,6 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare }) {
         </div>
       )}
 
-      {/* คะแนนรายด้าน */}
       <div>
         <h3 className="font-bold text-slate-700 text-sm mb-2">คะแนนรายด้าน</h3>
         <div className="space-y-2">
@@ -144,8 +134,7 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare }) {
               <span className="text-sm font-medium text-slate-700 flex-1">{d.label}</span>
               <div className="flex items-center gap-2">
                 <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all"
-                    style={{ width: `${d.score}%`, background: d.ring }} />
+                  <div className="h-full rounded-full transition-all" style={{ width: `${d.score}%`, background: d.ring }} />
                 </div>
                 <span className="text-sm font-bold w-8 text-right" style={{ color: d.ring }}>{d.score}</span>
               </div>
@@ -162,7 +151,6 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare }) {
   )
 }
 
-// ── หน้าคู่มือแนะนำ ──
 function GuideScreen({ onStart }) {
   const items = [
     { emoji: '🌙', label: 'การนอนหลับ', desc: 'คุณภาพและปริมาณการนอน' },
@@ -172,8 +160,7 @@ function GuideScreen({ onStart }) {
     { emoji: '🧘', label: 'ความเครียด', desc: 'การรับมือและผ่อนคลาย' },
   ]
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-6 pb-36 md:pb-8 space-y-5">
-      {/* Header */}
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-8 space-y-5">
       <div className="text-center">
         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
           <span className="text-3xl">📋</span>
@@ -182,7 +169,6 @@ function GuideScreen({ onStart }) {
         <p className="text-slate-500 text-sm mt-1">ประเมินพฤติกรรมสุขภาพของคุณใน 5 ด้าน</p>
       </div>
 
-      {/* วิธีตอบ */}
       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-2">
         <p className="font-bold text-blue-700 text-sm">📌 วิธีตอบคำถาม</p>
         <p className="text-slate-600 text-sm leading-relaxed">แต่ละข้อให้เลือกระดับที่ตรงกับพฤติกรรม <span className="font-semibold">จริงๆ ของคุณในช่วง 1 เดือนที่ผ่านมา</span> มากที่สุด ไม่มีคำตอบถูกหรือผิด</p>
@@ -196,7 +182,6 @@ function GuideScreen({ onStart }) {
         </div>
       </div>
 
-      {/* หัวข้อที่ประเมิน */}
       <div className="bg-white rounded-2xl shadow-sm p-4">
         <p className="font-bold text-slate-700 text-sm mb-3">📊 หัวข้อที่ประเมิน (5 ด้าน รวม 20 ข้อ)</p>
         <div className="space-y-2">
@@ -213,7 +198,6 @@ function GuideScreen({ onStart }) {
         </div>
       </div>
 
-      {/* หมายเหตุ */}
       <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4">
         <p className="font-bold text-yellow-700 text-sm mb-1">⏱ ใช้เวลาประมาณ 3–5 นาที</p>
         <p className="text-slate-500 text-xs leading-relaxed">ผลประเมินจะช่วยให้คุณเห็นภาพรวมพฤติกรรมสุขภาพและรับคำแนะนำเฉพาะสำหรับคุณ สามารถประเมินซ้ำได้ทุกวันเพื่อติดตามพัฒนาการ</p>
@@ -228,22 +212,18 @@ function GuideScreen({ onStart }) {
   )
 }
 
-// ── หน้าแบบประเมินหลัก ──
 export default function Assessment() {
+  const [mainTab, setMainTab] = useState('assessment')
   const [showGuide, setShowGuide] = useState(true)
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
   const [earnInfo, setEarnInfo] = useState({ pointsEarned: 0, alreadyToday: false })
-  const { saveAssessment, history } = useHealth()
+  const { saveAssessment } = useHealth()
   const navigate = useNavigate()
 
-  if (showGuide) {
-    return <GuideScreen onStart={() => setShowGuide(false)} />
-  }
-
   const domain = DOMAINS[step]
-  const progress = ((step) / DOMAINS.length) * 100
+  const progress = (step / DOMAINS.length) * 100
   const allAnswered = domain.questions.every(q => answers[q.id] !== undefined)
 
   function handleAnswer(qId, value) {
@@ -255,19 +235,13 @@ export default function Assessment() {
       setStep(s => s + 1)
       window.scrollTo(0, 0)
     } else {
-      // คำนวณคะแนนทุกด้าน
-      const sleepScore   = calcDomainScore(answers, DOMAINS[0])
-      const waterScore   = calcDomainScore(answers, DOMAINS[1])
+      const sleepScore    = calcDomainScore(answers, DOMAINS[0])
+      const waterScore    = calcDomainScore(answers, DOMAINS[1])
       const exerciseScore = calcDomainScore(answers, DOMAINS[2])
       const digitalScore  = calcDomainScore(answers, DOMAINS[3])
       const stressScore   = calcDomainScore(answers, DOMAINS[4])
       const overallScore  = calcTotal(answers)
-
-      const assessment = {
-        sleepScore, waterScore, exerciseScore, digitalScore, stressScore,
-        overallScore,
-        answers,
-      }
+      const assessment = { sleepScore, waterScore, exerciseScore, digitalScore, stressScore, overallScore, answers }
       const info = saveAssessment(assessment)
       setEarnInfo(info)
       setResult(assessment)
@@ -286,133 +260,146 @@ export default function Assessment() {
     }
   }
 
-  // หน้าผลลัพธ์
-  if (result) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-slate-800">ผลการประเมิน</h1>
-          <button onClick={() => navigate('/recommendations')} className="text-sm text-blue-600 font-medium">
-            ดูคำแนะนำ →
+  return (
+    <>
+      {/* Top-level tab switcher */}
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
+          <button
+            onClick={() => setMainTab('assessment')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              mainTab === 'assessment' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <ClipboardList size={15} />
+            ประเมินสุขภาพ
+          </button>
+          <button
+            onClick={() => setMainTab('bmi')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              mainTab === 'bmi' ? 'bg-white text-yellow-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Scale size={15} />
+            คำนวณ BMI
           </button>
         </div>
-        <ResultScreen
-          answers={result.answers}
-          pointsEarned={earnInfo.pointsEarned}
-          alreadyToday={earnInfo.alreadyToday}
-          onShare={handleShare}
-        />
-      </div>
-    )
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-6">
-
-      {/* progress bar */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-          <span>ด้านที่ {step + 1} จาก {DOMAINS.length}</span>
-          <span>{Math.round(progress)}%</span>
-        </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-blue-500 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }} />
-        </div>
-
-        {/* domain indicators */}
-        <div className="flex gap-1.5 mt-2.5">
-          {DOMAINS.map((d, i) => (
-            <div key={d.key} className={`flex-1 h-1 rounded-full transition-colors ${
-              i < step ? d.color : i === step ? `${d.color} opacity-70` : 'bg-slate-100'
-            }`} />
-          ))}
-        </div>
       </div>
 
-      {/* domain header */}
-      <div className={`${domain.light} border ${domain.border} rounded-2xl px-4 py-3 flex items-center gap-3 mb-5`}>
-        <div className={`w-11 h-11 ${domain.color} rounded-xl flex items-center justify-center text-2xl shadow-sm`}>
-          {domain.emoji}
+      {mainTab === 'bmi' ? (
+        <BMI />
+      ) : showGuide ? (
+        <GuideScreen onStart={() => setShowGuide(false)} />
+      ) : result ? (
+        <div className="max-w-2xl mx-auto px-4 pt-4 pb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold text-slate-800">ผลการประเมิน</h1>
+            <button onClick={() => navigate('/analytics')} className="text-sm text-blue-600 font-medium">
+              ดูคำแนะนำ →
+            </button>
+          </div>
+          <ResultScreen
+            answers={result.answers}
+            pointsEarned={earnInfo.pointsEarned}
+            alreadyToday={earnInfo.alreadyToday}
+            onShare={handleShare}
+          />
         </div>
-        <div>
-          <p className="text-xs text-slate-400">ด้านที่ {step + 1}</p>
-          <p className={`font-bold ${domain.text}`}>{domain.label}</p>
-        </div>
-      </div>
-
-      {/* คำอธิบายระดับ */}
-      <div className="bg-slate-50 rounded-xl px-3 py-2 mb-4">
-        <div className="flex justify-between text-[10px] text-slate-400">
-          {SCALE.map(s => (
-            <span key={s.value} className="text-center w-1/5">{s.value}<br/>{s.label}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* คำถาม */}
-      <div className="space-y-5">
-        {domain.questions.map((q, qi) => (
-          <div key={q.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-            <div className="flex gap-2 mb-3">
-              <span className={`w-6 h-6 rounded-full ${domain.color} text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                {q.id}
-              </span>
-              <p className="text-sm text-slate-700 leading-relaxed flex-1">{q.text}</p>
+      ) : (
+        <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-6">
+          {/* progress bar */}
+          <div className="mb-5">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
+              <span>ด้านที่ {step + 1} จาก {DOMAINS.length}</span>
+              <span>{Math.round(progress)}%</span>
             </div>
-            {q.reverse && (
-              <p className="text-[10px] text-orange-400 flex items-center gap-1 mb-2">
-                <AlertCircle size={10} /> ข้อนี้ยิ่งตอบสูง = พฤติกรรมเสี่ยงมากกว่า
-              </p>
-            )}
-            <div className="flex gap-2">
-              {SCALE.map(s => {
-                const selected = answers[q.id] === s.value
-                return (
-                  <button
-                    key={s.value}
-                    onClick={() => handleAnswer(q.id, s.value)}
-                    className={`flex-1 h-10 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-                      selected
-                        ? `${domain.color} text-white shadow-md`
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >
-                    {s.value}
-                  </button>
-                )
-              })}
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="flex gap-1.5 mt-2.5">
+              {DOMAINS.map((d, i) => (
+                <div key={d.key} className={`flex-1 h-1 rounded-full transition-colors ${
+                  i < step ? d.color : i === step ? `${d.color} opacity-70` : 'bg-slate-100'
+                }`} />
+              ))}
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* ปุ่มนำทาง */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 flex gap-3 pb-safe md:static md:bottom-auto md:border-none md:bg-transparent md:mt-6 md:px-0 md:pb-0">
-        {step > 0 && (
-          <button
-            onClick={() => { setStep(s => s - 1); window.scrollTo(0, 0) }}
-            className="flex items-center gap-1.5 px-4 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
-          >
-            <ChevronLeft size={18} /> ย้อนกลับ
-          </button>
-        )}
-        <button
-          onClick={handleNext}
-          disabled={!allAnswered}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all active:scale-[0.98] ${
-            allAnswered
-              ? `${domain.color} text-white hover:opacity-90`
-              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-          }`}
-        >
-          {step === DOMAINS.length - 1 ? (
-            <><Check size={18} /> ดูผลการประเมิน</>
-          ) : (
-            <>ถัดไป <ChevronRight size={18} /></>
-          )}
-        </button>
-      </div>
-    </div>
+          {/* domain header */}
+          <div className={`${domain.light} border ${domain.border} rounded-2xl px-4 py-3 flex items-center gap-3 mb-5`}>
+            <div className={`w-11 h-11 ${domain.color} rounded-xl flex items-center justify-center text-2xl shadow-sm`}>
+              {domain.emoji}
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">ด้านที่ {step + 1}</p>
+              <p className={`font-bold ${domain.text}`}>{domain.label}</p>
+            </div>
+          </div>
+
+          {/* scale legend */}
+          <div className="bg-slate-50 rounded-xl px-3 py-2 mb-4">
+            <div className="flex justify-between text-[10px] text-slate-400">
+              {SCALE.map(s => (
+                <span key={s.value} className="text-center w-1/5">{s.value}<br/>{s.label}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* questions */}
+          <div className="space-y-5">
+            {domain.questions.map(q => (
+              <div key={q.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <div className="flex gap-2 mb-3">
+                  <span className={`w-6 h-6 rounded-full ${domain.color} text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                    {q.id}
+                  </span>
+                  <p className="text-sm text-slate-700 leading-relaxed flex-1">{q.text}</p>
+                </div>
+                {q.reverse && (
+                  <p className="text-[10px] text-orange-400 flex items-center gap-1 mb-2">
+                    <AlertCircle size={10} /> ข้อนี้ยิ่งตอบสูง = พฤติกรรมเสี่ยงมากกว่า
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  {SCALE.map(s => {
+                    const selected = answers[q.id] === s.value
+                    return (
+                      <button key={s.value} onClick={() => handleAnswer(q.id, s.value)}
+                        className={`flex-1 h-10 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                          selected ? `${domain.color} text-white shadow-md` : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        }`}
+                      >
+                        {s.value}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* nav buttons */}
+          <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 flex gap-3 pb-safe md:static md:bottom-auto md:border-none md:bg-transparent md:mt-6 md:px-0 md:pb-0">
+            {step > 0 && (
+              <button onClick={() => { setStep(s => s - 1); window.scrollTo(0, 0) }}
+                className="flex items-center gap-1.5 px-4 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+                <ChevronLeft size={18} /> ย้อนกลับ
+              </button>
+            )}
+            <button onClick={handleNext} disabled={!allAnswered}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all active:scale-[0.98] ${
+                allAnswered ? `${domain.color} text-white hover:opacity-90` : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              {step === DOMAINS.length - 1 ? (
+                <><Check size={18} /> ดูผลการประเมิน</>
+              ) : (
+                <>ถัดไป <ChevronRight size={18} /></>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
