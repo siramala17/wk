@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import {
   pushUserToCloud, loginUserFromCloud, syncUserPointsToCloud, updateUserAvatarInCloud,
-  claimApprovedPoints, submitRedemption, claimRedemptionRefunds,
+  claimApprovedPoints, submitRedemption, claimRedemptionRefunds, saveAssessmentToCloud,
 } from '../services/userSync'
 
 const HealthContext = createContext(null)
@@ -193,6 +193,11 @@ export function HealthProvider({ children }) {
       setUser(prev => ({ ...prev, points: prev.points + pointsEarned, streak: prev.streak + 1 }))
     }
     setCompletedTips([])
+
+    if (user.id) {
+      saveAssessmentToCloud(user.id, user, data).catch(() => {})
+    }
+
     return { pointsEarned, alreadyToday }
   }
 

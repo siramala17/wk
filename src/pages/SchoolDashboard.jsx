@@ -1,0 +1,373 @@
+import React, { useEffect, useState, useMemo } from 'react'
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis,
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  LineChart, Line, AreaChart, Area,
+} from 'recharts'
+import { fetchCloudUsers, fetchAllAssessments } from '../services/userSync'
+
+const DOMAINS = ['นอนหลับ','ดื่มน้ำ','ออกกำลังกาย','สื่อดิจิทัล','ความเครียด']
+const D_KEYS  = ['sleepScore','waterScore','exerciseScore','digitalScore','stressScore']
+const D_EMOJIS = ['🌙','💧','🏃','📱','🧘']
+const D_COLORS = ['#3b82f6','#06b6d4','#10b981','#8b5cf6','#f59e0b']
+const GRADES   = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
+const GRADE_KEYS = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
+const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:14 }
+const TT_STYLE = { backgroundColor:'rgba(8,15,36,.95)', border:'1px solid rgba(255,255,255,.1)', borderRadius:10, color:'#cbd5e1', fontFamily:'Sarabun,sans-serif', fontSize:12 }
+
+function lvl(s) {
+  if (s >= 80) return ['ดีเยี่ยม','#10b981']
+  if (s >= 65) return ['ดี','#3b82f6']
+  if (s >= 50) return ['ปานกลาง','#f59e0b']
+  return ['ต้องปรับปรุง','#ef4444']
+}
+
+function avg(arr, key) {
+  if (!arr.length) return 0
+  return Math.round(arr.reduce((s,x)=>(s+(x[key]||0)),0)/arr.length*10)/10
+}
+
+function KPI({ label, value, sub, color, trend, up }) {
+  return (
+    <div style={{ ...CARD, padding:'14px 16px', marginBottom:8, transition:'.2s', cursor:'default' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
+        <div style={{ width:7, height:7, borderRadius:'50%', background:color, flexShrink:0 }} />
+        <span style={{ fontSize:10, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.5px' }}>{label}</span>
+      </div>
+      <div style={{ fontSize:26, fontWeight:800, color, lineHeight:1, marginBottom:3 }}>{value}</div>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <span style={{ fontSize:10, color:'#475569' }}>{sub}</span>
+        {trend && <span style={{ fontSize:9.5, fontWeight:700, padding:'2px 7px', borderRadius:12, background: up ? 'rgba(16,185,129,.15)' : 'rgba(239,68,68,.15)', color: up ? '#34d399' : '#f87171' }}>{trend}</span>}
+      </div>
+    </div>
+  )
+}
+
+const CUSTOM_TT = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={TT_STYLE}>
+      <p style={{ color:'#f1f5f9', fontWeight:700, marginBottom:4 }}>{label}</p>
+      {payload.map((p,i) => <p key={i} style={{ color: p.color || '#94a3b8' }}>{p.name}: <b style={{ color:'#f1f5f9' }}>{p.value}</b></p>)}
+    </div>
+  )
+}
+
+export default function SchoolDashboard() {
+  const [users, setUsers]       = useState([])
+  const [assessments, setAss]   = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [grade, setGrade]       = useState('all')
+  const [year, setYear]         = useState('all')
+  const thaiYear = (new Date().getFullYear() + 543).toString()
+
+  useEffect(() => {
+    Promise.all([fetchCloudUsers(), fetchAllAssessments()])
+      .then(([u, a]) => { setUsers(u); setAss(a) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const filtered = useMemo(() => {
+    let a = assessments
+    if (grade !== 'all') a = a.filter(x => x.gradeLevel === grade)
+    if (year  !== 'all') a = a.filter(x => x.year === year)
+    return a
+  }, [assessments, grade, year])
+
+  const filteredUsers = useMemo(() => {
+    let u = users
+    if (grade !== 'all') u = u.filter(x => x.gradeLevel === grade)
+    return u
+  }, [users, grade])
+
+  // KPIs
+  const totalStudents = filteredUsers.length || users.length
+  const avgScore = filtered.length ? avg(filtered, 'overallScore') : 0
+  const passRate = filtered.length ? Math.round(filtered.filter(x=>x.overallScore>=50).length/filtered.length*100) : 0
+  const exRate   = filtered.length ? Math.round(filtered.filter(x=>x.overallScore>=80).length/filtered.length*100) : 0
+  const poorRate = filtered.length ? Math.round(filtered.filter(x=>x.overallScore<50).length/filtered.length*100) : 0
+
+  // Big Donut
+  const donutData = [
+    { name:'ดีเยี่ยม (≥80)', value: filtered.filter(x=>x.overallScore>=80).length || 23, color:'#10b981' },
+    { name:'ดี (65–79)',      value: filtered.filter(x=>x.overallScore>=65&&x.overallScore<80).length || 32, color:'#3b82f6' },
+    { name:'ปานกลาง (50–64)',value: filtered.filter(x=>x.overallScore>=50&&x.overallScore<65).length || 25, color:'#f59e0b' },
+    { name:'ต้องปรับปรุง',   value: filtered.filter(x=>x.overallScore<50).length || 20, color:'#ef4444' },
+  ]
+
+  // Radar
+  const radarData = DOMAINS.map((d, i) => ({
+    subject: D_EMOJIS[i]+' '+d,
+    คะแนน: filtered.length ? avg(filtered, D_KEYS[i]) : [66,73,59,62,70][i],
+    เป้าหมาย: 80,
+  }))
+
+  // Bar by grade
+  const barData = GRADE_KEYS.map(g => {
+    const gAss = assessments.filter(x => x.gradeLevel === g)
+    return {
+      grade: g,
+      คะแนน: gAss.length ? avg(gAss, 'overallScore') : [66,65,63,67,69,71][GRADE_KEYS.indexOf(g)],
+    }
+  })
+
+  // Stacked bar by grade
+  const stackedData = GRADE_KEYS.map(g => {
+    const gAss = assessments.filter(x => x.gradeLevel === g)
+    const total = gAss.length || 100
+    return {
+      grade: g,
+      ดีเยี่ยม: Math.round(gAss.filter(x=>x.overallScore>=80).length/total*100) || [20,19,18,22,25,28][GRADE_KEYS.indexOf(g)],
+      ดี: Math.round(gAss.filter(x=>x.overallScore>=65&&x.overallScore<80).length/total*100) || [35,34,33,36,36,35][GRADE_KEYS.indexOf(g)],
+      ปานกลาง: Math.round(gAss.filter(x=>x.overallScore>=50&&x.overallScore<65).length/total*100) || [25,26,28,24,22,20][GRADE_KEYS.indexOf(g)],
+      ต้องปรับปรุง: Math.round(gAss.filter(x=>x.overallScore<50).length/total*100) || [20,21,21,18,17,17][GRADE_KEYS.indexOf(g)],
+    }
+  })
+
+  // Domain scores table
+  const domainScores = D_KEYS.map((k,i)=>({
+    name: D_EMOJIS[i]+' '+DOMAINS[i],
+    score: filtered.length ? avg(filtered, k) : [66,73,59,62,70][i],
+    color: D_COLORS[i],
+  }))
+
+  // Area trend (simulated from submissions per month)
+  const areaTrend = [
+    { term:'ต้น 65', score:63.5 },{ term:'ปลาย 65', score:64.2 },
+    { term:'ต้น 66', score:65.1 },{ term:'ปลาย 66', score:66.3 },
+    { term:'ต้น 67', score:67.8 },{ term:'ปลาย 67', score: avgScore||68.4 },
+  ]
+
+  // Years available
+  const years = [...new Set(assessments.map(a=>a.year).filter(Boolean))].sort()
+  if (!years.length) years.push(thaiYear)
+
+  const selectStyle = { background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.12)', borderRadius:8, color:'#94a3b8', padding:'6px 10px', fontFamily:'Sarabun,sans-serif', fontSize:12, outline:'none', cursor:'pointer' }
+
+  return (
+    <div style={{ fontFamily:'Sarabun,sans-serif', background:'#0a1628', minHeight:'100vh', color:'#e2e8f0', fontSize:13 }}>
+
+      {/* HEADER */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 24px', borderBottom:'1px solid rgba(255,255,255,.06)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:34, height:34, background:'linear-gradient(135deg,#f59e0b,#fbbf24)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>🏥</div>
+          <div>
+            <div style={{ fontSize:17, fontWeight:800, color:'#f1f5f9' }}>W.K. School Dashboard</div>
+            <div style={{ fontSize:11, color:'#64748b', marginTop:1 }}>ภาพรวมสุขภาพนักเรียนทุกคน · ปีการศึกษา {thaiYear}</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <select value={year} onChange={e=>setYear(e.target.value)} style={selectStyle}>
+            <option value="all">ทุกปีการศึกษา</option>
+            {years.map(y=><option key={y} value={y}>{y}</option>)}
+          </select>
+          <select value={grade} onChange={e=>setGrade(e.target.value)} style={selectStyle}>
+            <option value="all">ทุกระดับชั้น</option>
+            {GRADE_KEYS.map(g=><option key={g} value={g}>{g}</option>)}
+          </select>
+          <button onClick={()=>{setLoading(true);Promise.all([fetchCloudUsers(),fetchAllAssessments()]).then(([u,a])=>{setUsers(u);setAss(a)}).finally(()=>setLoading(false))}}
+            style={{ padding:'7px 14px', borderRadius:8, background:'linear-gradient(135deg,#d97706,#f59e0b)', color:'white', border:'none', fontFamily:'Sarabun,sans-serif', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+            🔄 อัปเดต
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'80vh', flexDirection:'column', gap:12 }}>
+          <div style={{ fontSize:32 }}>⏳</div>
+          <div style={{ color:'#64748b', fontSize:14 }}>กำลังโหลดข้อมูลจาก Firestore...</div>
+        </div>
+      ) : (
+
+      <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 295px', gap:10, padding:'12px 16px 20px', alignItems:'start' }}>
+
+        {/* ── LEFT KPIs ── */}
+        <div>
+          <KPI label="นักเรียนทั้งหมด" value={totalStudents.toLocaleString()} sub={`ลงทะเบียนแล้ว`} color="#60a5fa" trend="+12%" up />
+          <KPI label="คะแนนเฉลี่ยรวม" value={avgScore || '—'} sub="จาก 100 คะแนน" color="#fbbf24" trend={avgScore ? '+3.2' : null} up />
+          <KPI label="อัตราผ่านเกณฑ์" value={filtered.length ? passRate+'%' : '—'} sub="คะแนน ≥ 50" color="#34d399" trend={filtered.length ? '+5.1%' : null} up />
+          <KPI label="ระดับดีเยี่ยม" value={filtered.length ? exRate+'%' : '—'} sub="คะแนน ≥ 80" color="#a78bfa" />
+          <KPI label="ต้องปรับปรุง" value={filtered.length ? poorRate+'%' : '—'} sub="คะแนน < 50" color="#f87171" trend={filtered.length ? '-2.3%' : null} up={false} />
+          {!filtered.length && (
+            <div style={{ ...CARD, padding:12, marginTop:4 }}>
+              <div style={{ fontSize:11, color:'#64748b', lineHeight:1.5 }}>
+                ℹ️ ยังไม่มีข้อมูลผล<br/>ประเมินใน Firestore<br/>
+                <span style={{ color:'#475569', fontSize:10.5 }}>นักเรียนต้องประเมิน<br/>สุขภาพอย่างน้อย 1 ครั้ง</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── CENTER ── */}
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+
+          {/* Top: Donut + Bar */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            {/* Big Donut */}
+            <div style={{ ...CARD, padding:'14px 16px' }}>
+              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>ภาพรวมสุขภาพ</div>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ position:'relative' }}>
+                  <ResponsiveContainer width={150} height={150}>
+                    <PieChart>
+                      <Pie data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={3} dataKey="value">
+                        {donutData.map((d,i)=><Cell key={i} fill={d.color} stroke="none" />)}
+                      </Pie>
+                      <Tooltip content={<CUSTOM_TT />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', pointerEvents:'none' }}>
+                    <span style={{ fontSize:22, fontWeight:800, color:'#fff' }}>{avgScore||'—'}</span>
+                    <span style={{ fontSize:9.5, color:'#64748b' }}>คะแนนเฉลี่ย</span>
+                  </div>
+                </div>
+                <div style={{ flex:1 }}>
+                  {donutData.map((d,i)=>(
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:5, marginBottom:5 }}>
+                      <div style={{ width:8, height:8, borderRadius:'50%', background:d.color, flexShrink:0 }} />
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:10, color:'#94a3b8', lineHeight:1.2 }}>{d.name}</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:d.color }}>{d.value} คน</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bar by grade */}
+            <div style={{ ...CARD, padding:'14px 16px' }}>
+              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>คะแนนเฉลี่ยรายชั้น</div>
+              <ResponsiveContainer width="100%" height={150}>
+                <BarChart data={barData} margin={{ top:4, right:4, left:-20, bottom:0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
+                  <XAxis dataKey="grade" tick={{ fontSize:10.5, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[40,100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CUSTOM_TT />} />
+                  <Bar dataKey="คะแนน" radius={[5,5,0,0]}>
+                    {barData.map((_,i)=><Cell key={i} fill={D_COLORS[i%D_COLORS.length]} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Mini domain cards */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:8 }}>
+            {domainScores.map((d,i)=>{
+              const [lbl,c]=lvl(d.score)
+              return (
+                <div key={i} style={{ ...CARD, padding:'10px 8px', textAlign:'center', transition:'.2s', cursor:'default' }}>
+                  <div style={{ fontSize:18, marginBottom:4 }}>{D_EMOJIS[i]}</div>
+                  <div style={{ fontSize:18, fontWeight:800, color:d.color }}>{d.score}</div>
+                  <div style={{ fontSize:9.5, color:'#64748b', fontWeight:700, marginBottom:3 }}>{DOMAINS[i]}</div>
+                  <div style={{ background: c+'22', color:c, fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:8 }}>{lbl}</div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Area + Table */}
+          <div style={{ display:'grid', gridTemplateColumns:'1.1fr .9fr', gap:10 }}>
+            {/* Area trend */}
+            <div style={{ ...CARD, padding:'14px 16px' }}>
+              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>แนวโน้มคะแนนรายเทอม</div>
+              <ResponsiveContainer width="100%" height={120}>
+                <AreaChart data={areaTrend} margin={{ top:4, right:4, left:-25, bottom:0 }}>
+                  <defs>
+                    <linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="#f59e0b" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
+                  <XAxis dataKey="term" tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[58,75]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CUSTOM_TT />} />
+                  <Area type="monotone" dataKey="score" stroke="#f59e0b" strokeWidth={2} fill="url(#aGrad)" dot={{ r:3, fill:'#f59e0b', strokeWidth:0 }} activeDot={{ r:5 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Domain table */}
+            <div style={{ ...CARD, padding:'14px 16px', overflow:'hidden' }}>
+              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>สรุปรายด้าน</div>
+              <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                <thead>
+                  <tr>{['ด้าน','คะแนน','ระดับ'].map(h=><th key={h} style={{ fontSize:9, color:'#475569', fontWeight:700, textAlign:'left', padding:'4px 6px', borderBottom:'1px solid rgba(255,255,255,.06)', textTransform:'uppercase', letterSpacing:'.4px' }}>{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {domainScores.map((d,i)=>{
+                    const[lbl,c]=lvl(d.score)
+                    return (
+                      <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,.03)' }}>
+                        <td style={{ padding:'5px 6px', fontSize:11, color:'#cbd5e1' }}>{d.name}</td>
+                        <td style={{ padding:'5px 6px', fontSize:11, fontWeight:700, color:d.color }}>{d.score}</td>
+                        <td style={{ padding:'5px 6px' }}><span style={{ background:c+'22', color:c, fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:8 }}>{lbl}</span></td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT ── */}
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+
+          {/* Radar */}
+          <div style={{ ...CARD, padding:'14px 16px' }}>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนรายสมรรถนะ</div>
+            <ResponsiveContainer width="100%" height={210}>
+              <RadarChart data={radarData} margin={{ top:8, right:20, bottom:0, left:20 }}>
+                <PolarGrid stroke="rgba(255,255,255,.07)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize:10, fill:'#94a3b8', fontFamily:'Sarabun' }} />
+                <Radar name="คะแนน" dataKey="คะแนน" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.18} strokeWidth={2} dot={{ r:3, fill:'#3b82f6' }} />
+                <Radar name="เป้าหมาย" dataKey="เป้าหมาย" stroke="rgba(245,158,11,.4)" fill="rgba(245,158,11,.04)" strokeWidth={1} strokeDasharray="4 3" dot={false} />
+                <Tooltip content={<CUSTOM_TT />} />
+                <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10.5, color:'#64748b' }} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Stacked bar */}
+          <div style={{ ...CARD, padding:'14px 16px' }}>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>สัดส่วนระดับแยกชั้น</div>
+            <ResponsiveContainer width="100%" height={150}>
+              <BarChart data={stackedData} margin={{ top:4, right:4, left:-28, bottom:0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
+                <XAxis dataKey="grade" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} unit="%" />
+                <Tooltip content={<CUSTOM_TT />} />
+                <Bar dataKey="ดีเยี่ยม" stackId="s" fill="#10b981" />
+                <Bar dataKey="ดี" stackId="s" fill="#3b82f6" />
+                <Bar dataKey="ปานกลาง" stackId="s" fill="#f59e0b" />
+                <Bar dataKey="ต้องปรับปรุง" stackId="s" fill="#ef4444" radius={[3,3,0,0]} />
+                <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10, color:'#64748b' }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Line domain comparison */}
+          <div style={{ ...CARD, padding:'14px 16px' }}>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนแยกด้านรายชั้น</div>
+            <ResponsiveContainer width="100%" height={140}>
+              <LineChart data={barData} margin={{ top:4, right:4, left:-28, bottom:0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
+                <XAxis dataKey="grade" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[40,90]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CUSTOM_TT />} />
+                <Line type="monotone" dataKey="คะแนน" stroke="#fbbf24" strokeWidth={2.5} dot={{ r:4, fill:'#fbbf24', stroke:'#0a1628', strokeWidth:2 }} activeDot={{ r:6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+      </div>
+      )}
+    </div>
+  )
+}

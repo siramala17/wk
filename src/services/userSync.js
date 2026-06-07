@@ -338,6 +338,38 @@ export async function claimRedemptionRefunds(userId) {
   return total
 }
 
+// ── Assessments ──────────────────────────────────────────────
+
+export async function saveAssessmentToCloud(userId, userData, assessmentData) {
+  if (!db) return
+  const date = new Date().toISOString().split('T')[0]
+  const docId = `${userId}_${date}`
+  const thaiYear = (new Date().getFullYear() + 543).toString()
+  await setDoc(doc(db, 'assessments', docId), {
+    userId: String(userId),
+    gradeLevel: userData.gradeLevel || '',
+    age: userData.age || null,
+    gender: userData.gender || '',
+    overallScore: assessmentData.overallScore ?? 0,
+    sleepScore: assessmentData.sleepScore ?? 0,
+    waterScore: assessmentData.waterScore ?? 0,
+    exerciseScore: assessmentData.exerciseScore ?? 0,
+    digitalScore: assessmentData.digitalScore ?? 0,
+    stressScore: assessmentData.stressScore ?? 0,
+    date,
+    year: thaiYear,
+    submittedAt: new Date().toISOString(),
+  })
+}
+
+export async function fetchAllAssessments() {
+  if (!db) return []
+  try {
+    const snap = await getDocs(collection(db, 'assessments'))
+    return snap.docs.map(d => d.data())
+  } catch { return [] }
+}
+
 export async function claimApprovedPoints(userId) {
   const all = await fetchSubmissions()
   const unclaimed = all.filter(

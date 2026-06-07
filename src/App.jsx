@@ -20,12 +20,14 @@ import Knowledge from './pages/Knowledge'
 import ActivitySubmit from './pages/ActivitySubmit'
 import NubCal from './pages/NubCal'
 import Survey from './pages/Survey'
+import SchoolDashboard from './pages/SchoolDashboard'
 
 function AppContent() {
   const { isLoggedIn, showRegister } = useHealth()
   const { pathname } = useLocation()
 
   if (pathname === '/admin') return <Admin />
+  if (pathname === '/school-dashboard') return <SchoolDashboard />
 
   if (showRegister) return <Register />
 
