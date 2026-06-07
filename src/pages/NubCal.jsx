@@ -9,6 +9,22 @@ const TODAY = () => new Date().toISOString().split('T')[0]
 const BLANK = { foodName: '', calories: '', protein: '', carbs: '', fat: '', fiber: '' }
 const GLASS_ML = 250
 
+function compressImage(dataUrl, maxSize = 200) {
+  return new Promise(resolve => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ratio = Math.min(maxSize / img.width, maxSize / img.height, 1)
+      canvas.width = img.width * ratio
+      canvas.height = img.height * ratio
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', 0.6))
+    }
+    img.onerror = () => resolve(null)
+    img.src = dataUrl
+  })
+}
+
 const MEALS = [
   { key: 'breakfast', label: 'อาหารเช้า' },
   { key: 'lunch',     label: 'อาหารกลางวัน' },
@@ -135,9 +151,11 @@ export default function NubCal() {
     const type = file.type || 'image/jpeg'
     setImageType(type)
     const reader = new FileReader()
-    reader.onload = ev => {
-      const base64 = ev.target.result.split(',')[1]
-      setImagePreview(ev.target.result)
+    reader.onload = async ev => {
+      const original = ev.target.result
+      const base64 = original.split(',')[1]
+      const thumbnail = await compressImage(original, 200)
+      setImagePreview(thumbnail || original)
       setImageBase64(base64)
       setEditResult(null); setAnalyzed(false); setError('')
       setShowCamera(true); setShowAddSheet(false)
