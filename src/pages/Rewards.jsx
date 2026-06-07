@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import {
   Award, Star, Zap, Share2, Flame, Trophy,
-  Lock, Gift, Check, X, Clock, RefreshCw, AlertCircle,
+  Lock, Gift, Check, X, Clock, RefreshCw, AlertCircle, Camera,
 } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { getUserLevel, getBadges } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
 import { fetchRedemptions, fetchRewardCatalog } from '../services/userSync'
+import ActivitySubmit from './ActivitySubmit'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -442,53 +443,66 @@ export default function Rewards() {
   const { user, latestAssessment, bmiData, redeemReward, claimRefunds } = useHealth()
   const { level, progress, nextLevel } = getUserLevel(user.points)
   const badges = getBadges(user, latestAssessment, bmiData)
+  const [mainTab, setMainTab] = useState('rewards')
   const [tab, setTab] = useState('rewards')
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-5 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-yellow-400 rounded-2xl flex items-center justify-center">
-          <Award size={20} className="text-yellow-900" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-slate-800">แต้มสะสม & รางวัล</h1>
-          <p className="text-xs text-slate-500">สะสมแต้มเพื่อแลกของรางวัล</p>
-        </div>
-      </div>
-
-      <PointsCard points={user.points} level={level} progress={progress} nextLevel={nextLevel} streak={user.streak} />
-
-      {/* tabs */}
-      <div className="flex bg-slate-100 rounded-2xl p-1 gap-1">
-        {[
-          { key: 'rewards',  label: '🎁 แลกรางวัล' },
-          { key: 'history',  label: '🕐 ประวัติ' },
-          { key: 'badges',   label: '🏆 ความสำเร็จ' },
-        ].map(({ key, label }) => (
-          <button key={key} onClick={() => setTab(key)}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-              tab === key ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'
-            }`}>
-            {label}
+    <>
+      {/* Top-level tab switcher */}
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
+          <button
+            onClick={() => setMainTab('rewards')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              mainTab === 'rewards' ? 'bg-white text-yellow-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Award size={15} /> แต้ม & รางวัล
           </button>
-        ))}
+          <button
+            onClick={() => setMainTab('activity')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              mainTab === 'activity' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Camera size={15} /> ส่งภาพกิจกรรม
+          </button>
+        </div>
       </div>
 
-      {tab === 'rewards' && (
-        <>
-          <RewardCatalog user={user} onRedeem={redeemReward} />
-          <ShareCard user={user} score={latestAssessment?.overallScore} points={user.points} />
-          <HowToEarn />
-        </>
-      )}
+      {mainTab === 'activity' ? (
+        <ActivitySubmit />
+      ) : (
+        <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-5 animate-fade-in">
+          <PointsCard points={user.points} level={level} progress={progress} nextLevel={nextLevel} streak={user.streak} />
 
-      {tab === 'history' && (
-        <RedemptionHistory userId={user.id} claimRefunds={claimRefunds} />
-      )}
+          {/* inner tabs */}
+          <div className="flex bg-slate-100 rounded-2xl p-1 gap-1">
+            {[
+              { key: 'rewards',  label: '🎁 แลกรางวัล' },
+              { key: 'history',  label: '🕐 ประวัติ' },
+              { key: 'badges',   label: '🏆 ความสำเร็จ' },
+            ].map(({ key, label }) => (
+              <button key={key} onClick={() => setTab(key)}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  tab === key ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
 
-      {tab === 'badges' && (
-        <BadgeGrid badges={badges} />
+          {tab === 'rewards' && (
+            <>
+              <RewardCatalog user={user} onRedeem={redeemReward} />
+              <ShareCard user={user} score={latestAssessment?.overallScore} points={user.points} />
+              <HowToEarn />
+            </>
+          )}
+          {tab === 'history' && <RedemptionHistory userId={user.id} claimRefunds={claimRefunds} />}
+          {tab === 'badges' && <BadgeGrid badges={badges} />}
+        </div>
       )}
-    </div>
+    </>
   )
 }

@@ -15,7 +15,6 @@ import Analytics from './pages/Analytics'
 import Rewards from './pages/Rewards'
 import Profile from './pages/Profile'
 import Knowledge from './pages/Knowledge'
-import ActivitySubmit from './pages/ActivitySubmit'
 import NubCal from './pages/NubCal'
 import Survey from './pages/Survey'
 import SchoolDashboard from './pages/SchoolDashboard'
@@ -45,7 +44,7 @@ function AppContent() {
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/knowledge" element={<Knowledge />} />
-          <Route path="/activity" element={<ActivitySubmit />} />
+          <Route path="/activity" element={<Navigate to="/rewards" replace />} />
           <Route path="/nubcal" element={<NubCal />} />
           <Route path="/survey" element={<Survey />} />
           <Route path="*" element={<Navigate to="/" replace />} />

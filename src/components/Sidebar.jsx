@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Home, ClipboardList, TrendingUp,
-  Award, UserCircle, BookOpen, Camera, LogOut, Star, Shield, Flame, ClipboardCheck, LayoutDashboard,
+  Award, UserCircle, BookOpen, LogOut, Star, Shield, Flame, ClipboardCheck, LayoutDashboard,
 } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
@@ -10,10 +10,9 @@ const links = [
   { to: '/',               icon: Home,          label: 'หน้าหลัก' },
   { to: '/assessment',     icon: ClipboardList, label: 'ประเมิน & BMI' },
   { to: '/analytics',      icon: TrendingUp,    label: 'กราฟ & คำแนะนำ AI' },
-  { to: '/rewards',        icon: Award,         label: 'แต้มสะสม' },
+  { to: '/rewards',        icon: Award,         label: 'แต้ม & ส่งภาพ' },
   { to: '/knowledge',      icon: BookOpen,      label: 'ใบความรู้' },
   { to: '/nubcal',          icon: Flame,         label: 'nubcal แคลอรี่' },
-  { to: '/activity',       icon: Camera,        label: 'ส่งภาพกิจกรรม' },
   { to: '/survey',          icon: ClipboardCheck,label: 'แบบประเมินความพึงพอใจ' },
   { to: '/profile',        icon: UserCircle,    label: 'บัญชีของฉัน' },
   { to: '/school-dashboard', icon: LayoutDashboard, label: 'Dashboard โรงเรียน' },
