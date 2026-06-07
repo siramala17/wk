@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Home, ClipboardList, Scale, TrendingUp, Lightbulb,
-  Award, UserCircle, BookOpen, Camera, LogOut, Star, Shield, Flame, ClipboardCheck,
+  Award, UserCircle, BookOpen, Camera, LogOut, Star, Shield, Flame, ClipboardCheck, LayoutDashboard,
 } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
@@ -18,6 +18,7 @@ const links = [
   { to: '/activity',       icon: Camera,        label: 'ส่งภาพกิจกรรม' },
   { to: '/survey',          icon: ClipboardCheck,label: 'แบบประเมินความพึงพอใจ' },
   { to: '/profile',        icon: UserCircle,    label: 'บัญชีของฉัน' },
+  { to: '/school-dashboard', icon: LayoutDashboard, label: 'Dashboard โรงเรียน' },
 ]
 
 export default function Sidebar() {
