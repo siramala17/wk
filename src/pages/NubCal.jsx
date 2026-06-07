@@ -8,6 +8,7 @@ import { FOOD_DB, FOOD_CATS as CATS } from '../data/foodDb'
 
 const CIRCLE_R = 60
 const CIRC = 2 * Math.PI * CIRCLE_R
+const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
 
 function CalorieRing({ value, goal }) {
   const pct = Math.min(value / Math.max(goal, 1), 1)
@@ -39,9 +40,9 @@ export default function NubCal() {
   const [analyzed, setAnalyzed] = useState(false)
   const [error, setError] = useState('')
   const [showSettings, setShowSettings] = useState(false)
-  const [apiKeyInput, setApiKeyInput] = useState(() => localStorage.getItem('nubcal_key') || '')
+  const [apiKeyInput, setApiKeyInput] = useState(() => API_KEY || localStorage.getItem('nubcal_key') || '')
   const [goalInput, setGoalInput] = useState(() => localStorage.getItem('nubcal_goal') || '2000')
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('nubcal_key') || '')
+  const [apiKey, setApiKey] = useState(() => API_KEY || localStorage.getItem('nubcal_key') || '')
   const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('nubcal_goal') || '2000'))
   const fileRef = useRef(null)
 
@@ -90,24 +91,67 @@ export default function NubCal() {
     setImageType(type)
     const reader = new FileReader()
     reader.onload = ev => {
+      const base64 = ev.target.result.split(',')[1]
       setImagePreview(ev.target.result)
-      setImageBase64(ev.target.result.split(',')[1])
+      setImageBase64(base64)
       setEditResult(null); setAnalyzed(false); setError('')
       setShowCamera(true); setShowAddSheet(false)
+      autoAnalyze(base64, type)
     }
     reader.readAsDataURL(file)
     e.target.value = ''
   }
 
-  async function analyzeImage() {
-    if (!imageBase64) return
-    if (!apiKey) { setError('กรุณาตั้งค่า API Key ก่อนใช้งาน (กดไอคอนเฟืองด้านบนขวา)'); return }
+  async function autoAnalyze(base64, type) {
+    const key = API_KEY
+    if (!key) return
     setAnalyzing(true); setError('')
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'x-api-key': apiKey,
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 512,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: type, data: base64 } },
+              { type: 'text', text: `วิเคราะห์อาหารในภาพนี้และประมาณค่าโภชนาการต่อ 1 ที่เสิร์ฟ ตอบเป็น JSON เท่านั้น ห้ามมีข้อความอื่น:\n{"foodName":"ชื่ออาหาร (ภาษาไทย)","calories":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"description":"คำอธิบายสั้น ๆ"}\nถ้าไม่พบอาหารในภาพให้ตอบ: {"error":"ไม่พบอาหารในภาพ"}\ncalories=kcal, ตัวเลขอื่นเป็นกรัม ห้ามใส่หน่วยในตัวเลข` },
+            ],
+          }],
+        }),
+      })
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d?.error?.message || `API Error ${res.status}`) }
+      const data = await res.json()
+      const text = data.content[0].text.trim()
+      const m = text.match(/\{[\s\S]*\}/)
+      if (!m) throw new Error('ไม่สามารถอ่านผลได้')
+      const parsed = JSON.parse(m[0])
+      if (parsed.error) throw new Error(parsed.error)
+      setEditResult({ ...parsed }); setAnalyzed(true)
+    } catch (err) {
+      setError(err.message || 'เกิดข้อผิดพลาด')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
+  async function analyzeImage() {
+    if (!imageBase64) return
+    const key = API_KEY || apiKey
+    if (!key) { setError('กรุณาตั้งค่า API Key ก่อนใช้งาน (กดไอคอนเฟืองด้านบนขวา)'); return }
+    setAnalyzing(true); setError('')
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': key,
           'anthropic-version': '2023-06-01',
           'content-type': 'application/json',
           'anthropic-dangerous-direct-browser-access': 'true',
