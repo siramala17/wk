@@ -13,7 +13,6 @@ import Dashboard from './pages/Dashboard'
 import Assessment from './pages/Assessment'
 import BMI from './pages/BMI'
 import Analytics from './pages/Analytics'
-import Recommendations from './pages/Recommendations'
 import Rewards from './pages/Rewards'
 import Profile from './pages/Profile'
 import Knowledge from './pages/Knowledge'
@@ -43,7 +42,7 @@ function AppContent() {
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/bmi" element={<BMI />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/recommendations" element={<Recommendations />} />
+          <Route path="/recommendations" element={<Navigate to="/analytics" replace />} />
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/knowledge" element={<Knowledge />} />
