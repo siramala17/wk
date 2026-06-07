@@ -71,7 +71,11 @@ function SummaryRing({ consumed, goal }) {
 }
 
 export default function NubCal() {
-  const { calorieLog, addCalorieEntry, deleteCalorieEntry, waterLog, addGlass, removeGlass } = useHealth()
+  const ctx = useHealth()
+  const { calorieLog = {}, addCalorieEntry, deleteCalorieEntry } = ctx
+  const waterLog = ctx.waterLog || {}
+  const addGlass = ctx.addGlass || (() => {})
+  const removeGlass = ctx.removeGlass || (() => {})
 
   const [viewDate, setViewDate] = useState(TODAY())
   const [showCamera, setShowCamera] = useState(false)
