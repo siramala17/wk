@@ -121,7 +121,12 @@ body{font-family:'Sarabun',sans-serif;background:#0a1628;color:#e2e8f0;min-heigh
     <div class="time-tab" onclick="switchTime(this)">ทั้งหมด</div>
   </div>
   <div class="header-right">
-    <select onchange="applyGrade(this.value)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#94a3b8;padding:6px 10px;font-family:Sarabun,sans-serif;font-size:12px;outline:none;cursor:pointer">
+    <select id="statusSelect" onchange="applyStatus(this.value)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#94a3b8;padding:6px 10px;font-family:Sarabun,sans-serif;font-size:12px;outline:none;cursor:pointer">
+      <option value="student">👨‍🎓 นักเรียน</option>
+      <option value="teacher">👩‍🏫 ครู</option>
+      <option value="public">👥 บุคคลทั่วไป</option>
+    </select>
+    <select id="gradeSelect" onchange="applyGrade(this.value)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#94a3b8;padding:6px 10px;font-family:Sarabun,sans-serif;font-size:12px;outline:none;cursor:pointer">
       <option value="all">ทุกระดับชั้น</option>
       <option value="m1">ม.1</option><option value="m2">ม.2</option><option value="m3">ม.3</option>
       <option value="m4">ม.4</option><option value="m5">ม.5</option><option value="m6">ม.6</option>
@@ -317,11 +322,11 @@ new Chart(document.getElementById('comboChart'),{
 
 // Mini Gauges
 function miniG(id,val,col){
-  new Chart(document.getElementById(id),{type:'doughnut',
+  return new Chart(document.getElementById(id),{type:'doughnut',
     data:{datasets:[{data:[val,100-val],backgroundColor:[col,'rgba(255,255,255,.06)'],borderWidth:0,hoverOffset:0}]},
     options:{responsive:true,maintainAspectRatio:true,cutout:'73%',plugins:{tooltip:{enabled:false},legend:{display:false}},animation:{duration:900}}})
 }
-miniG('mg1',66,'#3b82f6');miniG('mg2',73,'#06b6d4');miniG('mg3',59,'#10b981');miniG('mg4',62,'#8b5cf6')
+window._mgCharts=[miniG('mg1',66,'#3b82f6'),miniG('mg2',73,'#06b6d4'),miniG('mg3',59,'#10b981'),miniG('mg4',62,'#8b5cf6')]
 
 // Area
 new Chart(document.getElementById('areaChart'),{
@@ -392,6 +397,124 @@ new Chart(document.getElementById('lineChart'),{
     plugins:{tooltip:{...TT,mode:'index',intersect:false},legend:{display:true,position:'bottom',labels:{color:TC,font:{family:'Sarabun',size:10},boxWidth:10,padding:8,usePointStyle:true}}},
     scales:{x:{grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:9.5}}},y:{min:45,max:85,grid:{color:GC},ticks:{color:TC,font:{family:'Sarabun',size:10}}}}}
 })
+
+// Status profiles
+const STATUS_PROFILES = {
+  student: {
+    subtitle: 'ระบบติดตามสุขภาพนักเรียน · ปีการศึกษา 2567',
+    showGrade: true,
+    kpis: [
+      { dot:'#3b82f6', lbl:'นักเรียนทั้งหมด',   val:'847',   sub:'ปีการศึกษา 2567', badge:'+12%',  type:'up',  color:'#60a5fa' },
+      { dot:'#f59e0b', lbl:'คะแนนเฉลี่ยรวม',   val:'68.4',  sub:'จาก 100 คะแนน',  badge:'+3.2',  type:'up',  color:'#fbbf24' },
+      { dot:'#10b981', lbl:'อัตราผ่านเกณฑ์',   val:'78.3%', sub:'คะแนน ≥ 50',      badge:'+5.1%', type:'up',  color:'#34d399' },
+      { dot:'#8b5cf6', lbl:'ระดับดีเยี่ยม',    val:'23.1%', sub:'คะแนน ≥ 81',      badge:'±0.2%', type:'neu', color:'#a78bfa' },
+      { dot:'#ef4444', lbl:'ต้องปรับปรุง',      val:'21.7%', sub:'คะแนน ≤ 50',      badge:'-2.3%', type:'down',color:'#f87171' }
+    ],
+    ringVal:'68.4', passVal:'78%',
+    domainScores:[66,73,59,62,70],
+    sparks:[
+      {id:'spark1',vals:[700,720,735,748,760,780,810,830,847],c:'#3b82f6'},
+      {id:'spark2',vals:[64,64.5,65,65.8,66.5,67,67.8,68,68.4],c:'#f59e0b'},
+      {id:'spark3',vals:[70,71,72,73,74,75,76,77,78.3],c:'#10b981'},
+      {id:'spark4',vals:[22,22.2,22.5,22.8,23,23,23.1,23.1,23.1],c:'#8b5cf6'},
+      {id:'spark5',vals:[26,25.8,25.4,25,24.5,24,23.5,22.5,21.7],c:'#ef4444'}
+    ]
+  },
+  teacher: {
+    subtitle: 'ระบบติดตามสุขภาพครูและบุคลากร · ปีการศึกษา 2567',
+    showGrade: false,
+    kpis: [
+      { dot:'#3b82f6', lbl:'ครูทั้งหมด',        val:'84',    sub:'ปีการศึกษา 2567', badge:'+3%',   type:'up',  color:'#60a5fa' },
+      { dot:'#f59e0b', lbl:'คะแนนเฉลี่ยรวม',   val:'72.1',  sub:'จาก 100 คะแนน',  badge:'+2.4',  type:'up',  color:'#fbbf24' },
+      { dot:'#10b981', lbl:'อัตราผ่านเกณฑ์',   val:'85.2%', sub:'คะแนน ≥ 50',      badge:'+4.0%', type:'up',  color:'#34d399' },
+      { dot:'#8b5cf6', lbl:'ระดับดีเยี่ยม',    val:'31.5%', sub:'คะแนน ≥ 81',      badge:'+1.3%', type:'up',  color:'#a78bfa' },
+      { dot:'#ef4444', lbl:'ต้องปรับปรุง',      val:'14.8%', sub:'คะแนน ≤ 50',      badge:'-1.8%', type:'down',color:'#f87171' }
+    ],
+    ringVal:'72.1', passVal:'85%',
+    domainScores:[70,76,62,68,74],
+    sparks:[
+      {id:'spark1',vals:[78,79,80,81,81,82,83,83,84],c:'#3b82f6'},
+      {id:'spark2',vals:[69,69.5,70,70.5,71,71.2,71.8,72,72.1],c:'#f59e0b'},
+      {id:'spark3',vals:[78,79,80,81,82,83,84,85,85.2],c:'#10b981'},
+      {id:'spark4',vals:[28,29,29.5,30,30.5,31,31.2,31.5,31.5],c:'#8b5cf6'},
+      {id:'spark5',vals:[18,17.5,17,16.5,16,15.5,15,15,14.8],c:'#ef4444'}
+    ]
+  },
+  public: {
+    subtitle: 'ระบบติดตามสุขภาพชุมชน · ปีการศึกษา 2567',
+    showGrade: false,
+    kpis: [
+      { dot:'#3b82f6', lbl:'บุคคลทั้งหมด',      val:'1,250', sub:'ในชุมชน', badge:'+8%',   type:'up',  color:'#60a5fa' },
+      { dot:'#f59e0b', lbl:'คะแนนเฉลี่ยรวม',   val:'65.3',  sub:'จาก 100 คะแนน', badge:'+1.7', type:'up',  color:'#fbbf24' },
+      { dot:'#10b981', lbl:'อัตราผ่านเกณฑ์',   val:'72.8%', sub:'คะแนน ≥ 50',    badge:'+3.2%',type:'up',  color:'#34d399' },
+      { dot:'#8b5cf6', lbl:'ระดับดีเยี่ยม',    val:'18.4%', sub:'คะแนน ≥ 81',    badge:'-0.5%',type:'neu', color:'#a78bfa' },
+      { dot:'#ef4444', lbl:'ต้องปรับปรุง',      val:'27.2%', sub:'คะแนน ≤ 50',    badge:'-1.1%',type:'down',color:'#f87171' }
+    ],
+    ringVal:'65.3', passVal:'73%',
+    domainScores:[63,70,56,60,67],
+    sparks:[
+      {id:'spark1',vals:[1100,1130,1150,1180,1200,1210,1230,1240,1250],c:'#3b82f6'},
+      {id:'spark2',vals:[63,63.5,64,64.2,64.8,65,65.1,65.2,65.3],c:'#f59e0b'},
+      {id:'spark3',vals:[67,68,69,70,70.5,71,72,72.5,72.8],c:'#10b981'},
+      {id:'spark4',vals:[19,18.8,18.7,18.6,18.5,18.5,18.4,18.4,18.4],c:'#8b5cf6'},
+      {id:'spark5',vals:[30,29.5,29,28.5,28,27.8,27.5,27.2,27.2],c:'#ef4444'}
+    ]
+  }
+}
+
+let bigDonutChart, gaugeChart2
+function applyStatus(status){
+  const p = STATUS_PROFILES[status]
+  // subtitle
+  document.querySelector('.hd-sub').textContent = p.subtitle
+  // grade selector visibility
+  document.getElementById('gradeSelect').style.display = p.showGrade ? '' : 'none'
+  // KPI cards
+  const kpiCards = document.querySelectorAll('.kpi-card')
+  p.kpis.forEach((k,i)=>{
+    const c = kpiCards[i]
+    c.querySelector('.kpi-dot').style.background = k.dot
+    c.querySelector('.kpi-lbl').textContent = k.lbl
+    c.querySelector('.kpi-big').style.color = k.color
+    c.querySelector('.kpi-big').textContent = k.val
+    c.querySelector('.kpi-sub').textContent = k.sub
+    const badge = c.querySelector('.kpi-badge')
+    badge.textContent = k.badge
+    badge.className = 'kpi-badge badge-'+(k.type==='up'?'up':k.type==='down'?'down':'neu')
+    spark(k.id||p.sparks[i].id, p.sparks[i].vals, p.sparks[i].c)
+  })
+  // Ring center
+  document.querySelector('.ring-pct').textContent = p.ringVal
+  // Gauge center
+  document.querySelector('.gauge-big-pct').textContent = p.passVal
+  document.querySelector('.gauge-stat-val[style*="fbbf24"]').textContent = p.ringVal
+  // Domain table + scores
+  const tbody = document.getElementById('domainTbody')
+  tbody.innerHTML = p.domainScores.map((v,i)=>{
+    const[lbl,cls]=lvl(v)
+    return`<tr><td>${D_EMOJIS[i]} ${DOMAINS[i]}</td>
+    <td><div class="dom-bar"><div class="dom-track"><div class="dom-fill" style="width:${v}%;background:${D_COLORS[i]}"></div></div><b style="color:${D_COLORS[i]};min-width:22px;font-size:11px">${v}</b></div></td>
+    <td><span class="status-pill ${cls}">${lbl}</span></td></tr>`
+  }).join('')
+  // Mini gauges
+  const mgIds=['mg1','mg2','mg3','mg4']
+  const mgEls=document.querySelectorAll('.mini-gauge-val')
+  p.domainScores.slice(0,4).forEach((v,i)=>{
+    mgEls[i].textContent=v
+    if(window._mgCharts&&window._mgCharts[i]){
+      window._mgCharts[i].data.datasets[0].data=[v,100-v]
+      window._mgCharts[i].update('none')
+    }
+  })
+  // badges on mini gauges
+  const mgBadges=document.querySelectorAll('.mini-gauge .kpi-badge')
+  const diffs={student:[1.2,0.8,-0.5,1.5],teacher:[2.1,1.4,0.9,1.8],public:[0.5,0.3,-1.2,0.7]}[status]
+  diffs.forEach((d,i)=>{
+    mgBadges[i].textContent=(d>=0?'+':'')+d
+    mgBadges[i].className='kpi-badge '+(d>=0?'badge-up':'badge-down')
+  })
+  refreshAll()
+}
 
 // Interactions
 function switchTime(el){document.querySelectorAll('.time-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
