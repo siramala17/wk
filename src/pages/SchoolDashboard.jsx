@@ -172,7 +172,7 @@ export default function SchoolDashboard() {
     เป้าหมาย: 80,
   }))
 
-  // Bar by grade
+  // Bar by grade (always grade-based, used in line chart)
   const barData = GRADE_KEYS.map(g => {
     const gAss = assessments.filter(x => x.gradeLevel === g)
     return {
@@ -180,6 +180,29 @@ export default function SchoolDashboard() {
       คะแนน: gAss.length ? avg(gAss, 'overallScore') : [66,65,63,67,69,71][GRADE_KEYS.indexOf(g)],
     }
   })
+
+  // Dynamic bar chart — เปลี่ยนตาม role filter
+  const barChartTitle = role === 'ครู' ? 'คะแนนเฉลี่ยรายด้าน · ครู'
+    : role === 'บุคคลทั่วไป' ? 'คะแนนเฉลี่ยรายด้าน · บุคคลทั่วไป'
+    : 'คะแนนเฉลี่ยรายชั้น'
+
+  const dynamicBarData = useMemo(() => {
+    if (role === 'ครู' || role === 'บุคคลทั่วไป') {
+      return DOMAINS.map((d, i) => ({
+        label: D_EMOJIS[i] + ' ' + d,
+        คะแนน: filtered.length ? avg(filtered, D_KEYS[i]) : 0,
+        fill: D_COLORS[i],
+      }))
+    }
+    return GRADE_KEYS.map(g => {
+      const gAss = assessments.filter(x => x.gradeLevel === g)
+      return {
+        label: g,
+        คะแนน: gAss.length ? avg(gAss, 'overallScore') : [66,65,63,67,69,71][GRADE_KEYS.indexOf(g)],
+        fill: D_COLORS[GRADE_KEYS.indexOf(g) % D_COLORS.length],
+      }
+    })
+  }, [role, filtered, assessments])
 
   // Stacked bar by grade
   const stackedData = GRADE_KEYS.map(g => {
@@ -332,17 +355,21 @@ export default function SchoolDashboard() {
               </div>
             </div>
 
-            {/* Bar by grade */}
+            {/* Bar — dynamic by role */}
             <div style={{ ...CARD, padding:'14px 16px' }}>
-              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>คะแนนเฉลี่ยรายชั้น</div>
+              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>
+                {barChartTitle}
+              </div>
               <ResponsiveContainer width="100%" height={150}>
-                <BarChart data={barData} margin={{ top:4, right:4, left:-20, bottom:0 }}>
+                <BarChart data={dynamicBarData} margin={{ top:4, right:4, left:-20, bottom:0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                  <XAxis dataKey="grade" tick={{ fontSize:10.5, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[40,100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="label"
+                    tick={{ fontSize: (role === 'ครู' || role === 'บุคคลทั่วไป') ? 8.5 : 10.5, fill:'#64748b', fontFamily:'Sarabun' }}
+                    axisLine={false} tickLine={false} />
+                  <YAxis domain={[0,100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CUSTOM_TT />} />
                   <Bar dataKey="คะแนน" radius={[5,5,0,0]}>
-                    {barData.map((_,i)=><Cell key={i} fill={D_COLORS[i%D_COLORS.length]} />)}
+                    {dynamicBarData.map((d,i) => <Cell key={i} fill={d.fill} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
