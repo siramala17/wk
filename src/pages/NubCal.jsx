@@ -9,6 +9,31 @@ const TODAY = () => new Date().toISOString().split('T')[0]
 const BLANK = { foodName: '', calories: '', protein: '', carbs: '', fat: '', fiber: '' }
 const GLASS_ML = 250
 
+const ACTIVITY_LEVELS = [
+  { key: 'sedentary',   label: 'ไม่ค่อยออกกำลังกาย',   desc: 'งานนั่งโต๊ะ กิจกรรมน้อยมาก',        factor: 1.2   },
+  { key: 'light',       label: 'กิจกรรมเบา',            desc: 'ออกกำลังกาย 1–3 วัน/สัปดาห์',       factor: 1.375 },
+  { key: 'moderate',    label: 'กิจกรรมปานกลาง',        desc: 'ออกกำลังกาย 3–5 วัน/สัปดาห์',       factor: 1.55  },
+  { key: 'active',      label: 'กิจกรรมมาก',            desc: 'ออกกำลังกาย 6–7 วัน/สัปดาห์',       factor: 1.725 },
+  { key: 'very_active', label: 'กิจกรรมหนักมาก',        desc: 'งานใช้แรงหนัก / นักกีฬา',            factor: 1.9   },
+]
+
+function calcTDEE(weight, height, age, gender, activityKey) {
+  const bmr = (gender === 'ชาย' || gender === 'male')
+    ? 10 * weight + 6.25 * height - 5 * age + 5
+    : 10 * weight + 6.25 * height - 5 * age - 161
+  const factor = ACTIVITY_LEVELS.find(a => a.key === activityKey)?.factor ?? 1.375
+  return Math.round(bmr * factor)
+}
+
+function calcBMR(weight, height, age, gender) {
+  if (!weight || !height || !age) return null
+  return Math.round(
+    (gender === 'ชาย' || gender === 'male')
+      ? 10 * weight + 6.25 * height - 5 * age + 5
+      : 10 * weight + 6.25 * height - 5 * age - 161
+  )
+}
+
 function compressImage(dataUrl, maxSize = 200) {
   return new Promise(resolve => {
     const img = new Image()
@@ -88,7 +113,7 @@ function SummaryRing({ consumed, goal }) {
 
 export default function NubCal() {
   const ctx = useHealth()
-  const { calorieLog = {}, addCalorieEntry, deleteCalorieEntry } = ctx
+  const { calorieLog = {}, addCalorieEntry, deleteCalorieEntry, user = {}, bmiData } = ctx
   const waterLog = ctx.waterLog || {}
   const addGlass = ctx.addGlass || (() => {})
   const removeGlass = ctx.removeGlass || (() => {})
@@ -103,9 +128,27 @@ export default function NubCal() {
   const [analyzed, setAnalyzed] = useState(false)
   const [error, setError] = useState('')
   const [showSettings, setShowSettings] = useState(false)
-  const [goalInput, setGoalInput] = useState(() => localStorage.getItem('nubcal_goal') || '2000')
-  const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('nubcal_goal') || '2000'))
+  const [activityLevel, setActivityLevel] = useState(() => localStorage.getItem('nubcal_activity') || 'light')
+  const [goalMode, setGoalMode]       = useState(() => localStorage.getItem('nubcal_goal_mode') || 'auto')
+  const [goalInput, setGoalInput]     = useState(() => localStorage.getItem('nubcal_goal') || '2000')
+  const [manualGoal, setManualGoal]   = useState(() => parseInt(localStorage.getItem('nubcal_goal') || '2000'))
   const fileRef = useRef(null)
+
+  // คำนวณ TDEE อัตโนมัติจากข้อมูลโปรไฟล์
+  const autoGoal = useMemo(() => {
+    const w = bmiData?.weight
+    const h = bmiData?.height
+    const age = user?.age
+    const gender = user?.gender
+    if (!w || !h || !age) return null
+    return calcTDEE(w, h, age, gender, activityLevel)
+  }, [bmiData, user, activityLevel])
+
+  const goal = (goalMode === 'auto' && autoGoal) ? autoGoal : manualGoal
+
+  // บันทึก activity และ mode ทันทีที่เปลี่ยน
+  React.useEffect(() => { localStorage.setItem('nubcal_activity', activityLevel) }, [activityLevel])
+  React.useEffect(() => { localStorage.setItem('nubcal_goal_mode', goalMode) }, [goalMode])
 
   const [activeMeal, setActiveMeal] = useState('breakfast')
   const [showAddSheet, setShowAddSheet] = useState(false)
@@ -287,8 +330,11 @@ export default function NubCal() {
   }
 
   function saveSettings() {
-    localStorage.setItem('nubcal_goal', goalInput)
-    setGoal(parseInt(goalInput) || 2000)
+    if (goalMode === 'manual') {
+      const v = parseInt(goalInput) || 2000
+      localStorage.setItem('nubcal_goal', String(v))
+      setManualGoal(v)
+    }
     setShowSettings(false)
   }
 
@@ -347,7 +393,10 @@ export default function NubCal() {
           </div>
           <div className="flex flex-col items-center">
             <SummaryRing consumed={totalCal} goal={goal} />
-            <div className="mt-4 w-full bg-orange-500 rounded-2xl px-4 py-3">
+            <p className="text-[10px] text-gray-400 mt-1">
+              {goalMode === 'auto' && autoGoal ? `🤖 คำนวณจากโปรไฟล์ · ${goal.toLocaleString()} kcal` : `✏️ กำหนดเอง · ${goal.toLocaleString()} kcal`}
+            </p>
+            <div className="mt-3 w-full bg-orange-500 rounded-2xl px-4 py-3">
               <p className="text-orange-100 text-xs font-medium">พลังงาน</p>
               <p className="text-white font-black text-xl leading-tight">{totalCal.toLocaleString()} แคลอรี</p>
             </div>
@@ -617,18 +666,94 @@ export default function NubCal() {
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md">
-            <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
-              <h3 className="font-bold text-gray-800">ตั้งค่า</h3>
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
+              <h3 className="font-bold text-gray-800">ตั้งค่าพลังงานต่อวัน</h3>
               <button onClick={() => setShowSettings(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"><X size={18} /></button>
             </div>
-            <div className="p-4 space-y-4">
+            <div className="overflow-y-auto flex-1 p-4 space-y-4">
+
+              {/* ข้อมูลโปรไฟล์ที่ใช้คำนวณ */}
+              {autoGoal ? (
+                <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 space-y-2">
+                  <p className="text-sm font-bold text-orange-800">📊 คำนวณจากข้อมูลของคุณ</p>
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex justify-between text-gray-600">
+                      <span>น้ำหนัก / ส่วนสูง / อายุ</span>
+                      <span className="font-semibold text-gray-800">
+                        {bmiData?.weight} kg / {bmiData?.height} cm / {user?.age} ปี
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>ค่าการเผาผลาญพื้นฐาน (BMR)</span>
+                      <span className="font-semibold text-gray-800">
+                        {calcBMR(bmiData?.weight, bmiData?.height, user?.age, user?.gender)} kcal
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-bold border-t border-orange-200 pt-1.5">
+                      <span className="text-orange-700">พลังงานที่แนะนำ (TDEE)</span>
+                      <span className="text-orange-600 text-sm">{autoGoal} kcal/วัน</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
+                  <p className="text-sm text-gray-500">⚖️ ไปคำนวณ <b>BMI</b> ก่อนเพื่อให้ระบบตั้งค่าพลังงานอัตโนมัติ</p>
+                </div>
+              )}
+
+              {/* ระดับกิจกรรม */}
               <div>
-                <label className="text-sm font-semibold text-gray-700 mb-1.5 block">เป้าหมายแคลอรีต่อวัน (kcal)</label>
-                <input type="number" min="500" max="9999"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
-                  value={goalInput} onChange={e => setGoalInput(e.target.value)} />
+                <label className="text-sm font-bold text-gray-700 mb-2 block">ระดับกิจกรรมของคุณ</label>
+                <div className="space-y-2">
+                  {ACTIVITY_LEVELS.map(a => (
+                    <button key={a.key} onClick={() => setActivityLevel(a.key)}
+                      className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${activityLevel === a.key ? 'border-orange-400 bg-orange-50' : 'border-gray-100 bg-white hover:border-orange-200'}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">{a.label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{a.desc}</p>
+                        </div>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${activityLevel === a.key ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                          ×{a.factor}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* โหมด */}
+              <div>
+                <label className="text-sm font-bold text-gray-700 mb-2 block">วิธีกำหนดเป้าหมาย</label>
+                <div className="flex gap-2">
+                  <button onClick={() => setGoalMode('auto')} disabled={!autoGoal}
+                    className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 ${goalMode === 'auto' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-orange-50'}`}>
+                    🤖 อัตโนมัติ
+                  </button>
+                  <button onClick={() => setGoalMode('manual')}
+                    className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${goalMode === 'manual' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-orange-50'}`}>
+                    ✏️ กำหนดเอง
+                  </button>
+                </div>
+              </div>
+
+              {/* กรอกค่าเอง */}
+              {goalMode === 'manual' && (
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 mb-1.5 block">พลังงานต่อวัน (kcal)</label>
+                  <input type="number" min="500" max="9999"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                    value={goalInput} onChange={e => setGoalInput(e.target.value)} />
+                </div>
+              )}
+
+              {/* เป้าหมายปัจจุบัน */}
+              <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between">
+                <span className="text-sm text-gray-500">เป้าหมายปัจจุบัน</span>
+                <span className="text-lg font-black text-orange-500">{goal.toLocaleString()} kcal</span>
+              </div>
+
               <button onClick={saveSettings} className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 font-bold transition-colors">
                 บันทึก
               </button>
