@@ -1,7 +1,7 @@
 import { JSONBIN_KEY, SUBMISSIONS_URL, SURVEYS_URL, REDEMPTIONS_URL, REWARD_CATALOG_URL } from '../config/jsonbin'
 import {
   collection, doc, getDocs, setDoc, deleteDoc, updateDoc,
-  query, where, getDoc,
+  query, where, getDoc, onSnapshot,
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
@@ -368,6 +368,35 @@ export async function fetchAllAssessments() {
     const snap = await getDocs(collection(db, 'assessments'))
     return snap.docs.map(d => d.data())
   } catch { return [] }
+}
+
+// ── Real-time subscriptions ───────────────────────────────────
+
+export function subscribeUsers(callback) {
+  if (!db) {
+    callback(getLocalUsers())
+    return () => {}
+  }
+  return onSnapshot(collection(db, 'users'), snap => {
+    const firestoreUsers = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? d.id }))
+    const localUsers = getLocalUsers()
+    for (const lu of localUsers) {
+      if (!firestoreUsers.some(fu => String(fu.id) === String(lu.id))) {
+        firestoreUsers.push(lu)
+      }
+    }
+    callback(firestoreUsers)
+  }, () => callback(getLocalUsers()))
+}
+
+export function subscribeAssessments(callback) {
+  if (!db) {
+    callback([])
+    return () => {}
+  }
+  return onSnapshot(collection(db, 'assessments'), snap => {
+    callback(snap.docs.map(d => d.data()))
+  }, () => callback([]))
 }
 
 export async function claimApprovedPoints(userId) {

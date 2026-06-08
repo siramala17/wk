@@ -1,8 +1,174 @@
 import React, { useState, useEffect } from 'react'
-import { Scale, ArrowRight, RefreshCw, Star, Clock } from 'lucide-react'
+import { Scale, RefreshCw, Star, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { calcBmiScore, getBmiCategory } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
+
+const BMI_ADVICE = {
+  underweight: {
+    title: 'น้ำหนักน้อยกว่าเกณฑ์ — ต้องการความใส่ใจ',
+    icon: '⚠️',
+    headerBg: 'bg-blue-600',
+    cardBg: 'bg-blue-50',
+    border: 'border-blue-200',
+    sections: [
+      {
+        icon: '🍱', title: 'อาหารและโภชนาการ',
+        bg: 'bg-white', border: 'border-blue-100',
+        items: [
+          'เพิ่มแคลอรี่จากอาหารคุณภาพ เช่น ถั่ว อะโวคาโด ข้าวโอ๊ต งา',
+          'กินมื้อย่อย 3–5 ครั้ง/วัน เพิ่มเติมจากมื้อหลัก',
+          'เน้นโปรตีนสูง เช่น ไข่ นม ปลา เนื้อไม่ติดมัน ถั่วเหลือง',
+          'เพิ่มไขมันดี เช่น น้ำมันมะกอก ปลาแซลมอน เมล็ดฟักทอง',
+        ],
+      },
+      {
+        icon: '💪', title: 'การออกกำลังกาย',
+        bg: 'bg-white', border: 'border-blue-100',
+        items: [
+          'ฝึก Resistance Training / ยกน้ำหนักเบา 2–3 ครั้ง/สัปดาห์ เพิ่มมวลกล้ามเนื้อ',
+          'หลีกเลี่ยง Cardio หนักๆ ที่เผาผลาญแคลอรี่มากเกินไป',
+          'ออกกำลังกายหลังอาหาร 1 ชั่วโมง เพื่อให้ร่างกายดูดซึมได้ดี',
+        ],
+      },
+      {
+        icon: '👨‍⚕️', title: 'คำแนะนำทางการแพทย์',
+        bg: 'bg-blue-100', border: 'border-blue-200',
+        items: [
+          'พบแพทย์เพื่อตรวจหาสาเหตุที่น้ำหนักต่ำกว่าเกณฑ์',
+          'ตรวจค่าเลือด วิตามิน และธาตุอาหารที่จำเป็น',
+          'ปรึกษานักโภชนาการเพื่อวางแผนอาหารเฉพาะบุคคล',
+        ],
+      },
+    ],
+    goal: 'เป้าหมาย: เพิ่มน้ำหนัก 0.3–0.5 kg/สัปดาห์ อย่างค่อยเป็นค่อยไป',
+    goalColor: 'text-blue-700 bg-blue-100',
+  },
+  overweight: {
+    title: 'น้ำหนักเกิน — สามารถปรับปรุงได้',
+    icon: '💛',
+    headerBg: 'bg-orange-500',
+    cardBg: 'bg-orange-50',
+    border: 'border-orange-200',
+    sections: [
+      {
+        icon: '🥗', title: 'ปรับอาหาร',
+        bg: 'bg-white', border: 'border-orange-100',
+        items: [
+          'ลดแป้งขัดสี น้ำตาล ของทอด และเครื่องดื่มหวาน',
+          'เพิ่มผัก โปรตีน และใยอาหาร ทำให้อิ่มนานขึ้น',
+          'ดื่มน้ำเปล่า 1–2 แก้วก่อนอาหาร 15 นาที',
+          'กินช้าๆ เคี้ยวให้ละเอียด 20–30 ครั้ง/คำ',
+        ],
+      },
+      {
+        icon: '🏃', title: 'การออกกำลังกาย',
+        bg: 'bg-white', border: 'border-orange-100',
+        items: [
+          'Cardio 150 นาที/สัปดาห์ เช่น เดินเร็ว วิ่ง ปั่นจักรยาน',
+          'เพิ่ม Strength Training 2 ครั้ง/สัปดาห์ ช่วยเผาผลาญระยะยาว',
+          'เพิ่มกิจกรรมในชีวิตประจำวัน เช่น เดินขึ้นบันได จอดรถห่างขึ้น',
+        ],
+      },
+      {
+        icon: '📊', title: 'ติดตามผล',
+        bg: 'bg-white', border: 'border-orange-100',
+        items: [
+          'บันทึกอาหารที่กินทุกวัน ช่วยให้เห็นพฤติกรรมชัดเจนขึ้น',
+          'ชั่งน้ำหนักทุกสัปดาห์ในเวลาเดียวกัน เช้าหลังตื่นนอน',
+          'วัด Waist Circumference ร่วมด้วย (ควร < 80 cm หญิง / < 90 cm ชาย)',
+        ],
+      },
+    ],
+    goal: 'เป้าหมาย: ลดน้ำหนัก 0.5 kg/สัปดาห์ ด้วยการปรับพฤติกรรม',
+    goalColor: 'text-orange-700 bg-orange-100',
+  },
+  obese: {
+    title: 'โรคอ้วน — ต้องการการดูแลเร่งด่วน',
+    icon: '🚨',
+    headerBg: 'bg-red-600',
+    cardBg: 'bg-red-50',
+    border: 'border-red-200',
+    sections: [
+      {
+        icon: '🥗', title: 'ปรับอาหารทันที',
+        bg: 'bg-white', border: 'border-red-100',
+        items: [
+          'ลดแคลอรี่ลง 300–500 kcal/วัน (ไม่ควรอดอาหารอย่างสิ้นเชิง)',
+          'หลีกเลี่ยงอาหารทอด น้ำตาล แป้งขัดสี และเครื่องดื่มหวานทุกชนิด',
+          'เพิ่มผักใบเขียว โปรตีนไม่ติดมัน และใยอาหาร',
+          'กินอาหารเช้าทุกวัน ป้องกันการกินมากเกินในมื้อถัดไป',
+        ],
+      },
+      {
+        icon: '🚶', title: 'ออกกำลังกายแบบปลอดภัย',
+        bg: 'bg-white', border: 'border-red-100',
+        items: [
+          'เริ่มด้วยการเดิน 20–30 นาที/วัน ลดแรงกระแทกต่อข้อเข่า',
+          'ว่ายน้ำหรือปั่นจักรยาน เป็นตัวเลือกที่ดีมากสำหรับผู้มีน้ำหนักมาก',
+          'ค่อยๆ เพิ่มความเข้มข้น อย่าหักโหมในช่วงแรก',
+        ],
+      },
+      {
+        icon: '🏥', title: 'ต้องพบแพทย์ (สำคัญมาก)',
+        bg: 'bg-red-100', border: 'border-red-300',
+        items: [
+          'ตรวจคัดกรองเบาหวาน ความดันโลหิตสูง และไขมันในเลือด',
+          'ปรึกษาแพทย์ก่อนเริ่มโปรแกรมลดน้ำหนักทุกครั้ง',
+          'อาจต้องร่วมกับนักโภชนาการและนักกายภาพบำบัด',
+          'ในบางกรณีแพทย์อาจพิจารณาการรักษาเพิ่มเติม',
+        ],
+      },
+    ],
+    goal: 'เป้าหมาย: ลดน้ำหนัก 5–10% ภายใน 6 เดือน ลดความเสี่ยงโรคเรื้อรังได้มาก',
+    goalColor: 'text-red-700 bg-red-100',
+  },
+}
+
+function BmiRecommendations({ bmi }) {
+  const [open, setOpen] = useState(true)
+  const type = bmi >= 30 ? 'obese' : bmi >= 25 ? 'overweight' : bmi < 18.5 ? 'underweight' : null
+  if (!type) return null
+  const advice = BMI_ADVICE[type]
+
+  return (
+    <div className={`rounded-3xl overflow-hidden border ${advice.border} shadow-sm`}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={`w-full flex items-center justify-between px-5 py-4 ${advice.headerBg} text-white`}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{advice.icon}</span>
+          <span className="font-bold text-sm">{advice.title}</span>
+        </div>
+        {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+      </button>
+
+      {open && (
+        <div className={`${advice.cardBg} p-4 space-y-3`}>
+          {advice.sections.map(sec => (
+            <div key={sec.title} className={`rounded-2xl border ${sec.border} ${sec.bg} p-4`}>
+              <p className="font-bold text-slate-700 text-sm mb-2.5 flex items-center gap-1.5">
+                <span>{sec.icon}</span>{sec.title}
+              </p>
+              <ul className="space-y-1.5">
+                {sec.items.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed">
+                    <span className="text-slate-400 mt-0.5 flex-shrink-0">•</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className={`rounded-xl px-4 py-3 text-xs font-semibold ${advice.goalColor}`}>
+            🎯 {advice.goal}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function BmiGauge({ bmi }) {
   const zones = [
@@ -205,6 +371,8 @@ export default function BMI() {
           </div>
 
           <IdealWeightCard height={result.height} />
+
+          <BmiRecommendations bmi={result.bmi} />
 
           {/* BMI Reference Table */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-blue-50">

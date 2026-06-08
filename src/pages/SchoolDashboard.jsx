@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   LineChart, Line, AreaChart, Area,
 } from 'recharts'
-import { fetchCloudUsers, fetchAllAssessments } from '../services/userSync'
+import { subscribeUsers, subscribeAssessments } from '../services/userSync'
 
 const DOMAINS = ['นอนหลับ','ดื่มน้ำ','ออกกำลังกาย','สื่อดิจิทัล','ความเครียด']
 const D_KEYS  = ['sleepScore','waterScore','exerciseScore','digitalScore','stressScore']
@@ -54,33 +54,55 @@ const CUSTOM_TT = ({ active, payload, label }) => {
   )
 }
 
+const ROLES = [
+  { value: 'all',        label: '👥 ทุกสถานะ' },
+  { value: 'นักเรียน',  label: '👨‍🎓 นักเรียน' },
+  { value: 'ครู',        label: '👩‍🏫 ครู' },
+  { value: 'บุคคลทั่วไป', label: '🧑 บุคคลทั่วไป' },
+]
+
 export default function SchoolDashboard() {
   const [users, setUsers]       = useState([])
   const [assessments, setAss]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [grade, setGrade]       = useState('all')
   const [year, setYear]         = useState('all')
+  const [role, setRole]         = useState('all')
+  const [lastUpdate, setLastUpdate] = useState(null)
   const thaiYear = (new Date().getFullYear() + 543).toString()
 
   useEffect(() => {
-    Promise.all([fetchCloudUsers(), fetchAllAssessments()])
-      .then(([u, a]) => { setUsers(u); setAss(a) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    let loadCount = 0
+    const done = () => { loadCount++; if (loadCount >= 2) setLoading(false) }
+    const unsubUsers = subscribeUsers(u => { setUsers(u); setLastUpdate(new Date()); done() })
+    const unsubAss   = subscribeAssessments(a => { setAss(a); setLastUpdate(new Date()); done() })
+    return () => { unsubUsers(); unsubAss() }
   }, [])
+
+  // users filtered by role
+  const roleUsers = useMemo(() => {
+    if (role === 'all') return users
+    return users.filter(u => u.role === role)
+  }, [users, role])
+
+  const roleUserIds = useMemo(() => new Set(roleUsers.map(u => String(u.id))), [roleUsers])
 
   const filtered = useMemo(() => {
     let a = assessments
+    if (role !== 'all') a = a.filter(x => roleUserIds.has(String(x.userId)))
     if (grade !== 'all') a = a.filter(x => x.gradeLevel === grade)
     if (year  !== 'all') a = a.filter(x => x.year === year)
     return a
-  }, [assessments, grade, year])
+  }, [assessments, role, grade, year, roleUserIds])
 
   const filteredUsers = useMemo(() => {
-    let u = users
+    let u = roleUsers
     if (grade !== 'all') u = u.filter(x => x.gradeLevel === grade)
     return u
-  }, [users, grade])
+  }, [roleUsers, grade])
+
+  const totalLabel = role === 'ครู' ? 'ครูทั้งหมด' : role === 'บุคคลทั่วไป' ? 'บุคคลทั่วไป' : role === 'นักเรียน' ? 'นักเรียนทั้งหมด' : 'ผู้ใช้ทั้งหมด'
+  const showGrade  = role === 'all' || role === 'นักเรียน'
 
   // KPIs
   const totalStudents = filteredUsers.length || users.length
@@ -150,29 +172,40 @@ export default function SchoolDashboard() {
     <div style={{ fontFamily:'Sarabun,sans-serif', background:'#0a1628', minHeight:'100vh', color:'#e2e8f0', fontSize:13 }}>
 
       {/* HEADER */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 24px', borderBottom:'1px solid rgba(255,255,255,.06)' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 24px', borderBottom:'1px solid rgba(255,255,255,.06)', flexWrap:'wrap', gap:8 }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <div style={{ width:34, height:34, background:'linear-gradient(135deg,#f59e0b,#fbbf24)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>🏥</div>
           <div>
-            <div style={{ fontSize:17, fontWeight:800, color:'#f1f5f9' }}>W.K. School Dashboard</div>
-            <div style={{ fontSize:11, color:'#64748b', marginTop:1 }}>ภาพรวมสุขภาพนักเรียนทุกคน · ปีการศึกษา {thaiYear}</div>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <div style={{ fontSize:17, fontWeight:800, color:'#f1f5f9' }}>W.K. School Dashboard</div>
+              <div style={{ display:'flex', alignItems:'center', gap:5, padding:'3px 9px', background:'rgba(16,185,129,.14)', borderRadius:6, border:'1px solid rgba(16,185,129,.25)' }}>
+                <div style={{ width:6, height:6, borderRadius:'50%', background:'#34d399', animation:'livePulse 2s ease-in-out infinite' }} />
+                <span style={{ fontSize:10, color:'#34d399', fontWeight:800, letterSpacing:.5 }}>LIVE</span>
+              </div>
+            </div>
+            <div style={{ fontSize:11, color:'#64748b', marginTop:1 }}>
+              {ROLES.find(r=>r.value===role)?.label.replace(/[👥👨‍🎓👩‍🏫🧑]\s?/,'')} · ปีการศึกษา {thaiYear}
+              {lastUpdate && <span style={{ marginLeft:8, color:'#475569' }}>อัปเดต {lastUpdate.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>}
+            </div>
           </div>
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+          <select value={role} onChange={e=>{ setRole(e.target.value); setGrade('all') }} style={{ ...selectStyle, borderColor:'rgba(245,158,11,.35)', color:'#fbbf24', fontWeight:700 }}>
+            {ROLES.map(r=><option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
           <select value={year} onChange={e=>setYear(e.target.value)} style={selectStyle}>
             <option value="all">ทุกปีการศึกษา</option>
             {years.map(y=><option key={y} value={y}>{y}</option>)}
           </select>
-          <select value={grade} onChange={e=>setGrade(e.target.value)} style={selectStyle}>
-            <option value="all">ทุกระดับชั้น</option>
-            {GRADE_KEYS.map(g=><option key={g} value={g}>{g}</option>)}
-          </select>
-          <button onClick={()=>{setLoading(true);Promise.all([fetchCloudUsers(),fetchAllAssessments()]).then(([u,a])=>{setUsers(u);setAss(a)}).finally(()=>setLoading(false))}}
-            style={{ padding:'7px 14px', borderRadius:8, background:'linear-gradient(135deg,#d97706,#f59e0b)', color:'white', border:'none', fontFamily:'Sarabun,sans-serif', fontSize:12, fontWeight:700, cursor:'pointer' }}>
-            🔄 อัปเดต
-          </button>
+          {showGrade && (
+            <select value={grade} onChange={e=>setGrade(e.target.value)} style={selectStyle}>
+              <option value="all">ทุกระดับชั้น</option>
+              {GRADE_KEYS.map(g=><option key={g} value={g}>{g}</option>)}
+            </select>
+          )}
         </div>
       </div>
+      <style>{`@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}`}</style>
 
       {loading ? (
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'80vh', flexDirection:'column', gap:12 }}>
@@ -185,7 +218,7 @@ export default function SchoolDashboard() {
 
         {/* ── LEFT KPIs ── */}
         <div>
-          <KPI label="นักเรียนทั้งหมด" value={totalStudents.toLocaleString()} sub={`ลงทะเบียนแล้ว`} color="#60a5fa" trend="+12%" up />
+          <KPI label={totalLabel} value={filteredUsers.length.toLocaleString() || totalStudents.toLocaleString()} sub="ลงทะเบียนแล้ว" color="#60a5fa" trend={`${users.length} คนรวม`} up />
           <KPI label="คะแนนเฉลี่ยรวม" value={avgScore || '—'} sub="จาก 100 คะแนน" color="#fbbf24" trend={avgScore ? '+3.2' : null} up />
           <KPI label="อัตราผ่านเกณฑ์" value={filtered.length ? passRate+'%' : '—'} sub="คะแนน ≥ 50" color="#34d399" trend={filtered.length ? '+5.1%' : null} up />
           <KPI label="ระดับดีเยี่ยม" value={filtered.length ? exRate+'%' : '—'} sub="คะแนน ≥ 80" color="#a78bfa" />
