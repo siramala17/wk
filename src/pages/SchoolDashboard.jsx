@@ -157,18 +157,24 @@ export default function SchoolDashboard() {
   const exRate   = filtered.length ? Math.round(filtered.filter(x=>x.overallScore>=80).length/filtered.length*100) : 0
   const poorRate = filtered.length ? Math.round(filtered.filter(x=>x.overallScore<50).length/filtered.length*100) : 0
 
-  // Big Donut
-  const donutData = [
-    { name:'ดีเยี่ยม (≥80)', value: filtered.filter(x=>x.overallScore>=80).length || 23, color:'#10b981' },
-    { name:'ดี (65–79)',      value: filtered.filter(x=>x.overallScore>=65&&x.overallScore<80).length || 32, color:'#3b82f6' },
-    { name:'ปานกลาง (50–64)',value: filtered.filter(x=>x.overallScore>=50&&x.overallScore<65).length || 25, color:'#f59e0b' },
-    { name:'ต้องปรับปรุง',   value: filtered.filter(x=>x.overallScore<50).length || 20, color:'#ef4444' },
-  ]
+  // Big Donut — real-time เท่านั้น ไม่มี fallback
+  const donutCounts = {
+    ex:   filtered.filter(x=>x.overallScore>=80).length,
+    good: filtered.filter(x=>x.overallScore>=65&&x.overallScore<80).length,
+    mid:  filtered.filter(x=>x.overallScore>=50&&x.overallScore<65).length,
+    poor: filtered.filter(x=>x.overallScore<50).length,
+  }
+  const donutData = filtered.length ? [
+    { name:'ดีเยี่ยม (≥80)',  value: donutCounts.ex,   color:'#10b981' },
+    { name:'ดี (65–79)',       value: donutCounts.good, color:'#3b82f6' },
+    { name:'ปานกลาง (50–64)', value: donutCounts.mid,  color:'#f59e0b' },
+    { name:'ต้องปรับปรุง',    value: donutCounts.poor, color:'#ef4444' },
+  ] : [{ name:'ยังไม่มีข้อมูล', value:1, color:'rgba(255,255,255,0.08)' }]
 
-  // Radar
+  // Radar — real-time เท่านั้น
   const radarData = DOMAINS.map((d, i) => ({
     subject: D_EMOJIS[i]+' '+d,
-    คะแนน: filtered.length ? avg(filtered, D_KEYS[i]) : [66,73,59,62,70][i],
+    คะแนน: filtered.length ? avg(filtered, D_KEYS[i]) : 0,
     เป้าหมาย: 80,
   }))
 
@@ -177,7 +183,7 @@ export default function SchoolDashboard() {
     const gAss = assessments.filter(x => x.gradeLevel === g)
     return {
       grade: g,
-      คะแนน: gAss.length ? avg(gAss, 'overallScore') : [66,65,63,67,69,71][GRADE_KEYS.indexOf(g)],
+      คะแนน: gAss.length ? avg(gAss, 'overallScore') : 0,
     }
   })
 
@@ -198,29 +204,29 @@ export default function SchoolDashboard() {
       const gAss = assessments.filter(x => x.gradeLevel === g)
       return {
         label: g,
-        คะแนน: gAss.length ? avg(gAss, 'overallScore') : [66,65,63,67,69,71][GRADE_KEYS.indexOf(g)],
+        คะแนน: gAss.length ? avg(gAss, 'overallScore') : 0,
         fill: D_COLORS[GRADE_KEYS.indexOf(g) % D_COLORS.length],
       }
     })
   }, [role, filtered, assessments])
 
-  // Stacked bar by grade
+  // Stacked bar by grade — real-time เท่านั้น
   const stackedData = GRADE_KEYS.map(g => {
     const gAss = assessments.filter(x => x.gradeLevel === g)
-    const total = gAss.length || 100
+    const total = gAss.length || 1
     return {
       grade: g,
-      ดีเยี่ยม: Math.round(gAss.filter(x=>x.overallScore>=80).length/total*100) || [20,19,18,22,25,28][GRADE_KEYS.indexOf(g)],
-      ดี: Math.round(gAss.filter(x=>x.overallScore>=65&&x.overallScore<80).length/total*100) || [35,34,33,36,36,35][GRADE_KEYS.indexOf(g)],
-      ปานกลาง: Math.round(gAss.filter(x=>x.overallScore>=50&&x.overallScore<65).length/total*100) || [25,26,28,24,22,20][GRADE_KEYS.indexOf(g)],
-      ต้องปรับปรุง: Math.round(gAss.filter(x=>x.overallScore<50).length/total*100) || [20,21,21,18,17,17][GRADE_KEYS.indexOf(g)],
+      ดีเยี่ยม:      gAss.length ? Math.round(gAss.filter(x=>x.overallScore>=80).length/total*100) : 0,
+      ดี:            gAss.length ? Math.round(gAss.filter(x=>x.overallScore>=65&&x.overallScore<80).length/total*100) : 0,
+      ปานกลาง:      gAss.length ? Math.round(gAss.filter(x=>x.overallScore>=50&&x.overallScore<65).length/total*100) : 0,
+      ต้องปรับปรุง:  gAss.length ? Math.round(gAss.filter(x=>x.overallScore<50).length/total*100) : 0,
     }
   })
 
-  // Domain scores table
+  // Domain scores table — real-time เท่านั้น
   const domainScores = D_KEYS.map((k,i)=>({
     name: D_EMOJIS[i]+' '+DOMAINS[i],
-    score: filtered.length ? avg(filtered, k) : [66,73,59,62,70][i],
+    score: filtered.length ? avg(filtered, k) : 0,
     color: D_COLORS[i],
   }))
 
@@ -337,20 +343,39 @@ export default function SchoolDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', pointerEvents:'none' }}>
-                    <span style={{ fontSize:22, fontWeight:800, color:'#fff' }}>{avgScore||'—'}</span>
-                    <span style={{ fontSize:9.5, color:'#64748b' }}>คะแนนเฉลี่ย</span>
+                    {filtered.length > 0 ? (
+                      <>
+                        <span style={{ fontSize:22, fontWeight:800, color:'#fff' }}>{avgScore}</span>
+                        <span style={{ fontSize:9.5, color:'#64748b' }}>คะแนนเฉลี่ย</span>
+                        <span style={{ fontSize:9, color:'#475569', marginTop:1 }}>{filtered.length} คน</span>
+                      </>
+                    ) : (
+                      <span style={{ fontSize:10, color:'#475569', textAlign:'center', lineHeight:1.4 }}>ยังไม่มี<br/>ข้อมูล</span>
+                    )}
                   </div>
                 </div>
                 <div style={{ flex:1 }}>
-                  {donutData.map((d,i)=>(
-                    <div key={i} style={{ display:'flex', alignItems:'center', gap:5, marginBottom:5 }}>
-                      <div style={{ width:8, height:8, borderRadius:'50%', background:d.color, flexShrink:0 }} />
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:10, color:'#94a3b8', lineHeight:1.2 }}>{d.name}</div>
-                        <div style={{ fontSize:12, fontWeight:700, color:d.color }}>{d.value} คน</div>
+                  {filtered.length > 0 ? (
+                    [
+                      { name:'ดีเยี่ยม (≥80)',  value:donutCounts.ex,   color:'#10b981' },
+                      { name:'ดี (65–79)',        value:donutCounts.good, color:'#3b82f6' },
+                      { name:'ปานกลาง (50–64)',  value:donutCounts.mid,  color:'#f59e0b' },
+                      { name:'ต้องปรับปรุง',     value:donutCounts.poor, color:'#ef4444' },
+                    ].map((d,i)=>(
+                      <div key={i} style={{ display:'flex', alignItems:'center', gap:5, marginBottom:5 }}>
+                        <div style={{ width:8, height:8, borderRadius:'50%', background:d.color, flexShrink:0 }} />
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:10, color:'#94a3b8', lineHeight:1.2 }}>{d.name}</div>
+                          <div style={{ fontSize:12, fontWeight:700, color:d.color }}>{d.value} คน</div>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div style={{ fontSize:10.5, color:'#475569', lineHeight:1.6 }}>
+                      ℹ️ รอข้อมูล<br/>จาก Firestore<br/>
+                      <span style={{ fontSize:10, color:'#334155' }}>เมื่อมีผู้ประเมิน<br/>กราฟจะแสดงทันที</span>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>
