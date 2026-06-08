@@ -28,6 +28,52 @@ function avg(arr, key) {
   return Math.round(arr.reduce((s,x)=>(s+(x[key]||0)),0)/arr.length*10)/10
 }
 
+function RoleScoreCard({ roleLabel, emoji, accentColor, assessments: ass, userCount }) {
+  const overallAvg = ass.length ? avg(ass, 'overallScore') : null
+  const [lvlLabel, lvlColor] = overallAvg ? lvl(overallAvg) : ['ยังไม่มีข้อมูล','#475569']
+  const domainData = DOMAINS.map((d,i) => ({
+    name: D_EMOJIS[i]+' '+d.slice(0,4),
+    คะแนน: ass.length ? avg(ass, D_KEYS[i]) : 0,
+  }))
+  return (
+    <div style={{ ...CARD, padding:'14px 16px' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <div style={{ width:28, height:28, borderRadius:8, background:accentColor+'22', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>{emoji}</div>
+          <div>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'.6px' }}>คะแนนเฉลี่ย · {roleLabel}</div>
+            <div style={{ fontSize:9.5, color:'#475569', marginTop:1 }}>{userCount} คน · {ass.length} ผลประเมิน</div>
+          </div>
+        </div>
+        <div style={{ textAlign:'right' }}>
+          <div style={{ fontSize:26, fontWeight:800, color: overallAvg ? accentColor : '#334155', lineHeight:1 }}>
+            {overallAvg ?? '—'}
+          </div>
+          <div style={{ fontSize:9.5, fontWeight:700, color: lvlColor, marginTop:2 }}>{lvlLabel}</div>
+        </div>
+      </div>
+      {ass.length > 0 ? (
+        <ResponsiveContainer width="100%" height={110}>
+          <BarChart data={domainData} margin={{ top:2, right:2, left:-32, bottom:0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
+            <XAxis dataKey="name" tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+            <YAxis domain={[0,100]} tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+            <Tooltip content={<CUSTOM_TT />} />
+            <Bar dataKey="คะแนน" radius={[4,4,0,0]}>
+              {domainData.map((_,i) => <Cell key={i} fill={D_COLORS[i]} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      ) : (
+        <div style={{ height:110, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:4 }}>
+          <span style={{ fontSize:20, opacity:.4 }}>{emoji}</span>
+          <span style={{ fontSize:10.5, color:'#475569' }}>ยังไม่มีข้อมูลผลประเมิน</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function KPI({ label, value, sub, color, trend, up }) {
   return (
     <div style={{ ...CARD, padding:'14px 16px', marginBottom:8, transition:'.2s', cursor:'default' }}>
@@ -166,6 +212,22 @@ export default function SchoolDashboard() {
   const years = [...new Set(assessments.map(a=>a.year).filter(Boolean))].sort()
   if (!years.length) years.push(thaiYear)
 
+  // ── ข้อมูลครูและบุคคลทั่วไป (แสดงเสมอ ไม่ขึ้นกับ role filter) ──
+  const teacherIds  = useMemo(() => new Set(users.filter(u=>u.role==='ครู').map(u=>String(u.id))), [users])
+  const publicIds   = useMemo(() => new Set(users.filter(u=>u.role==='บุคคลทั่วไป').map(u=>String(u.id))), [users])
+  const teacherAss  = useMemo(() => {
+    let a = assessments.filter(x => teacherIds.has(String(x.userId)))
+    if (year !== 'all') a = a.filter(x => x.year === year)
+    return a
+  }, [assessments, teacherIds, year])
+  const publicAss   = useMemo(() => {
+    let a = assessments.filter(x => publicIds.has(String(x.userId)))
+    if (year !== 'all') a = a.filter(x => x.year === year)
+    return a
+  }, [assessments, publicIds, year])
+  const teacherCount = useMemo(() => users.filter(u=>u.role==='ครู').length, [users])
+  const publicCount  = useMemo(() => users.filter(u=>u.role==='บุคคลทั่วไป').length, [users])
+
   const selectStyle = { background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.12)', borderRadius:8, color:'#94a3b8', padding:'6px 10px', fontFamily:'Sarabun,sans-serif', fontSize:12, outline:'none', cursor:'pointer' }
 
   return (
@@ -300,6 +362,16 @@ export default function SchoolDashboard() {
                 </div>
               )
             })}
+          </div>
+
+          {/* ── ครู & บุคคลทั่วไป Score Cards ── */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            <RoleScoreCard
+              roleLabel="ครู" emoji="👩‍🏫" accentColor="#10b981"
+              assessments={teacherAss} userCount={teacherCount} />
+            <RoleScoreCard
+              roleLabel="บุคคลทั่วไป" emoji="🧑" accentColor="#8b5cf6"
+              assessments={publicAss} userCount={publicCount} />
           </div>
 
           {/* Area + Table */}
