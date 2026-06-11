@@ -353,24 +353,27 @@ export default function Admin() {
     <div className="min-h-screen bg-slate-100">
 
       {/* top bar */}
-      <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center"><Shield size={18} /></div>
-          <div>
-            <p className="font-bold text-sm leading-tight">ระบบหลังบ้าน</p>
-            <p className="text-slate-400 text-xs">Admin Panel</p>
+      <div className="bg-slate-900 text-white px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-lg">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0"><Shield size={16} /></div>
+          <div className="min-w-0">
+            <p className="font-bold text-sm leading-tight truncate">ระบบหลังบ้าน</p>
+            <p className="text-slate-400 text-xs hidden sm:block">Admin Panel</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
-            <ArrowLeft size={16} /> หน้าหลัก
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <button onClick={() => navigate('/')} className="flex items-center gap-1 sm:gap-1.5 text-slate-400 hover:text-white text-sm transition-colors px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/10">
+            <ArrowLeft size={16} />
+            <span className="hidden sm:inline">หน้าหลัก</span>
           </button>
           <button onClick={() => { loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions() }} disabled={loading || subLoading || surveyLoading || redeemLoading}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-blue-300 text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-40">
-            <RefreshCw size={16} className={(loading || subLoading || surveyLoading || redeemLoading) ? 'animate-spin' : ''} /> รีเฟรช
+            className="flex items-center gap-1 sm:gap-1.5 text-slate-400 hover:text-blue-300 text-sm transition-colors px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-40">
+            <RefreshCw size={16} className={(loading || subLoading || surveyLoading || redeemLoading) ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">รีเฟรช</span>
           </button>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 text-slate-400 hover:text-red-400 text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">
-            <LogOut size={16} /> ออกจากระบบ
+          <button onClick={handleLogout} className="flex items-center gap-1 sm:gap-1.5 text-slate-400 hover:text-red-400 text-sm transition-colors px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/10">
+            <LogOut size={16} />
+            <span className="hidden sm:inline">ออกจากระบบ</span>
           </button>
         </div>
       </div>
@@ -397,12 +400,12 @@ export default function Admin() {
         )}
 
         {/* tab selector */}
-        <div className="grid grid-cols-4 bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
           {[
-            { key: 'users',       label: '👥 ผู้ใช้',    badge: null },
-            { key: 'submissions', label: '📸 ภาพ',        badge: pendingCount > 0 ? pendingCount : null },
-            { key: 'redemptions', label: '🎁 แลกรางวัล',  badge: redemptions.filter(r => r.status === 'pending').length || null },
-            { key: 'surveys',     label: '📊 พึงพอใจ',   badge: null },
+            { key: 'users',       label: '👥 ผู้ใช้',      badge: null },
+            { key: 'submissions', label: '📸 ภาพ',          badge: pendingCount > 0 ? pendingCount : null },
+            { key: 'redemptions', label: '🎁 แลกรางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
+            { key: 'surveys',     label: '📊 พึงพอใจ',     badge: null },
           ].map(({ key, label, badge }) => (
             <button key={key} onClick={() => setAdminTab(key)}
               className={`relative py-2.5 rounded-xl text-xs font-semibold transition-all ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
@@ -456,22 +459,22 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="bg-blue-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">♂</span><p className="text-xl font-bold text-blue-700">{male}</p><p className="text-blue-500 text-xs">ชาย</p></div>
-                  <div className="bg-pink-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">♀</span><p className="text-xl font-bold text-pink-700">{female}</p><p className="text-pink-500 text-xs">หญิง</p></div>
-                  <div className="bg-purple-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">🏳️‍🌈</span><p className="text-xl font-bold text-purple-700">{lgbt}</p><p className="text-purple-500 text-xs">LGBTQ+</p></div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+                  <div className="bg-blue-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">♂</span><p className="text-lg sm:text-xl font-bold text-blue-700">{male}</p><p className="text-blue-500 text-xs">ชาย</p></div>
+                  <div className="bg-pink-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">♀</span><p className="text-lg sm:text-xl font-bold text-pink-700">{female}</p><p className="text-pink-500 text-xs">หญิง</p></div>
+                  <div className="bg-purple-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">🏳️‍🌈</span><p className="text-lg sm:text-xl font-bold text-purple-700">{lgbt}</p><p className="text-purple-500 text-xs">LGBTQ+</p></div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="bg-sky-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">🎒</span><p className="text-xl font-bold text-sky-700">{students}</p><p className="text-sky-500 text-xs">นักเรียน</p></div>
-                  <div className="bg-emerald-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">👩‍🏫</span><p className="text-xl font-bold text-emerald-700">{teachers}</p><p className="text-emerald-500 text-xs">ครู</p></div>
-                  <div className="bg-slate-100 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">👤</span><p className="text-xl font-bold text-slate-700">{general}</p><p className="text-slate-500 text-xs">ทั่วไป</p></div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+                  <div className="bg-sky-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">🎒</span><p className="text-lg sm:text-xl font-bold text-sky-700">{students}</p><p className="text-sky-500 text-xs">นักเรียน</p></div>
+                  <div className="bg-emerald-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">👩‍🏫</span><p className="text-lg sm:text-xl font-bold text-emerald-700">{teachers}</p><p className="text-emerald-500 text-xs">ครู</p></div>
+                  <div className="bg-slate-100 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">👤</span><p className="text-lg sm:text-xl font-bold text-slate-700">{general}</p><p className="text-slate-500 text-xs">ทั่วไป</p></div>
                 </div>
 
                 {/* สถิติแยกระดับชั้น */}
                 {studentGrades.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-sm p-4 mb-6">
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">🏫 นักเรียนแยกตามชั้น</p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {studentGrades.map(grade => {
                         const count = cloudUsers.filter(u => u.role === 'นักเรียน' && u.gradeLevel === grade).length
                         return (
@@ -971,15 +974,15 @@ function RedemptionTab({
             <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
           ) : (
             <>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 {[
                   { label: 'รอการอนุมัติ', count: redemptions.filter(r => r.status === 'pending').length,  bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-700' },
                   { label: 'อนุมัติแล้ว',  count: redemptions.filter(r => r.status === 'approved').length, bg: 'bg-green-50 border-green-200',   text: 'text-green-700' },
                   { label: 'ไม่อนุมัติ',   count: redemptions.filter(r => r.status === 'rejected').length, bg: 'bg-red-50 border-red-200',       text: 'text-red-600' },
                 ].map(s => (
-                  <div key={s.label} className={`${s.bg} border rounded-2xl p-3 text-center`}>
-                    <p className={`text-2xl font-black ${s.text}`}>{s.count}</p>
-                    <p className={`text-xs font-medium ${s.text} opacity-80`}>{s.label}</p>
+                  <div key={s.label} className={`${s.bg} border rounded-2xl p-2.5 sm:p-3 text-center`}>
+                    <p className={`text-xl sm:text-2xl font-black ${s.text}`}>{s.count}</p>
+                    <p className={`text-[10px] sm:text-xs font-medium ${s.text} opacity-80`}>{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -1258,7 +1261,7 @@ function SurveyTab({ surveys, loading, onDelete, deletingId }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-2xl p-4 shadow-sm col-span-2">
           <p className="text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wide">คะแนนเฉลี่ย ({surveys.length} คน)</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             {RATING_KEYS.map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-2">
                 <span className="text-sm text-slate-600">{label}</span>
