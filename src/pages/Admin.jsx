@@ -157,6 +157,9 @@ export default function Admin() {
   const [deleteError, setDeleteError] = useState('')
   const [deleteSuccess, setDeleteSuccess] = useState('')
 
+  // grade filter
+  const [filterGrade, setFilterGrade] = useState('all')
+
   // tab
   const [adminTab, setAdminTab] = useState('users')
 
@@ -336,7 +339,12 @@ export default function Admin() {
   const students  = cloudUsers.filter(u => u.role === 'นักเรียน').length
   const teachers  = cloudUsers.filter(u => u.role === 'ครู').length
   const general   = cloudUsers.filter(u => u.role === 'บุคคลทั่วไป').length
-  const filteredCloudUsers = filterRole === 'all' ? cloudUsers : cloudUsers.filter(u => u.role === filterRole)
+  const studentGrades = [...new Set(
+    cloudUsers.filter(u => u.role === 'นักเรียน' && u.gradeLevel).map(u => u.gradeLevel)
+  )].sort()
+  const filteredCloudUsers = cloudUsers
+    .filter(u => filterRole === 'all' || u.role === filterRole)
+    .filter(u => filterGrade === 'all' || u.gradeLevel === filterGrade)
   const pendingCount = submissions.filter(s => s.status === 'pending').length
 
   const filteredSubs = filterStatus === 'all' ? submissions : submissions.filter(s => s.status === filterStatus)
@@ -453,21 +461,43 @@ export default function Admin() {
                   <div className="bg-pink-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">♀</span><p className="text-xl font-bold text-pink-700">{female}</p><p className="text-pink-500 text-xs">หญิง</p></div>
                   <div className="bg-purple-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">🏳️‍🌈</span><p className="text-xl font-bold text-purple-700">{lgbt}</p><p className="text-purple-500 text-xs">LGBTQ+</p></div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="bg-sky-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">🎒</span><p className="text-xl font-bold text-sky-700">{students}</p><p className="text-sky-500 text-xs">นักเรียน</p></div>
                   <div className="bg-emerald-50 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">👩‍🏫</span><p className="text-xl font-bold text-emerald-700">{teachers}</p><p className="text-emerald-500 text-xs">ครู</p></div>
                   <div className="bg-slate-100 rounded-2xl p-4 flex flex-col items-center gap-1"><span className="text-2xl">👤</span><p className="text-xl font-bold text-slate-700">{general}</p><p className="text-slate-500 text-xs">ทั่วไป</p></div>
                 </div>
 
+                {/* สถิติแยกระดับชั้น */}
+                {studentGrades.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm p-4 mb-6">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">🏫 นักเรียนแยกตามชั้น</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {studentGrades.map(grade => {
+                        const count = cloudUsers.filter(u => u.role === 'นักเรียน' && u.gradeLevel === grade).length
+                        return (
+                          <button
+                            key={grade}
+                            onClick={() => { setFilterRole('นักเรียน'); setFilterGrade(grade); setExpandedId(null) }}
+                            className="bg-sky-50 hover:bg-sky-100 rounded-xl p-3 text-center transition-colors cursor-pointer"
+                          >
+                            <p className="text-lg font-bold text-sky-700">{count}</p>
+                            <p className="text-sky-500 text-xs truncate">{grade}</p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* role filter */}
-                <div className="flex gap-2 mb-4 flex-wrap">
+                <div className="flex gap-2 mb-3 flex-wrap">
                   {[
                     { key: 'all',          label: 'ทั้งหมด',       count: total },
                     { key: 'นักเรียน',     label: '🎒 นักเรียน',   count: students },
                     { key: 'ครู',           label: '👩‍🏫 ครู',       count: teachers },
                     { key: 'บุคคลทั่วไป', label: '👤 ทั่วไป',      count: general },
                   ].map(({ key, label, count }) => (
-                    <button key={key} onClick={() => { setFilterRole(key); setExpandedId(null) }}
+                    <button key={key} onClick={() => { setFilterRole(key); setFilterGrade('all'); setExpandedId(null) }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                         filterRole === key ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
                       }`}>
@@ -475,6 +505,37 @@ export default function Admin() {
                     </button>
                   ))}
                 </div>
+
+                {/* grade filter — แสดงเฉพาะตอนเลือก นักเรียน */}
+                {filterRole === 'นักเรียน' && studentGrades.length > 0 && (
+                  <div className="bg-sky-50 border border-sky-100 rounded-2xl px-4 py-3 mb-4">
+                    <p className="text-xs font-semibold text-sky-700 mb-2">🏫 แยกตามระดับชั้น</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => { setFilterGrade('all'); setExpandedId(null) }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                          filterGrade === 'all' ? 'bg-sky-700 text-white' : 'bg-white text-sky-600 border border-sky-200 hover:bg-sky-50'
+                        }`}
+                      >
+                        ทุกชั้น <span className="opacity-70">({students})</span>
+                      </button>
+                      {studentGrades.map(grade => {
+                        const count = cloudUsers.filter(u => u.role === 'นักเรียน' && u.gradeLevel === grade).length
+                        return (
+                          <button
+                            key={grade}
+                            onClick={() => { setFilterGrade(grade); setExpandedId(null) }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                              filterGrade === grade ? 'bg-sky-700 text-white' : 'bg-white text-sky-600 border border-sky-200 hover:bg-sky-50'
+                            }`}
+                          >
+                            {grade} <span className="opacity-70">({count})</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* user list */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
