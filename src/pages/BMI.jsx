@@ -231,7 +231,6 @@ export default function BMI() {
   const [height, setHeight] = useState(165)
   const [weight, setWeight] = useState(60)
   const [result, setResult] = useState(null)
-  const [unit, setUnit] = useState('metric')
   const [pointsEarned, setPointsEarned] = useState(null) // null=ยังไม่คำนวณ true/false=ผลล่าสุด
 
   useEffect(() => {
@@ -242,8 +241,8 @@ export default function BMI() {
   const alreadyEarnedThisMonth = bmiData?.lastBmiPointsMonth === currentMonthKey
 
   function calculate() {
-    const h = unit === 'metric' ? height : height * 2.54
-    const w = unit === 'metric' ? weight : weight * 0.453592
+    const h = height
+    const w = weight
     const bmiVal = +(w / Math.pow(h / 100, 2)).toFixed(1)
     const cat = getBmiCategory(bmiVal)
     const score = calcBmiScore(bmiVal)
@@ -265,26 +264,14 @@ export default function BMI() {
         </div>
       </div>
 
-      {/* Unit Toggle */}
-      <div className="flex bg-slate-100 rounded-xl p-1">
-        <button onClick={() => setUnit('metric')}
-          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${unit === 'metric' ? 'bg-white text-blue-700 shadow' : 'text-slate-500'}`}>
-          เมตริก (kg/cm)
-        </button>
-        <button onClick={() => setUnit('imperial')}
-          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${unit === 'imperial' ? 'bg-white text-blue-700 shadow' : 'text-slate-500'}`}>
-          อิมพีเรียล (lbs/in)
-        </button>
-      </div>
-
       {/* Input Card */}
       <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50 space-y-5">
         <div>
           <label className="text-sm font-semibold text-slate-700 block mb-2">
-            ส่วนสูง ({unit === 'metric' ? 'cm' : 'นิ้ว'})
+            ส่วนสูง (cm)
           </label>
           <div className="flex items-center gap-3">
-            <input type="range" min={unit === 'metric' ? 100 : 40} max={unit === 'metric' ? 220 : 87}
+            <input type="range" min={100} max={220}
               value={height} onChange={e => setHeight(+e.target.value)}
               className="flex-1 accent-blue-600"
             />
@@ -298,10 +285,10 @@ export default function BMI() {
 
         <div>
           <label className="text-sm font-semibold text-slate-700 block mb-2">
-            น้ำหนัก ({unit === 'metric' ? 'kg' : 'lbs'})
+            น้ำหนัก (kg)
           </label>
           <div className="flex items-center gap-3">
-            <input type="range" min={unit === 'metric' ? 30 : 66} max={unit === 'metric' ? 150 : 330}
+            <input type="range" min={30} max={150}
               value={weight} onChange={e => setWeight(+e.target.value)}
               className="flex-1 accent-blue-600"
             />
