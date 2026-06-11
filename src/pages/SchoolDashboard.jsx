@@ -3,7 +3,7 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  LineChart, Line, AreaChart, Area,
+  LineChart, Line,
 } from 'recharts'
 import { subscribeUsers, subscribeAssessments } from '../services/userSync'
 
@@ -230,13 +230,6 @@ export default function SchoolDashboard() {
     color: D_COLORS[i],
   }))
 
-  // Area trend (simulated from submissions per month)
-  const areaTrend = [
-    { term:'ต้น 65', score:63.5 },{ term:'ปลาย 65', score:64.2 },
-    { term:'ต้น 66', score:65.1 },{ term:'ปลาย 66', score:66.3 },
-    { term:'ต้น 67', score:67.8 },{ term:'ปลาย 67', score: avgScore||68.4 },
-  ]
-
   // Years available
   const years = [...new Set(assessments.map(a=>a.year).filter(Boolean))].sort()
   if (!years.length) years.push(thaiYear)
@@ -426,29 +419,8 @@ export default function SchoolDashboard() {
               assessments={publicAss} userCount={publicCount} />
           </div>
 
-          {/* Area + Table */}
-          <div style={{ display:'grid', gridTemplateColumns:'1.1fr .9fr', gap:10 }}>
-            {/* Area trend */}
-            <div style={{ ...CARD, padding:'14px 16px' }}>
-              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>แนวโน้มคะแนนรายเทอม</div>
-              <ResponsiveContainer width="100%" height={120}>
-                <AreaChart data={areaTrend} margin={{ top:4, right:4, left:-25, bottom:0 }}>
-                  <defs>
-                    <linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#f59e0b" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                  <XAxis dataKey="term" tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[58,75]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CUSTOM_TT />} />
-                  <Area type="monotone" dataKey="score" stroke="#f59e0b" strokeWidth={2} fill="url(#aGrad)" dot={{ r:3, fill:'#f59e0b', strokeWidth:0 }} activeDot={{ r:5 }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Domain table */}
+          {/* Domain table */}
+          <div>
             <div style={{ ...CARD, padding:'14px 16px', overflow:'hidden' }}>
               <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>สรุปรายด้าน</div>
               <table style={{ width:'100%', borderCollapse:'collapse' }}>
