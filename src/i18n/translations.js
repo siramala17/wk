@@ -1,6 +1,5 @@
 export const translations = {
   th: {
-    // ── Navigation ──────────────────────────────────
     nav: {
       home:            'หลัก',
       assessment:      'ประเมิน',
@@ -9,7 +8,6 @@ export const translations = {
       hello:           'สวัสดี',
       myAccount:       'บัญชีของฉัน',
       logout:          'ออกจากระบบ',
-      // Sidebar links
       mainPage:        'หน้าหลัก',
       assessBmi:       'ประเมิน & BMI',
       graphAi:         'กราฟ & คำแนะนำ AI',
@@ -21,30 +19,28 @@ export const translations = {
       adminPanel:      'Admin Panel',
     },
 
-    // ── Dashboard ────────────────────────────────────
     dashboard: {
-      homeTab:         'หน้าหลัก',
-      profileTab:      'บัญชีของฉัน',
-      healthScore:     'คะแนน',
-      healthToday:     'สุขภาพวันนี้',
-      streak:          'Streak',
-      days:            'วัน',
-      pts:             'แต้ม',
-      noData:          'ยังไม่มีข้อมูล',
-      noDataSub:       'เริ่มประเมินสุขภาพเพื่อดูคะแนนของคุณ',
-      assessAgain:     'ประเมินสุขภาพอีกครั้ง',
-      startNow:        'เริ่มประเมินเดี๋ยวนี้!',
-      quickMenu:       'เมนูด่วน',
-      latestData:      'ข้อมูลล่าสุด',
-      weeklyTrend:     'แนวโน้มสุขภาพ 7 วัน',
-      trackProgress:   'ติดตามความก้าวหน้าของคุณ',
-      seeMore:         'ดูเพิ่ม',
-      tipTitle:        'เคล็ดลับสุขภาพวันนี้',
-      greet:           'สวัสดี',
-      bmiLabel:        'BMI',
+      homeTab:       'หน้าหลัก',
+      profileTab:    'บัญชีของฉัน',
+      healthScore:   'คะแนน',
+      healthToday:   'สุขภาพวันนี้',
+      streak:        'Streak',
+      days:          'วัน',
+      pts:           'แต้ม',
+      noData:        'ยังไม่มีข้อมูล',
+      noDataSub:     'เริ่มประเมินสุขภาพเพื่อดูคะแนนของคุณ',
+      assessAgain:   'ประเมินสุขภาพอีกครั้ง',
+      startNow:      'เริ่มประเมินเดี๋ยวนี้!',
+      quickMenu:     'เมนูด่วน',
+      latestData:    'ข้อมูลล่าสุด',
+      weeklyTrend:   'แนวโน้มสุขภาพ 7 วัน',
+      trackProgress: 'ติดตามความก้าวหน้าของคุณ',
+      seeMore:       'ดูเพิ่ม',
+      tipTitle:      'เคล็ดลับสุขภาพวันนี้',
+      greet:         'สวัสดี',
+      bmiLabel:      'BMI',
     },
 
-    // ── Quick Actions ─────────────────────────────────
     quick: {
       assessment: 'ประเมิน\nสุขภาพ',
       bmi:        'คำนวณ\nBMI',
@@ -54,7 +50,6 @@ export const translations = {
       knowledge:  'ใบ\nความรู้',
     },
 
-    // ── Stat cards ────────────────────────────────────
     stats: {
       sleep:    'นอนหลับ',
       screen:   'หน้าจอ',
@@ -63,7 +58,6 @@ export const translations = {
       water:    'ดื่มน้ำ',
     },
 
-    // ── Units ─────────────────────────────────────────
     units: {
       hrs:       'ชม.',
       daysPerWk: 'วัน/สปด.',
@@ -71,7 +65,6 @@ export const translations = {
       outOf10:   '/10',
     },
 
-    // ── Tips ──────────────────────────────────────────
     tips: [
       'ดื่มน้ำอุ่นหลังตื่นนอนช่วยกระตุ้นระบบเผาผลาญและเตรียมร่างกายให้พร้อมสำหรับวัน',
       'นอนหลับให้ครบ 8 ชั่วโมง ช่วยให้ความจำดีขึ้นและลดความเครียดได้จริง',
@@ -79,7 +72,6 @@ export const translations = {
       'กินผักผลไม้หลากสีสัน = ได้สารอาหารครบถ้วนทุกประเภท',
     ],
 
-    // ── Assessment ────────────────────────────────────
     assessment: {
       title:       'ประเมินสุขภาพ',
       subtitle:    'ตอบคำถามสุขภาพวันนี้',
@@ -91,22 +83,132 @@ export const translations = {
       good:        'ดี',
       fair:        'พอใช้',
       poor:        'ต้องปรับปรุง',
+      // tabs
+      tabAssess:   'ประเมินสุขภาพ',
+      tabBmi:      'คำนวณ BMI',
+      // guide
+      guideTitle:  'แบบประเมินสุขภาพ',
+      guideSub:    'ประเมินพฤติกรรมสุขภาพของคุณใน 5 ด้าน',
+      guideHow:    '📌 วิธีตอบคำถาม',
+      guideInstr:  'แต่ละข้อให้เลือกระดับที่ตรงกับพฤติกรรมจริงๆ ของคุณในช่วง 1 เดือนที่ผ่านมา มากที่สุด ไม่มีคำตอบถูกหรือผิด',
+      guideTopics: '📊 หัวข้อที่ประเมิน (5 ด้าน รวม 20 ข้อ)',
+      guideQCount: '4 ข้อ',
+      guideTime:   '⏱ ใช้เวลาประมาณ 3–5 นาที',
+      guideTimeSub:'ผลประเมินจะช่วยให้คุณเห็นภาพรวมพฤติกรรมสุขภาพและรับคำแนะนำเฉพาะสำหรับคุณ สามารถประเมินซ้ำได้ทุกวันเพื่อติดตามพัฒนาการ',
+      guideStart:  'เริ่มประเมิน →',
+      // scale
+      scale:       ['ไม่เคยเลย', 'นานๆ ครั้ง', 'บางครั้ง', 'บ่อยครั้ง', 'ประจำ'],
+      // progress
+      stepOf:      'ด้านที่ {a} จาก {b}',
+      // warnings
+      reverseWarn: 'ข้อนี้ยิ่งตอบสูง = พฤติกรรมเสี่ยงมากกว่า',
+      // results
+      resultTitle: 'ผลการประเมิน',
+      seeAdvice:   'ดูคำแนะนำ →',
+      scoreLabel:  'คะแนนสุขภาพรวม (เต็ม 100)',
+      alreadyDone: 'ประเมินแล้ววันนี้',
+      alreadySub:  'ข้อมูลถูกอัปเดตแล้ว แต้มจะได้รับวันละ 1 ครั้ง',
+      earnedPts:   'แต้ม!',
+      assessTomr:  'ประเมินอีกครั้งได้พรุ่งนี้',
+      byDomain:    'คะแนนรายด้าน',
+      shareBtn:    'แชร์ผลลัพธ์ 🎉',
+      finishBtn:   'ดูผลการประเมิน',
+      // levels
+      levelExcellent:     'ดีเยี่ยม',
+      levelExcellentDesc: 'คุณมีวิถีชีวิตที่สมดุลมาก ร่างกายและจิตใจได้รับดูแลอย่างถูกต้อง',
+      levelFair:          'ปานกลาง',
+      levelFairDesc:      'พฤติกรรมสุขภาพอยู่ในเกณฑ์ยอมรับได้ แต่มีบางจุดที่ควรปรับปรุง',
+      levelPoor:          'ต้องปรับปรุงด่วน',
+      levelPoorDesc:      'พฤติกรรมเสี่ยงต่อการเกิดโรคเรื้อรัง ควรเริ่มปรับเปลี่ยนพฤติกรรมทีละด้าน',
+      // domains
+      domains: {
+        sleep:    {
+          label: 'การนอนหลับ',
+          desc:  'คุณภาพและปริมาณการนอน',
+          questions: [
+            'คุณเข้านอนและตื่นนอนเป็นเวลาเดียวกันทุกวัน (รวมวันหยุดด้วย)',
+            'คุณนอนหลับได้สนิทต่อเนื่องยาวนาน 6-8 ชั่วโมงต่อคืน',
+            'คุณตื่นนอนตอนเช้าแล้วรู้สึกสดชื่น ไม่เพลียหรืออยากนอนต่อ',
+            'คุณสะดุ้งตื่นกลางดึก หรือหลับๆ ตื่นๆ บ่อยครั้ง',
+          ],
+        },
+        water:    {
+          label: 'การดื่มน้ำ',
+          desc:  'ปริมาณและชนิดเครื่องดื่ม',
+          questions: [
+            'คุณดื่มน้ำเปล่าสะอาดได้อย่างน้อยวันละ 8 แก้ว (ประมาณ 2 ลิตร)',
+            'คุณจิบน้ำสม่ำเสมอตลอดทั้งวัน โดยไม่รอให้รู้สึกกระหายน้ำก่อน',
+            'คุณดื่มเครื่องดื่มหวาน ชานม หรือน้ำอัดลมแทนน้ำเปล่า',
+            'คุณดื่มกาแฟ เครื่องดื่มชูกำลัง หรือชาเข้มข้น เกิน 2 แก้วต่อวัน',
+          ],
+        },
+        exercise: {
+          label: 'การออกกำลังกาย',
+          desc:  'ความสม่ำเสมอและความหนัก',
+          questions: [
+            'คุณออกกำลังกายระดับปานกลาง (เดินเร็ว วิ่ง ปั่นจักรยาน) รวมกันอย่างน้อย 150 นาที/สัปดาห์',
+            'คุณมีการยืดเหยียดกล้ามเนื้อ หรือออกกำลังกายแรงต้าน (ยกน้ำหนัก/เวท) บ้างในแต่ละสัปดาห์',
+            'คุณใช้เวลาขยับร่างกาย เดิน หรือทำงานบ้าน แทนการนั่งอยู่กับที่นานๆ',
+            'คุณนั่งทำงานหรืออยู่กับที่ติดต่อกันเกิน 2 ชั่วโมงโดยไม่ลุกขยับเลย',
+          ],
+        },
+        digital:  {
+          label: 'การใช้สื่อดิจิทัล',
+          desc:  'เวลาหน้าจอและพฤติกรรม',
+          questions: [
+            'คุณใช้เวลาอยู่หน้าจอสมาร์ทโฟน/คอมพิวเตอร์ เพื่อความบันเทิงเกิน 4 ชั่วโมงต่อวัน',
+            'คุณเปิดดูโทรศัพท์มือถือ ทันทีที่ตื่นนอนและก่อนหลับตานอน',
+            'คุณสามารถวางมือถือหรือหยุดเช็กโซเชียลมีเดียได้ โดยไม่รู้สึกกระวนกระวายใจ',
+            'คุณรู้สึกว่าแสงหน้าจอหรือการเสพข่าวสารทำให้คุณปวดตาหรือปวดหัว',
+          ],
+        },
+        stress:   {
+          label: 'ความเครียดและการจัดการ',
+          desc:  'การรับมือและผ่อนคลาย',
+          questions: [
+            'คุณรู้สึกกดดัน วิตกกังวล หรือหงุดหงิดง่ายจากเรื่องงาน/เรียน/ส่วนตัว',
+            'คุณมีอาการทางกายจากความเครียด เช่น ปวดบ่าไหล่ นอนไม่หลับ หรือกรดไหลย้อน',
+            'คุณมีวิธีจัดการความเครียดที่ดี เช่น ทำงานอดิเรก นั่งสมาธิ หรือคุยกับคนที่สบายใจ',
+            'คุณเลือกใช้วิธีกินของหวาน/ของทอด หรือสูบบุหรี่/ดื่มสุราเพื่อระบายความเครียด',
+          ],
+        },
+      },
     },
 
-    // ── BMI ───────────────────────────────────────────
     bmi: {
       title:       'คำนวณ BMI',
+      subtitle:    'ดัชนีมวลกาย (Body Mass Index)',
       weight:      'น้ำหนัก (กก.)',
       height:      'ส่วนสูง (ซม.)',
+      heightLabel: 'ส่วนสูง (cm)',
+      weightLabel: 'น้ำหนัก (kg)',
       calculate:   'คำนวณ',
+      calcBtn:     'คำนวณ BMI',
       result:      'ผลลัพธ์',
+      analysisLabel: 'ผลการวิเคราะห์ BMI',
       underweight: 'น้ำหนักน้อย',
       normal:      'ปกติ',
       overweight:  'น้ำหนักเกิน',
       obese:       'อ้วน',
+      recalc:      'คำนวณใหม่',
+      tableTitle:  '📊 ตารางอ้างอิง BMI',
+      tableRows: [
+        { range: '< 18.5',      label: 'น้ำหนักน้อยกว่าเกณฑ์' },
+        { range: '18.5 – 22.9', label: 'น้ำหนักปกติ' },
+        { range: '23 – 24.9',   label: 'น้ำหนักเกินเล็กน้อย' },
+        { range: '25 – 29.9',   label: 'น้ำหนักเกิน' },
+        { range: '≥ 30',        label: 'โรคอ้วน' },
+      ],
+      gaugeZones: ['ผอม', 'ปกติ', 'เกินเล็กน้อย', 'น้ำหนักเกิน', 'อ้วน'],
+      idealTitle:  '⚖️ น้ำหนักในช่วงปกติสำหรับคุณ',
+      idealFor:    'สำหรับความสูง {h} cm (BMI 18.5–22.9)',
+      points15:    'คำนวณครั้งนี้จะได้รับ +15 แต้ม (1 ครั้ง/เดือน)',
+      earnedPoints:'ได้รับ +15 แต้ม!',
+      earnedSub:   'รางวัลการคำนวณ BMI ประจำเดือน',
+      waitUntil:   'ได้รับแต้มจาก BMI ในเดือนนี้แล้ว — รับได้อีกครั้ง',
+      noExtraPts:  'ไม่ได้รับแต้มเพิ่ม — สามารถรับได้อีกครั้ง',
     },
 
-    // ── NubCal / Personal Trainer ─────────────────────
     trainer: {
       title:       'ไดอารี่',
       today:       'วันนี้',
@@ -142,7 +244,6 @@ export const translations = {
       items:       'รายการ',
     },
 
-    // ── Rewards ───────────────────────────────────────
     rewards: {
       title:     'แต้มสะสม',
       myPoints:  'แต้มของฉัน',
@@ -152,7 +253,6 @@ export const translations = {
       sendPhoto: 'ส่งภาพกิจกรรม',
     },
 
-    // ── Common ────────────────────────────────────────
     common: {
       loading:  'กำลังโหลด...',
       error:    'เกิดข้อผิดพลาด',
@@ -171,7 +271,6 @@ export const translations = {
 
   // ══════════════════════════════════════════════════════
   en: {
-    // ── Navigation ──────────────────────────────────
     nav: {
       home:            'Home',
       assessment:      'Assess',
@@ -191,30 +290,28 @@ export const translations = {
       adminPanel:      'Admin Panel',
     },
 
-    // ── Dashboard ────────────────────────────────────
     dashboard: {
-      homeTab:         'Home',
-      profileTab:      'My Account',
-      healthScore:     'Health',
-      healthToday:     'Score Today',
-      streak:          'Streak',
-      days:            'days',
-      pts:             'pts',
-      noData:          'No Data Yet',
-      noDataSub:       'Start your health assessment to see your score',
-      assessAgain:     'Re-assess Health',
-      startNow:        'Start Now!',
-      quickMenu:       'Quick Menu',
-      latestData:      'Latest Data',
-      weeklyTrend:     '7-Day Health Trend',
-      trackProgress:   'Track your progress',
-      seeMore:         'See More',
-      tipTitle:        "Today's Health Tip",
-      greet:           'Hello',
-      bmiLabel:        'BMI',
+      homeTab:       'Home',
+      profileTab:    'My Account',
+      healthScore:   'Health',
+      healthToday:   'Score Today',
+      streak:        'Streak',
+      days:          'days',
+      pts:           'pts',
+      noData:        'No Data Yet',
+      noDataSub:     'Start your health assessment to see your score',
+      assessAgain:   'Re-assess Health',
+      startNow:      'Start Now!',
+      quickMenu:     'Quick Menu',
+      latestData:    'Latest Data',
+      weeklyTrend:   '7-Day Health Trend',
+      trackProgress: 'Track your progress',
+      seeMore:       'See More',
+      tipTitle:      "Today's Health Tip",
+      greet:         'Hello',
+      bmiLabel:      'BMI',
     },
 
-    // ── Quick Actions ─────────────────────────────────
     quick: {
       assessment: 'Health\nAssessment',
       bmi:        'BMI\nCalculator',
@@ -224,7 +321,6 @@ export const translations = {
       knowledge:  'Knowledge\nBase',
     },
 
-    // ── Stat cards ────────────────────────────────────
     stats: {
       sleep:    'Sleep',
       screen:   'Screen',
@@ -233,7 +329,6 @@ export const translations = {
       water:    'Water',
     },
 
-    // ── Units ─────────────────────────────────────────
     units: {
       hrs:       'hrs',
       daysPerWk: 'days/wk',
@@ -241,7 +336,6 @@ export const translations = {
       outOf10:   '/10',
     },
 
-    // ── Tips ──────────────────────────────────────────
     tips: [
       'Drinking warm water after waking up boosts metabolism and prepares your body for the day.',
       'Getting a full 8 hours of sleep genuinely improves memory and reduces stress.',
@@ -249,7 +343,6 @@ export const translations = {
       'Eating colorful fruits and vegetables ensures you get a full range of nutrients.',
     ],
 
-    // ── Assessment ────────────────────────────────────
     assessment: {
       title:       'Health Assessment',
       subtitle:    "Answer today's health questions",
@@ -261,22 +354,132 @@ export const translations = {
       good:        'Good',
       fair:        'Fair',
       poor:        'Needs Improvement',
+      // tabs
+      tabAssess:   'Health Assessment',
+      tabBmi:      'BMI Calculator',
+      // guide
+      guideTitle:  'Health Assessment',
+      guideSub:    'Assess your health behaviors across 5 dimensions',
+      guideHow:    '📌 How to Answer',
+      guideInstr:  'For each item, choose the level that most accurately reflects your actual behavior over the past month. There are no right or wrong answers.',
+      guideTopics: '📊 Assessment Topics (5 areas, 20 questions)',
+      guideQCount: '4 questions',
+      guideTime:   '⏱ Takes approximately 3–5 minutes',
+      guideTimeSub:'Results give you an overview of your health behaviors with personalized recommendations. Reassess daily to track your progress.',
+      guideStart:  'Start Assessment →',
+      // scale
+      scale:       ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'],
+      // progress
+      stepOf:      'Area {a} of {b}',
+      // warnings
+      reverseWarn: 'Higher answer = more risky behavior',
+      // results
+      resultTitle: 'Assessment Results',
+      seeAdvice:   'See Advice →',
+      scoreLabel:  'Total Health Score (out of 100)',
+      alreadyDone: 'Already assessed today',
+      alreadySub:  'Data updated. Points are awarded once per day.',
+      earnedPts:   'pts earned!',
+      assessTomr:  'You can reassess tomorrow.',
+      byDomain:    'Domain Scores',
+      shareBtn:    'Share Results 🎉',
+      finishBtn:   'View Results',
+      // levels
+      levelExcellent:     'Excellent',
+      levelExcellentDesc: 'You have a very balanced lifestyle. Your body and mind are well cared for.',
+      levelFair:          'Fair',
+      levelFairDesc:      'Your health behaviors are acceptable, but there are areas to improve.',
+      levelPoor:          'Needs Improvement',
+      levelPoorDesc:      'Risk behaviors for chronic disease. Start changing one area at a time.',
+      // domains
+      domains: {
+        sleep:    {
+          label: 'Sleep',
+          desc:  'Sleep quality and quantity',
+          questions: [
+            'You go to bed and wake up at the same time every day (including weekends).',
+            'You sleep continuously for 6–8 hours per night.',
+            'You wake up in the morning feeling refreshed, not tired.',
+            'You wake up in the middle of the night or sleep fitfully, frequently.',
+          ],
+        },
+        water:    {
+          label: 'Hydration',
+          desc:  'Amount and type of beverages',
+          questions: [
+            'You drink at least 8 glasses of clean water per day (about 2 liters).',
+            'You sip water consistently throughout the day without waiting until thirsty.',
+            'You drink sugary drinks, milk tea, or soda instead of plain water.',
+            'You drink coffee, energy drinks, or strong tea more than 2 cups per day.',
+          ],
+        },
+        exercise: {
+          label: 'Exercise',
+          desc:  'Consistency and intensity',
+          questions: [
+            'You do moderate exercise (brisk walk, run, cycle) for at least 150 min/week.',
+            'You stretch or do resistance training (weights) at some point each week.',
+            'You find time to move, walk, or do housework instead of sitting for long periods.',
+            'You sit at work or stay in one place for 2+ consecutive hours without getting up.',
+          ],
+        },
+        digital:  {
+          label: 'Digital Media',
+          desc:  'Screen time and behavior',
+          questions: [
+            'You spend 4+ hours per day on a smartphone/computer for entertainment.',
+            'You check your phone immediately after waking and just before sleeping.',
+            'You can put your phone down or stop checking social media without anxiety.',
+            'Screen glare or news consumption causes you eye strain or headaches.',
+          ],
+        },
+        stress:   {
+          label: 'Stress',
+          desc:  'Coping and relaxation',
+          questions: [
+            'You feel stressed, anxious, or easily irritated by work/study/personal life.',
+            'You have physical stress symptoms: shoulder pain, insomnia, or acid reflux.',
+            'You have healthy stress management: hobbies, meditation, or talking to someone.',
+            'You cope with stress by eating sweets/fried food or by smoking/drinking.',
+          ],
+        },
+      },
     },
 
-    // ── BMI ───────────────────────────────────────────
     bmi: {
       title:       'BMI Calculator',
+      subtitle:    'Body Mass Index',
       weight:      'Weight (kg)',
       height:      'Height (cm)',
+      heightLabel: 'Height (cm)',
+      weightLabel: 'Weight (kg)',
       calculate:   'Calculate',
+      calcBtn:     'Calculate BMI',
       result:      'Result',
+      analysisLabel: 'BMI Analysis Result',
       underweight: 'Underweight',
       normal:      'Normal',
       overweight:  'Overweight',
       obese:       'Obese',
+      recalc:      'Recalculate',
+      tableTitle:  '📊 BMI Reference Table',
+      tableRows: [
+        { range: '< 18.5',      label: 'Underweight' },
+        { range: '18.5 – 22.9', label: 'Normal weight' },
+        { range: '23 – 24.9',   label: 'Slightly overweight' },
+        { range: '25 – 29.9',   label: 'Overweight' },
+        { range: '≥ 30',        label: 'Obese' },
+      ],
+      gaugeZones: ['Underweight', 'Normal', 'Slightly Over', 'Overweight', 'Obese'],
+      idealTitle:  '⚖️ Healthy weight range for you',
+      idealFor:    'For height {h} cm (BMI 18.5–22.9)',
+      points15:    'This calculation will earn you +15 pts (once per month)',
+      earnedPoints:'+15 pts earned!',
+      earnedSub:   'Monthly BMI calculation reward',
+      waitUntil:   'Already earned BMI points this month — next available',
+      noExtraPts:  'No extra points — next available',
     },
 
-    // ── NubCal / Personal Trainer ─────────────────────
     trainer: {
       title:       'Food Diary',
       today:       'Today',
@@ -312,7 +515,6 @@ export const translations = {
       items:       'items',
     },
 
-    // ── Rewards ───────────────────────────────────────
     rewards: {
       title:     'Points & Rewards',
       myPoints:  'My Points',
@@ -322,7 +524,6 @@ export const translations = {
       sendPhoto: 'Submit Activity Photo',
     },
 
-    // ── Common ────────────────────────────────────────
     common: {
       loading:  'Loading...',
       error:    'An error occurred',
