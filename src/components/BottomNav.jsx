@@ -5,7 +5,7 @@ import { Home, ClipboardList, Flame, Award } from 'lucide-react'
 const tabs = [
   { to: '/',           icon: Home,         label: 'หลัก',    activeGrad: ['#1e40af','#3b82f6'], glow: 'rgba(37,99,235,0.50)' },
   { to: '/assessment', icon: ClipboardList, label: 'ประเมิน', activeGrad: ['#1d4ed8','#60a5fa'], glow: 'rgba(96,165,250,0.50)' },
-  { to: '/nubcal',     icon: Flame,         label: 'Trainer',  activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
+  { to: '/nubcal',     icon: Flame,         label: 'Personal\nTrainer', activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
   { to: '/rewards',    icon: Award,         label: 'แต้ม',    activeGrad: ['#b45309','#fbbf24'], glow: 'rgba(251,191,36,0.50)' },
 ]
 
@@ -45,7 +45,7 @@ export default function BottomNav() {
                 />
               </div>
               <span
-                className="text-[9px] font-bold transition-all"
+                className="text-[8px] font-bold transition-all text-center leading-tight whitespace-pre-line"
                 style={active ? {
                   background: `linear-gradient(135deg, ${activeGrad[0]}, ${activeGrad[1]})`,
                   WebkitBackgroundClip: 'text',

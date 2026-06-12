@@ -12,7 +12,7 @@ const links = [
   { to: '/analytics',      icon: TrendingUp,    label: 'กราฟ & คำแนะนำ AI' },
   { to: '/rewards',        icon: Award,         label: 'แต้ม & ส่งภาพ' },
   { to: '/knowledge',      icon: BookOpen,      label: 'ใบความรู้' },
-  { to: '/nubcal',          icon: Flame,         label: 'nubcal แคลอรี่' },
+  { to: '/nubcal',          icon: Flame,         label: 'Personal Trainer' },
   { to: '/survey',          icon: ClipboardCheck,label: 'แบบประเมินความพึงพอใจ' },
   { to: '/school-dashboard', icon: LayoutDashboard, label: 'Dashboard โรงเรียน' },
 ]
