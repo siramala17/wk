@@ -5,7 +5,7 @@ import { Home, ClipboardList, Flame, Award } from 'lucide-react'
 const tabs = [
   { to: '/',           icon: Home,         label: 'หลัก',    activeGrad: ['#1e40af','#3b82f6'], glow: 'rgba(37,99,235,0.50)' },
   { to: '/assessment', icon: ClipboardList, label: 'ประเมิน', activeGrad: ['#1d4ed8','#60a5fa'], glow: 'rgba(96,165,250,0.50)' },
-  { to: '/nubcal',     icon: Flame,         label: 'แคลอรี่', activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
+  { to: '/nubcal',     icon: Flame,         label: 'Trainer',  activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
   { to: '/rewards',    icon: Award,         label: 'แต้ม',    activeGrad: ['#b45309','#fbbf24'], glow: 'rgba(251,191,36,0.50)' },
 ]
 
