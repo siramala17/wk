@@ -2,22 +2,24 @@ import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Activity, Menu, X, Star, Shield, User, LogOut } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
-
-const links = [
-  { to: '/', label: 'หน้าหลัก' },
-  { to: '/assessment', label: 'ประเมินสุขภาพ' },
-  { to: '/bmi', label: 'คำนวณ BMI' },
-  { to: '/analytics', label: 'กราฟสุขภาพ' },
-  { to: '/recommendations', label: 'คำแนะนำ AI' },
-  { to: '/rewards', label: 'แต้มสะสม' },
-  { to: '/knowledge', label: 'ใบความรู้' },
-  { to: '/activity', label: 'ส่งภาพกิจกรรม' },
-]
+import { useLang } from '../context/LangContext'
 
 export default function Navbar() {
   const { pathname } = useLocation()
   const { user, logout } = useHealth()
+  const { lang, toggleLang, t } = useLang()
   const [open, setOpen] = useState(false)
+
+  const links = [
+    { to: '/',               label: t.nav.mainPage },
+    { to: '/assessment',     label: t.nav.assessBmi },
+    { to: '/analytics',      label: t.nav.graphAi },
+    { to: '/rewards',        label: t.nav.pointsActivity },
+    { to: '/knowledge',      label: t.nav.knowledge },
+    { to: '/nubcal',         label: t.nav.trainer },
+    { to: '/survey',         label: t.nav.survey },
+    { to: '/school-dashboard', label: t.nav.schoolDash },
+  ]
 
   return (
     <header
@@ -44,7 +46,7 @@ export default function Navbar() {
               : <User size={18} className="text-blue-400 m-auto mt-1.5" />}
           </div>
           <div className="leading-tight">
-            <p className="text-[10px] text-slate-400 font-medium">สวัสดี 👋</p>
+            <p className="text-[10px] text-slate-400 font-medium">{t.nav.hello} 👋</p>
             <p className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
               {user.firstName || user.name}
             </p>
@@ -64,6 +66,25 @@ export default function Navbar() {
 
         {/* Right */}
         <div className="flex items-center gap-2">
+          {/* Language toggle */}
+          <button
+            onClick={toggleLang}
+            title={lang === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black transition-all active:scale-95"
+            style={{
+              background: lang === 'th'
+                ? 'linear-gradient(135deg, #1e3a8a, #2563eb)'
+                : 'linear-gradient(135deg, #b45309, #fbbf24)',
+              color: 'white',
+              boxShadow: lang === 'th'
+                ? '0 3px 10px rgba(37,99,235,0.4)'
+                : '0 3px 10px rgba(251,191,36,0.4)',
+            }}
+          >
+            <span className="text-base leading-none">{lang === 'th' ? '🇹🇭' : '🇬🇧'}</span>
+            <span>{lang === 'th' ? 'TH' : 'EN'}</span>
+          </button>
+
           <Link to="/rewards"
             className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold transition-all"
             style={{ background: 'linear-gradient(135deg, #fef9c3, #fef08a)', color: '#b45309' }}>
@@ -76,7 +97,7 @@ export default function Navbar() {
             <Shield size={18} />
           </Link>
 
-          <button onClick={logout} title="ออกจากระบบ"
+          <button onClick={logout} title={t.nav.logout}
             className="hidden md:flex p-1.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
             <LogOut size={18} />
           </button>
@@ -103,7 +124,7 @@ export default function Navbar() {
                 ? <img src={user.faceImage} alt="avatar" className="w-full h-full object-cover" />
                 : <User size={14} className="text-blue-400 m-auto mt-1" />}
             </div>
-            บัญชีของฉัน ({user.firstName || user.name})
+            {t.nav.myAccount} ({user.firstName || user.name})
           </Link>
 
           {links.map(l => (
@@ -118,7 +139,7 @@ export default function Navbar() {
 
           <button onClick={() => { setOpen(false); logout() }}
             className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
-            <LogOut size={15} /> ออกจากระบบ
+            <LogOut size={15} /> {t.nav.logout}
           </button>
         </div>
       )}

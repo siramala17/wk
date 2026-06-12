@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HealthProvider, useHealth } from './context/HealthContext'
+import { LangProvider } from './context/LangContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import OfflineBanner from './components/OfflineBanner'
 import Navbar from './components/Navbar'
@@ -58,11 +59,13 @@ export default function App() {
   return (
     <ErrorBoundary>
       <OfflineBanner />
-      <HealthProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </HealthProvider>
+      <LangProvider>
+        <HealthProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </HealthProvider>
+      </LangProvider>
     </ErrorBoundary>
   )
 }
