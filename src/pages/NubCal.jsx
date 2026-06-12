@@ -5,7 +5,7 @@ import { FOOD_DB, FOOD_CATS as CATS } from '../data/foodDb'
 
 const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
 
-const TODAY = () => new Date().toISOString().split('T')[0]
+const TODAY = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' })
 const BLANK = { foodName: '', calories: '', protein: '', carbs: '', fat: '', fiber: '' }
 const GLASS_ML = 250
 
@@ -66,7 +66,10 @@ function getWeekDates(dateStr) {
   return Array.from({ length: 7 }, (_, i) => {
     const dt = new Date(mon)
     dt.setDate(mon.getDate() + i)
-    return dt.toISOString().split('T')[0]
+    const y = dt.getFullYear()
+    const m = String(dt.getMonth() + 1).padStart(2, '0')
+    const dy = String(dt.getDate()).padStart(2, '0')
+    return `${y}-${m}-${dy}`
   })
 }
 
