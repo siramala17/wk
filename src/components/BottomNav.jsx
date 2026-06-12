@@ -3,10 +3,10 @@ import { Link, useLocation } from 'react-router-dom'
 import { Home, ClipboardList, Flame, Award } from 'lucide-react'
 
 const tabs = [
-  { to: '/',           icon: Home,         label: 'หลัก' },
-  { to: '/assessment', icon: ClipboardList, label: 'ประเมิน' },
-  { to: '/nubcal',     icon: Flame,         label: 'แคลอรี่' },
-  { to: '/rewards',    icon: Award,         label: 'แต้ม' },
+  { to: '/',           icon: Home,         label: 'หลัก',    activeGrad: ['#1e40af','#3b82f6'], glow: 'rgba(37,99,235,0.50)' },
+  { to: '/assessment', icon: ClipboardList, label: 'ประเมิน', activeGrad: ['#1d4ed8','#60a5fa'], glow: 'rgba(96,165,250,0.50)' },
+  { to: '/nubcal',     icon: Flame,         label: 'แคลอรี่', activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
+  { to: '/rewards',    icon: Award,         label: 'แต้ม',    activeGrad: ['#b45309','#fbbf24'], glow: 'rgba(251,191,36,0.50)' },
 ]
 
 export default function BottomNav() {
@@ -16,13 +16,14 @@ export default function BottomNav() {
       className="md:hidden fixed bottom-3 left-3 right-3 z-50 nav-float pb-safe"
       style={{
         borderRadius: '1.25rem',
-        background: 'rgba(255,255,255,0.92)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: 'rgba(255,255,255,0.88)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: '1.5px solid rgba(255,255,255,0.70)',
       }}
     >
-      <div className="grid grid-cols-4 h-[60px] px-1">
-        {tabs.map(({ to, icon: Icon, label }) => {
+      <div className="grid grid-cols-4 h-[62px] px-1">
+        {tabs.map(({ to, icon: Icon, label, activeGrad, glow }) => {
           const active = pathname === to
           return (
             <Link
@@ -31,10 +32,10 @@ export default function BottomNav() {
               className="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90"
             >
               <div
-                className="flex items-center justify-center w-9 h-7 rounded-xl transition-all duration-200"
+                className="flex items-center justify-center w-10 h-7 rounded-xl transition-all duration-200"
                 style={active ? {
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  boxShadow: '0 4px 12px rgba(37,99,235,0.35)',
+                  background: `linear-gradient(135deg, ${activeGrad[0]}, ${activeGrad[1]})`,
+                  boxShadow: `0 4px 14px ${glow}`,
                 } : {}}
               >
                 <Icon
@@ -43,7 +44,15 @@ export default function BottomNav() {
                   className={active ? 'text-white' : 'text-slate-400'}
                 />
               </div>
-              <span className={`text-[9px] font-semibold transition-colors ${active ? 'text-blue-600' : 'text-slate-400'}`}>
+              <span
+                className="text-[9px] font-bold transition-all"
+                style={active ? {
+                  background: `linear-gradient(135deg, ${activeGrad[0]}, ${activeGrad[1]})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                } : { color: '#94a3b8' }}
+              >
                 {label}
               </span>
             </Link>
