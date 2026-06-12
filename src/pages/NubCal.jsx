@@ -83,7 +83,7 @@ function WeekRing({ pct, size = 38, selected }) {
   )
 }
 
-function SummaryRing({ consumed, goal }) {
+function SummaryRing({ consumed, goal, remaining2Label }) {
   const size = 180
   const r = 68
   const circ = 2 * Math.PI * r
@@ -101,7 +101,7 @@ function SummaryRing({ consumed, goal }) {
           style={{ transition: 'stroke-dasharray 0.5s ease' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-[10px] text-gray-400 tracking-wide uppercase">{tr.remaining2}</p>
+        <p className="text-[10px] text-gray-400 tracking-wide uppercase">{remaining2Label}</p>
         <p className="text-3xl font-black text-gray-900 leading-none mt-0.5">{remaining.toLocaleString()}</p>
         <p className="text-xs text-gray-400 mt-0.5">kcal</p>
       </div>
@@ -396,7 +396,7 @@ export default function NubCal() {
 
           {/* Ring + stats row */}
           <div className="flex items-center gap-4">
-            <SummaryRing consumed={totalCal} goal={goal} />
+            <SummaryRing consumed={totalCal} goal={goal} remaining2Label={tr.remaining2} />
             <div className="flex-1 space-y-2">
               <div className="bg-teal-500 rounded-xl px-3 py-2.5">
                 <p className="text-teal-100 text-xs">{tr.consumed}</p>
