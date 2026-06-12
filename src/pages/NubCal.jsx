@@ -79,9 +79,9 @@ function WeekRing({ pct, size = 38, selected }) {
   const dash = pct * circ
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={selected ? '#fed7aa' : '#f3f4f6'} strokeWidth="3.5" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={selected ? '#ccfbf1' : '#f3f4f6'} strokeWidth="3.5" />
       {pct > 0 && (
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f97316" strokeWidth="3.5"
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#0d9488" strokeWidth="3.5"
           strokeLinecap="round" strokeDasharray={`${dash} ${circ}`}
           transform={`rotate(-90 ${size / 2} ${size / 2})`} />
       )}
@@ -90,25 +90,26 @@ function WeekRing({ pct, size = 38, selected }) {
 }
 
 function SummaryRing({ consumed, goal }) {
-  const size = 200
-  const r = 78
+  const size = 180
+  const r = 68
   const circ = 2 * Math.PI * r
   const pct = Math.min(consumed / Math.max(goal, 1), 1)
   const dash = pct * circ
-  const stroke = pct >= 1 ? '#ef4444' : '#f97316'
+  const stroke = pct >= 1 ? '#ef4444' : '#0d9488'
   const remaining = Math.max(goal - consumed, 0)
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f3f4f6" strokeWidth="14" />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={stroke} strokeWidth="14"
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f1f5f9" strokeWidth="12" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={stroke} strokeWidth="12"
           strokeLinecap="round" strokeDasharray={`${dash} ${circ}`}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           style={{ transition: 'stroke-dasharray 0.5s ease' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-xs text-gray-400">ที่ควรได้รับ</p>
+        <p className="text-[10px] text-gray-400 tracking-wide uppercase">เหลืออยู่</p>
         <p className="text-3xl font-black text-gray-900 leading-none mt-0.5">{remaining.toLocaleString()}</p>
+        <p className="text-xs text-gray-400 mt-0.5">kcal</p>
       </div>
     </div>
   )
@@ -137,7 +138,6 @@ export default function NubCal() {
   const [manualGoal, setManualGoal]   = useState(() => parseInt(localStorage.getItem('nubcal_goal') || '2000'))
   const fileRef = useRef(null)
 
-  // คำนวณ TDEE อัตโนมัติจากข้อมูลโปรไฟล์
   const autoGoal = useMemo(() => {
     const w = bmiData?.weight
     const h = bmiData?.height
@@ -149,7 +149,12 @@ export default function NubCal() {
 
   const goal = (goalMode === 'auto' && autoGoal) ? autoGoal : manualGoal
 
-  // บันทึก activity และ mode ทันทีที่เปลี่ยน
+  const macroGoals = useMemo(() => ({
+    carbs:   Math.round(goal * 0.37 / 4),
+    protein: Math.round(goal * 0.33 / 4),
+    fat:     Math.round(goal * 0.30 / 9),
+  }), [goal])
+
   React.useEffect(() => { localStorage.setItem('nubcal_activity', activityLevel) }, [activityLevel])
   React.useEffect(() => { localStorage.setItem('nubcal_goal_mode', goalMode) }, [goalMode])
 
@@ -342,15 +347,15 @@ export default function NubCal() {
   }
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: '#f5f5f7' }}>
+    <div className="min-h-screen pb-24 bg-slate-50">
 
       {/* Header */}
-      <div className="bg-white px-4 pt-5 pb-3 shadow-sm">
+      <div className="bg-white px-4 pt-5 pb-3 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-black text-gray-900">ไดอารี่</h1>
+          <h1 className="text-xl font-bold text-gray-900">ไดอารี่อาหาร</h1>
           <div className="flex items-center gap-2">
             <button onClick={() => { setGoalInput(String(goal)); setShowSettings(true) }}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-400">
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
               <Settings size={18} />
             </button>
             <button className="flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1.5">
@@ -372,12 +377,12 @@ export default function NubCal() {
                 <div className="relative">
                   <WeekRing pct={pct} size={38} selected={isSelected} />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className={`text-xs font-bold ${isSelected || isT ? 'text-orange-500' : 'text-gray-400'}`}>
+                    <span className={`text-xs font-bold ${isSelected || isT ? 'text-teal-600' : 'text-gray-400'}`}>
                       {DAY_TH[i]}
                     </span>
                   </div>
                 </div>
-                <span className={`text-[10px] font-semibold ${isSelected ? 'text-orange-500' : 'text-gray-400'}`}>
+                <span className={`text-[10px] font-semibold ${isSelected ? 'text-teal-600' : 'text-gray-400'}`}>
                   {new Date(d + 'T00:00:00').getDate()}
                 </span>
               </button>
@@ -390,27 +395,50 @@ export default function NubCal() {
 
         {/* Summary card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-1 mb-4">
-            <span className="font-bold text-gray-900">สรุป</span>
-            <span className="font-bold text-orange-500">พลังงาน</span>
-          </div>
-          <div className="flex flex-col items-center">
+          <p className="text-sm font-semibold text-gray-500 mb-3">สรุปพลังงานวันนี้</p>
+
+          {/* Ring + stats row */}
+          <div className="flex items-center gap-4">
             <SummaryRing consumed={totalCal} goal={goal} />
-            <p className="text-[10px] text-gray-400 mt-1">
-              {goalMode === 'auto' && autoGoal ? `🤖 คำนวณจากโปรไฟล์ · ${goal.toLocaleString()} kcal` : `✏️ กำหนดเอง · ${goal.toLocaleString()} kcal`}
-            </p>
-            <div className="mt-3 w-full bg-orange-500 rounded-2xl px-4 py-3">
-              <p className="text-orange-100 text-xs font-medium">พลังงาน</p>
-              <p className="text-white font-black text-xl leading-tight">{totalCal.toLocaleString()} แคลอรี</p>
+            <div className="flex-1 space-y-2">
+              <div className="bg-teal-500 rounded-xl px-3 py-2.5">
+                <p className="text-teal-100 text-xs">รับประทานแล้ว</p>
+                <p className="text-white font-black text-lg leading-none mt-0.5">
+                  {totalCal.toLocaleString()} <span className="text-teal-200 text-xs font-normal">kcal</span>
+                </p>
+              </div>
+              <div className="bg-slate-50 rounded-xl px-3 py-2.5">
+                <p className="text-gray-400 text-xs">เป้าหมาย</p>
+                <p className="text-gray-800 font-black text-lg leading-none mt-0.5">
+                  {goal.toLocaleString()} <span className="text-gray-400 text-xs font-normal">kcal</span>
+                </p>
+              </div>
+              <p className="text-[10px] text-gray-400 px-1">
+                {goalMode === 'auto' && autoGoal ? `🤖 คำนวณจากโปรไฟล์` : `✏️ กำหนดเอง`}
+              </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 w-full mt-3">
-              {[['คาร์บ', Math.round(totalCarb * 10) / 10], ['โปรตีน', Math.round(totalPro * 10) / 10], ['ไขมัน', Math.round(totalFat * 10) / 10]].map(([l, v]) => (
-                <div key={l} className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-400">{l}</p>
-                  <p className="font-bold text-gray-800 mt-0.5">{v} <span className="font-normal text-xs text-gray-400">ก.</span></p>
+          </div>
+
+          {/* Macros with progress bars */}
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {[
+              { l: 'คาร์บ',   v: Math.round(totalCarb * 10) / 10, max: macroGoals.carbs,   color: '#f59e0b' },
+              { l: 'โปรตีน',  v: Math.round(totalPro  * 10) / 10, max: macroGoals.protein, color: '#0d9488' },
+              { l: 'ไขมัน',   v: Math.round(totalFat  * 10) / 10, max: macroGoals.fat,     color: '#8b5cf6' },
+            ].map(({ l, v, max, color }) => (
+              <div key={l} className="bg-slate-50 rounded-xl p-3">
+                <p className="text-xs text-gray-400">{l}</p>
+                <p className="font-bold text-gray-800 text-sm mt-0.5">
+                  {v}<span className="font-normal text-xs text-gray-400">/{max}ก.</span>
+                </p>
+                <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min((v / Math.max(max, 1)) * 100, 100)}%`, backgroundColor: color }}
+                  />
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -421,36 +449,34 @@ export default function NubCal() {
           return (
             <div key={meal.key} className="bg-white rounded-2xl shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3.5">
-                <span className="font-bold text-gray-900 text-sm">
-                  {meal.label} <span className="text-gray-400 font-normal text-xs">(แคลอรี)</span>
-                </span>
-                <span className="font-bold text-gray-900 text-sm">{mealCal}</span>
+                <span className="font-semibold text-gray-900 text-sm">{meal.label}</span>
+                <span className="text-sm text-gray-500 font-medium">{mealCal > 0 ? `${mealCal} kcal` : '—'}</span>
               </div>
 
               {mealEntries.map((entry, idx) => (
-                <div key={entry.id} className={`px-4 py-3 flex gap-3 items-start ${idx < mealEntries.length - 1 || isToday ? 'border-t border-gray-50' : ''}`}>
+                <div key={entry.id} className={`px-4 py-3 flex gap-3 items-start border-t border-gray-50`}>
                   {entry.image
-                    ? <img src={entry.image} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-                    : <div className="w-14 h-14 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0 text-2xl">🍽️</div>
+                    ? <img src={entry.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                    : <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">🍽️</div>
                   }
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 text-sm truncate">{entry.foodName}</p>
+                        <p className="font-medium text-gray-900 text-sm truncate">{entry.foodName}</p>
                         <p className="text-xs text-gray-400 mt-0.5">{entry.description || '1 หน่วย'}</p>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className="font-bold text-gray-900 text-sm">{entry.calories}</span>
+                        <span className="font-semibold text-gray-700 text-sm">{entry.calories} kcal</span>
                         <button onClick={() => deleteCalorieEntry(viewDate, entry.id)}
                           className="text-gray-300 hover:text-red-400 p-0.5 transition-colors">
                           <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
-                    <div className="flex gap-3 mt-1.5">
-                      <span className="text-xs text-gray-500">🍞 {Math.round((entry.carbs || 0) * 10) / 10} ก.</span>
-                      <span className="text-xs text-gray-500">🥩 {Math.round((entry.protein || 0) * 10) / 10} ก.</span>
-                      <span className="text-xs text-gray-500">🧀 {Math.round((entry.fat || 0) * 10) / 10} ก.</span>
+                    <div className="flex gap-3 mt-1">
+                      <span className="text-xs text-gray-400">คาร์บ {Math.round((entry.carbs || 0) * 10) / 10}ก.</span>
+                      <span className="text-xs text-gray-400">โปรตีน {Math.round((entry.protein || 0) * 10) / 10}ก.</span>
+                      <span className="text-xs text-gray-400">ไขมัน {Math.round((entry.fat || 0) * 10) / 10}ก.</span>
                     </div>
                   </div>
                 </div>
@@ -458,9 +484,9 @@ export default function NubCal() {
 
               {isToday && (
                 <button onClick={() => openAddFor(meal.key)}
-                  className="flex items-center gap-2 px-4 py-3 text-orange-500 text-sm font-semibold w-full hover:bg-orange-50 transition-colors border-t border-gray-50">
+                  className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
                   <Plus size={15} />
-                  บันทึกอาหาร
+                  เพิ่มอาหาร
                 </button>
               )}
             </div>
@@ -470,15 +496,15 @@ export default function NubCal() {
         {/* Water section */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3.5">
-            <span className="font-bold text-gray-900 text-sm">น้ำ <span className="text-gray-400 font-normal text-xs">(มล.)</span></span>
-            <span className="font-bold text-gray-900 text-sm">{glasses * GLASS_ML}</span>
+            <span className="font-semibold text-gray-900 text-sm">น้ำดื่ม</span>
+            <span className="text-sm text-gray-500 font-medium">{glasses * GLASS_ML > 0 ? `${glasses * GLASS_ML} มล.` : '—'}</span>
           </div>
           <div className="px-4 pb-3">
             <div className="flex gap-2 flex-wrap">
               {Array.from({ length: 8 }, (_, i) => (
                 <button key={i}
                   onClick={() => i < glasses ? removeGlass(viewDate) : addGlass(viewDate)}
-                  className="w-10 h-12 flex items-center justify-center rounded-xl hover:bg-orange-50 transition-colors">
+                  className="w-10 h-12 flex items-center justify-center rounded-xl hover:bg-teal-50 transition-colors">
                   <span className={`text-2xl transition-opacity ${i < glasses ? 'opacity-100' : 'opacity-20'}`}>🥤</span>
                 </button>
               ))}
@@ -486,9 +512,9 @@ export default function NubCal() {
           </div>
           {isToday && (
             <button onClick={() => addGlass(viewDate)}
-              className="flex items-center gap-2 px-4 py-3 text-orange-500 text-sm font-semibold w-full hover:bg-orange-50 transition-colors border-t border-gray-50">
+              className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
               <Plus size={15} />
-              บันทึกการดื่มน้ำ
+              บันทึกการดื่มน้ำ (+250 มล.)
             </button>
           )}
         </div>
@@ -499,29 +525,29 @@ export default function NubCal() {
 
       {/* Add Sheet */}
       {showAddSheet && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end" onClick={() => setShowAddSheet(false)}>
-          <div className="bg-white rounded-t-3xl w-full p-4 space-y-2.5 animate-slide-up" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-2" />
-            <h3 className="font-bold text-gray-800 text-center pb-1">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end" onClick={() => setShowAddSheet(false)}>
+          <div className="bg-white rounded-t-3xl w-full p-4 space-y-2 animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="w-8 h-1 bg-gray-200 rounded-full mx-auto mb-3" />
+            <h3 className="font-semibold text-gray-800 text-center text-sm pb-1">
               เพิ่ม{MEALS.find(m => m.key === activeMeal)?.label}
             </h3>
             {[
-              { icon: <Camera size={22} className="text-orange-500" />, bg: '#fff7ed', title: 'ถ่ายรูป / เลือกภาพ', desc: 'วิเคราะห์โภชนาการด้วย AI', action: () => fileRef.current?.click() },
-              { icon: <BookOpen size={22} className="text-amber-600" />, bg: '#fffbeb', title: 'ค้นหาจากฐานข้อมูล', desc: `อาหารไทย ${FOOD_DB.length} รายการ`, action: () => { setShowAddSheet(false); setShowSearch(true) } },
-              { icon: <Edit3 size={22} className="text-green-600" />, bg: '#f0fdf4', title: 'บันทึกเอง', desc: 'ระบุชื่ออาหารและสารอาหารเอง', action: () => { setShowAddSheet(false); setShowManual(true) } },
+              { icon: <Camera size={20} className="text-teal-600" />,  bg: '#f0fdfa', title: 'ถ่ายรูป / เลือกภาพ',    desc: 'วิเคราะห์โภชนาการด้วย AI',           action: () => fileRef.current?.click() },
+              { icon: <BookOpen size={20} className="text-amber-600" />, bg: '#fffbeb', title: 'ค้นหาจากฐานข้อมูล',     desc: `อาหารไทย ${FOOD_DB.length} รายการ`,  action: () => { setShowAddSheet(false); setShowSearch(true) } },
+              { icon: <Edit3 size={20} className="text-violet-600" />,  bg: '#f5f3ff', title: 'บันทึกเอง',              desc: 'ระบุชื่ออาหารและสารอาหารเอง',        action: () => { setShowAddSheet(false); setShowManual(true) } },
             ].map(({ icon, bg, title, desc, action }) => (
               <button key={title} onClick={action}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl active:scale-95 transition-all text-left"
-                style={{ background: bg, border: '1px solid rgba(0,0,0,0.05)' }}>
-                <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/80">{icon}</div>
+                style={{ background: bg, border: '1px solid rgba(0,0,0,0.04)' }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white shadow-sm">{icon}</div>
                 <div>
-                  <p className="font-bold text-gray-800 text-sm">{title}</p>
-                  <p className="text-xs text-gray-500">{desc}</p>
+                  <p className="font-semibold text-gray-800 text-sm">{title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
                 </div>
               </button>
             ))}
             <button onClick={() => setShowAddSheet(false)}
-              className="w-full py-3 rounded-2xl text-gray-400 font-semibold text-sm hover:bg-gray-50 transition-colors">
+              className="w-full py-3 rounded-2xl text-gray-400 font-medium text-sm hover:bg-gray-50 transition-colors">
               ยกเลิก
             </button>
           </div>
@@ -530,41 +556,41 @@ export default function NubCal() {
 
       {/* Search Modal */}
       {showSearch && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-bold text-gray-800">ค้นหาอาหาร</h3>
+              <h3 className="font-semibold text-gray-800">ค้นหาอาหาร</h3>
               <button onClick={() => { setShowSearch(false); setSearchQuery(''); setActiveCat('') }}
-                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"><X size={18} /></button>
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="px-4 pt-3 pb-2 flex-shrink-0">
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-                <Search size={16} className="text-gray-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
+                <Search size={15} className="text-gray-400 flex-shrink-0" />
                 <input placeholder="ค้นหาอาหาร..." autoFocus
                   className="flex-1 bg-transparent text-sm outline-none text-gray-700"
                   value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
               </div>
             </div>
-            <div className="flex gap-2 px-4 pb-2 overflow-x-auto flex-shrink-0">
+            <div className="flex gap-2 px-4 pb-2 overflow-x-auto flex-shrink-0 scrollbar-hide">
               {['', ...CATS].map(c => (
                 <button key={c || 'all'} onClick={() => setActiveCat(c)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 transition-colors ${activeCat === c ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-orange-50'}`}>
+                  className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 transition-colors ${activeCat === c ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-teal-50'}`}>
                   {c || 'ทั้งหมด'}
                 </button>
               ))}
             </div>
-            <div className="overflow-y-auto flex-1 px-4 pb-4 space-y-2">
+            <div className="overflow-y-auto flex-1 px-4 pb-4 space-y-1.5">
               {filteredFoods.length === 0
                 ? <p className="text-center text-gray-400 text-sm py-8">ไม่พบรายการ</p>
                 : filteredFoods.map(food => (
                   <button key={food.id} onClick={() => addFromDB(food)}
-                    className="w-full bg-white hover:bg-orange-50 border border-gray-100 rounded-2xl p-3.5 text-left flex items-center justify-between gap-3 transition-all active:scale-95">
+                    className="w-full bg-white hover:bg-teal-50 border border-gray-100 rounded-xl p-3.5 text-left flex items-center justify-between gap-3 transition-all active:scale-95">
                     <div>
-                      <p className="font-semibold text-gray-800 text-sm">{food.name}</p>
+                      <p className="font-medium text-gray-800 text-sm">{food.name}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{food.qty} · {food.cat}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-orange-500 font-extrabold text-lg leading-none">{food.cal}</p>
+                      <p className="text-teal-600 font-bold text-base leading-none">{food.cal}</p>
                       <p className="text-[10px] text-gray-400">kcal</p>
                     </div>
                   </button>
@@ -576,37 +602,37 @@ export default function NubCal() {
 
       {/* Manual Entry Modal */}
       {showManual && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-bold text-gray-800">บันทึกเอง</h3>
-              <button onClick={() => setShowManual(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"><X size={18} /></button>
+              <h3 className="font-semibold text-gray-800">บันทึกเอง</h3>
+              <button onClick={() => setShowManual(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-3">
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">ชื่ออาหาร *</label>
                 <input placeholder="เช่น ข้าวผัดหมู"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                   value={manualEntry.foodName} onChange={e => setManualEntry(p => ({ ...p, foodName: e.target.value }))} />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">🔥 แคลอรี่ (kcal)</label>
+                <label className="text-xs text-gray-500 mb-1 block">แคลอรี่ (kcal)</label>
                 <input type="number" min="0"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                   value={manualEntry.calories} onChange={e => setManualEntry(p => ({ ...p, calories: e.target.value }))} />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                {[['💪 โปรตีน (g)', 'protein'], ['🌾 คาร์โบไฮเดรต (g)', 'carbs'], ['🫙 ไขมัน (g)', 'fat'], ['🥦 ใยอาหาร (g)', 'fiber']].map(([label, key]) => (
+                {[['โปรตีน (g)', 'protein'], ['คาร์โบไฮเดรต (g)', 'carbs'], ['ไขมัน (g)', 'fat'], ['ใยอาหาร (g)', 'fiber']].map(([label, key]) => (
                   <div key={key}>
                     <label className="text-xs text-gray-500 mb-1 block">{label}</label>
                     <input type="number" min="0"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                       value={manualEntry[key]} onChange={e => setManualEntry(p => ({ ...p, [key]: e.target.value }))} />
                   </div>
                 ))}
               </div>
               <button onClick={saveManualEntry} disabled={!manualEntry.foodName.trim()}
-                className="w-full py-3 rounded-2xl font-bold text-white text-sm disabled:opacity-40 active:scale-95 bg-orange-500 hover:bg-orange-600 transition-colors">
+                className="w-full py-3 rounded-2xl font-semibold text-white text-sm disabled:opacity-40 active:scale-95 bg-teal-500 hover:bg-teal-600 transition-colors">
                 บันทึกลงประวัติ
               </button>
             </div>
@@ -616,25 +642,25 @@ export default function NubCal() {
 
       {/* Camera / Analysis Modal */}
       {showCamera && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-bold text-gray-800">วิเคราะห์อาหาร</h3>
-              <button onClick={closeModal} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"><X size={18} /></button>
+              <h3 className="font-semibold text-gray-800">วิเคราะห์อาหาร</h3>
+              <button onClick={closeModal} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-4">
-              {imagePreview && <img src={imagePreview} alt="อาหาร" className="w-full h-52 object-cover rounded-2xl" />}
+              {imagePreview && <img src={imagePreview} alt="อาหาร" className="w-full h-48 object-cover rounded-2xl" />}
               {error && <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-600">{error}</div>}
               {analyzing && (
                 <div className="flex items-center justify-center gap-2 py-4">
-                  <span className="w-5 h-5 border-2 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
-                  <span className="text-sm font-medium text-orange-500">กำลังวิเคราะห์...</span>
+                  <span className="w-5 h-5 border-2 border-teal-100 border-t-teal-500 rounded-full animate-spin" />
+                  <span className="text-sm font-medium text-teal-600">กำลังวิเคราะห์...</span>
                 </div>
               )}
               {!analyzed && !analyzing && (
                 <button onClick={analyzeImage}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 font-semibold transition-colors">
-                  🔍 วิเคราะห์สารอาหาร
+                  className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl py-3 font-semibold transition-colors">
+                  วิเคราะห์สารอาหาร
                 </button>
               )}
               {editResult && (
@@ -642,21 +668,21 @@ export default function NubCal() {
                   <h4 className="font-semibold text-gray-700 text-sm">ผลการวิเคราะห์ (แก้ไขได้)</h4>
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">ชื่ออาหาร</label>
-                    <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                    <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
                       value={editResult.foodName || ''} onChange={e => setEditResult(p => ({ ...p, foodName: e.target.value }))} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    {[['🔥 แคลอรี่ (kcal)', 'calories'], ['💪 โปรตีน (g)', 'protein'], ['🌾 คาร์โบไฮเดรต (g)', 'carbs'], ['🫙 ไขมัน (g)', 'fat']].map(([label, key]) => (
+                    {[['แคลอรี่ (kcal)', 'calories'], ['โปรตีน (g)', 'protein'], ['คาร์โบไฮเดรต (g)', 'carbs'], ['ไขมัน (g)', 'fat']].map(([label, key]) => (
                       <div key={key}>
                         <label className="text-xs text-gray-500 mb-1 block">{label}</label>
                         <input type="number" min="0"
-                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
                           value={editResult[key] ?? ''} onChange={e => setEditResult(p => ({ ...p, [key]: e.target.value }))} />
                       </div>
                     ))}
                   </div>
                   {editResult.description && <p className="text-xs text-gray-500 bg-gray-50 rounded-xl p-3">{editResult.description}</p>}
-                  <button onClick={saveEntry} className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 font-bold transition-colors">
+                  <button onClick={saveEntry} className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl py-3 font-semibold transition-colors">
                     บันทึกลงประวัติ
                   </button>
                 </div>
@@ -668,18 +694,17 @@ export default function NubCal() {
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-bold text-gray-800">ตั้งค่าพลังงานต่อวัน</h3>
-              <button onClick={() => setShowSettings(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"><X size={18} /></button>
+              <h3 className="font-semibold text-gray-800">ตั้งค่าพลังงานต่อวัน</h3>
+              <button onClick={() => setShowSettings(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-4">
 
-              {/* ข้อมูลโปรไฟล์ที่ใช้คำนวณ */}
               {autoGoal ? (
-                <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 space-y-2">
-                  <p className="text-sm font-bold text-orange-800">📊 คำนวณจากข้อมูลของคุณ</p>
+                <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 space-y-2">
+                  <p className="text-sm font-semibold text-teal-800">📊 คำนวณจากข้อมูลของคุณ</p>
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between text-gray-600">
                       <span>น้ำหนัก / ส่วนสูง / อายุ</span>
@@ -693,31 +718,30 @@ export default function NubCal() {
                         {calcBMR(bmiData?.weight, bmiData?.height, user?.age, user?.gender)} kcal
                       </span>
                     </div>
-                    <div className="flex justify-between font-bold border-t border-orange-200 pt-1.5">
-                      <span className="text-orange-700">พลังงานที่แนะนำ (TDEE)</span>
-                      <span className="text-orange-600 text-sm">{autoGoal} kcal/วัน</span>
+                    <div className="flex justify-between font-semibold border-t border-teal-100 pt-1.5">
+                      <span className="text-teal-700">พลังงานที่แนะนำ (TDEE)</span>
+                      <span className="text-teal-600">{autoGoal} kcal/วัน</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center">
                   <p className="text-sm text-gray-500">⚖️ ไปคำนวณ <b>BMI</b> ก่อนเพื่อให้ระบบตั้งค่าพลังงานอัตโนมัติ</p>
                 </div>
               )}
 
-              {/* ระดับกิจกรรม */}
               <div>
-                <label className="text-sm font-bold text-gray-700 mb-2 block">ระดับกิจกรรมของคุณ</label>
-                <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">ระดับกิจกรรมของคุณ</label>
+                <div className="space-y-1.5">
                   {ACTIVITY_LEVELS.map(a => (
                     <button key={a.key} onClick={() => setActivityLevel(a.key)}
-                      className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${activityLevel === a.key ? 'border-orange-400 bg-orange-50' : 'border-gray-100 bg-white hover:border-orange-200'}`}>
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${activityLevel === a.key ? 'border-teal-300 bg-teal-50' : 'border-gray-100 bg-white hover:border-teal-200'}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div>
-                          <p className="text-sm font-semibold text-gray-800">{a.label}</p>
+                          <p className="text-sm font-medium text-gray-800">{a.label}</p>
                           <p className="text-xs text-gray-400 mt-0.5">{a.desc}</p>
                         </div>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${activityLevel === a.key ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${activityLevel === a.key ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
                           ×{a.factor}
                         </span>
                       </div>
@@ -726,38 +750,35 @@ export default function NubCal() {
                 </div>
               </div>
 
-              {/* โหมด */}
               <div>
-                <label className="text-sm font-bold text-gray-700 mb-2 block">วิธีกำหนดเป้าหมาย</label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">วิธีกำหนดเป้าหมาย</label>
                 <div className="flex gap-2">
                   <button onClick={() => setGoalMode('auto')} disabled={!autoGoal}
-                    className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 ${goalMode === 'auto' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-orange-50'}`}>
+                    className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all disabled:opacity-40 ${goalMode === 'auto' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-teal-50'}`}>
                     🤖 อัตโนมัติ
                   </button>
                   <button onClick={() => setGoalMode('manual')}
-                    className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${goalMode === 'manual' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-orange-50'}`}>
+                    className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${goalMode === 'manual' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-teal-50'}`}>
                     ✏️ กำหนดเอง
                   </button>
                 </div>
               </div>
 
-              {/* กรอกค่าเอง */}
               {goalMode === 'manual' && (
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 mb-1.5 block">พลังงานต่อวัน (kcal)</label>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">พลังงานต่อวัน (kcal)</label>
                   <input type="number" min="500" max="9999"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
                     value={goalInput} onChange={e => setGoalInput(e.target.value)} />
                 </div>
               )}
 
-              {/* เป้าหมายปัจจุบัน */}
-              <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between">
+              <div className="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between">
                 <span className="text-sm text-gray-500">เป้าหมายปัจจุบัน</span>
-                <span className="text-lg font-black text-orange-500">{goal.toLocaleString()} kcal</span>
+                <span className="text-lg font-black text-teal-600">{goal.toLocaleString()} kcal</span>
               </div>
 
-              <button onClick={saveSettings} className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 font-bold transition-colors">
+              <button onClick={saveSettings} className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl py-3 font-semibold transition-colors">
                 บันทึก
               </button>
             </div>
