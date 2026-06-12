@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react'
 import { Camera, X, Trash2, Plus, Edit3, BookOpen, Search, Settings } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
+import { useLang } from '../context/LangContext'
 import { FOOD_DB, FOOD_CATS as CATS } from '../data/foodDb'
 
 const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
@@ -49,13 +50,6 @@ function compressImage(dataUrl, maxSize = 200) {
     img.src = dataUrl
   })
 }
-
-const MEALS = [
-  { key: 'breakfast', label: 'อาหารเช้า' },
-  { key: 'lunch',     label: 'อาหารกลางวัน' },
-  { key: 'dinner',    label: 'อาหารเย็น' },
-  { key: 'snack',     label: 'อาหารว่าง' },
-]
 
 const DAY_TH = ['จ', 'อ', 'พ', 'พ', 'ศ', 'ส', 'อ']
 
@@ -107,7 +101,7 @@ function SummaryRing({ consumed, goal }) {
           style={{ transition: 'stroke-dasharray 0.5s ease' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-[10px] text-gray-400 tracking-wide uppercase">เหลืออยู่</p>
+        <p className="text-[10px] text-gray-400 tracking-wide uppercase">{tr.remaining2}</p>
         <p className="text-3xl font-black text-gray-900 leading-none mt-0.5">{remaining.toLocaleString()}</p>
         <p className="text-xs text-gray-400 mt-0.5">kcal</p>
       </div>
@@ -117,6 +111,9 @@ function SummaryRing({ consumed, goal }) {
 
 export default function NubCal() {
   const ctx = useHealth()
+  const { t } = useLang()
+  const tr = t.trainer
+  const MEALS = tr.meals
   const { calorieLog = {}, addCalorieEntry, deleteCalorieEntry, user = {}, bmiData } = ctx
   const waterLog = ctx.waterLog || {}
   const addGlass = ctx.addGlass || (() => {})
@@ -352,7 +349,7 @@ export default function NubCal() {
       {/* Header */}
       <div className="bg-white px-4 pt-5 pb-3 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-gray-900">ไดอารี่อาหาร</h1>
+          <h1 className="text-xl font-bold text-gray-900">{tr.diaryTitle}</h1>
           <div className="flex items-center gap-2">
             <button onClick={() => { setGoalInput(String(goal)); setShowSettings(true) }}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
@@ -395,26 +392,26 @@ export default function NubCal() {
 
         {/* Summary card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-sm font-semibold text-gray-500 mb-3">สรุปพลังงานวันนี้</p>
+          <p className="text-sm font-semibold text-gray-500 mb-3">{tr.dailySummary}</p>
 
           {/* Ring + stats row */}
           <div className="flex items-center gap-4">
             <SummaryRing consumed={totalCal} goal={goal} />
             <div className="flex-1 space-y-2">
               <div className="bg-teal-500 rounded-xl px-3 py-2.5">
-                <p className="text-teal-100 text-xs">รับประทานแล้ว</p>
+                <p className="text-teal-100 text-xs">{tr.consumed}</p>
                 <p className="text-white font-black text-lg leading-none mt-0.5">
                   {totalCal.toLocaleString()} <span className="text-teal-200 text-xs font-normal">kcal</span>
                 </p>
               </div>
               <div className="bg-slate-50 rounded-xl px-3 py-2.5">
-                <p className="text-gray-400 text-xs">เป้าหมาย</p>
+                <p className="text-gray-400 text-xs">{tr.goal}</p>
                 <p className="text-gray-800 font-black text-lg leading-none mt-0.5">
                   {goal.toLocaleString()} <span className="text-gray-400 text-xs font-normal">kcal</span>
                 </p>
               </div>
               <p className="text-[10px] text-gray-400 px-1">
-                {goalMode === 'auto' && autoGoal ? `🤖 คำนวณจากโปรไฟล์` : `✏️ กำหนดเอง`}
+                {goalMode === 'auto' && autoGoal ? `🤖 ${tr.fromProfile}` : `✏️ ${tr.customGoalLabel}`}
               </p>
             </div>
           </div>
@@ -422,9 +419,9 @@ export default function NubCal() {
           {/* Macros with progress bars */}
           <div className="grid grid-cols-3 gap-2 mt-4">
             {[
-              { l: 'คาร์บ',   v: Math.round(totalCarb * 10) / 10, max: macroGoals.carbs,   color: '#f59e0b' },
-              { l: 'โปรตีน',  v: Math.round(totalPro  * 10) / 10, max: macroGoals.protein, color: '#0d9488' },
-              { l: 'ไขมัน',   v: Math.round(totalFat  * 10) / 10, max: macroGoals.fat,     color: '#8b5cf6' },
+              { l: tr.carb,    v: Math.round(totalCarb * 10) / 10, max: macroGoals.carbs,   color: '#f59e0b' },
+              { l: tr.protein, v: Math.round(totalPro  * 10) / 10, max: macroGoals.protein, color: '#0d9488' },
+              { l: tr.fat,     v: Math.round(totalFat  * 10) / 10, max: macroGoals.fat,     color: '#8b5cf6' },
             ].map(({ l, v, max, color }) => (
               <div key={l} className="bg-slate-50 rounded-xl p-3">
                 <p className="text-xs text-gray-400">{l}</p>
@@ -474,9 +471,9 @@ export default function NubCal() {
                       </div>
                     </div>
                     <div className="flex gap-3 mt-1">
-                      <span className="text-xs text-gray-400">คาร์บ {Math.round((entry.carbs || 0) * 10) / 10}ก.</span>
-                      <span className="text-xs text-gray-400">โปรตีน {Math.round((entry.protein || 0) * 10) / 10}ก.</span>
-                      <span className="text-xs text-gray-400">ไขมัน {Math.round((entry.fat || 0) * 10) / 10}ก.</span>
+                      <span className="text-xs text-gray-400">{tr.carb} {Math.round((entry.carbs || 0) * 10) / 10}ก.</span>
+                      <span className="text-xs text-gray-400">{tr.protein} {Math.round((entry.protein || 0) * 10) / 10}ก.</span>
+                      <span className="text-xs text-gray-400">{tr.fat} {Math.round((entry.fat || 0) * 10) / 10}ก.</span>
                     </div>
                   </div>
                 </div>
@@ -486,7 +483,7 @@ export default function NubCal() {
                 <button onClick={() => openAddFor(meal.key)}
                   className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
                   <Plus size={15} />
-                  เพิ่มอาหาร
+                  {tr.addFoodLabel}
                 </button>
               )}
             </div>
@@ -496,7 +493,7 @@ export default function NubCal() {
         {/* Water section */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3.5">
-            <span className="font-semibold text-gray-900 text-sm">น้ำดื่ม</span>
+            <span className="font-semibold text-gray-900 text-sm">{tr.waterTitle}</span>
             <span className="text-sm text-gray-500 font-medium">{glasses * GLASS_ML > 0 ? `${glasses * GLASS_ML} มล.` : '—'}</span>
           </div>
           <div className="px-4 pb-3">
@@ -514,7 +511,7 @@ export default function NubCal() {
             <button onClick={() => addGlass(viewDate)}
               className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
               <Plus size={15} />
-              บันทึกการดื่มน้ำ (+250 มล.)
+              {tr.waterLogBtn}
             </button>
           )}
         </div>
@@ -529,12 +526,12 @@ export default function NubCal() {
           <div className="bg-white rounded-t-3xl w-full p-4 space-y-2 animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="w-8 h-1 bg-gray-200 rounded-full mx-auto mb-3" />
             <h3 className="font-semibold text-gray-800 text-center text-sm pb-1">
-              เพิ่ม{MEALS.find(m => m.key === activeMeal)?.label}
+              {tr.addMealPrefix}{MEALS.find(m => m.key === activeMeal)?.label}
             </h3>
             {[
-              { icon: <Camera size={20} className="text-teal-600" />,  bg: '#f0fdfa', title: 'ถ่ายรูป / เลือกภาพ',    desc: 'วิเคราะห์โภชนาการด้วย AI',           action: () => fileRef.current?.click() },
-              { icon: <BookOpen size={20} className="text-amber-600" />, bg: '#fffbeb', title: 'ค้นหาจากฐานข้อมูล',     desc: `อาหารไทย ${FOOD_DB.length} รายการ`,  action: () => { setShowAddSheet(false); setShowSearch(true) } },
-              { icon: <Edit3 size={20} className="text-violet-600" />,  bg: '#f5f3ff', title: 'บันทึกเอง',              desc: 'ระบุชื่ออาหารและสารอาหารเอง',        action: () => { setShowAddSheet(false); setShowManual(true) } },
+              { icon: <Camera size={20} className="text-teal-600" />,  bg: '#f0fdfa', title: tr.shotPhoto,   desc: tr.aiAnalyze,                              action: () => fileRef.current?.click() },
+              { icon: <BookOpen size={20} className="text-amber-600" />, bg: '#fffbeb', title: tr.fromDB,   desc: `${tr.thaiFood} ${FOOD_DB.length} ${tr.items}`, action: () => { setShowAddSheet(false); setShowSearch(true) } },
+              { icon: <Edit3 size={20} className="text-violet-600" />,  bg: '#f5f3ff', title: tr.manualEntry, desc: tr.foodNameLabel.replace(' *', ''),         action: () => { setShowAddSheet(false); setShowManual(true) } },
             ].map(({ icon, bg, title, desc, action }) => (
               <button key={title} onClick={action}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl active:scale-95 transition-all text-left"
@@ -548,7 +545,7 @@ export default function NubCal() {
             ))}
             <button onClick={() => setShowAddSheet(false)}
               className="w-full py-3 rounded-2xl text-gray-400 font-medium text-sm hover:bg-gray-50 transition-colors">
-              ยกเลิก
+              {tr.cancel}
             </button>
           </div>
         </div>
@@ -559,14 +556,14 @@ export default function NubCal() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-semibold text-gray-800">ค้นหาอาหาร</h3>
+              <h3 className="font-semibold text-gray-800">{tr.searchFood}</h3>
               <button onClick={() => { setShowSearch(false); setSearchQuery(''); setActiveCat('') }}
                 className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="px-4 pt-3 pb-2 flex-shrink-0">
               <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
                 <Search size={15} className="text-gray-400 flex-shrink-0" />
-                <input placeholder="ค้นหาอาหาร..." autoFocus
+                <input placeholder={tr.searchPh} autoFocus
                   className="flex-1 bg-transparent text-sm outline-none text-gray-700"
                   value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
               </div>
@@ -575,13 +572,13 @@ export default function NubCal() {
               {['', ...CATS].map(c => (
                 <button key={c || 'all'} onClick={() => setActiveCat(c)}
                   className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 transition-colors ${activeCat === c ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-teal-50'}`}>
-                  {c || 'ทั้งหมด'}
+                  {c || tr.allCats}
                 </button>
               ))}
             </div>
             <div className="overflow-y-auto flex-1 px-4 pb-4 space-y-1.5">
               {filteredFoods.length === 0
-                ? <p className="text-center text-gray-400 text-sm py-8">ไม่พบรายการ</p>
+                ? <p className="text-center text-gray-400 text-sm py-8">{tr.noResults}</p>
                 : filteredFoods.map(food => (
                   <button key={food.id} onClick={() => addFromDB(food)}
                     className="w-full bg-white hover:bg-teal-50 border border-gray-100 rounded-xl p-3.5 text-left flex items-center justify-between gap-3 transition-all active:scale-95">
@@ -605,24 +602,24 @@ export default function NubCal() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-semibold text-gray-800">บันทึกเอง</h3>
+              <h3 className="font-semibold text-gray-800">{tr.manualEntry}</h3>
               <button onClick={() => setShowManual(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-3">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">ชื่ออาหาร *</label>
-                <input placeholder="เช่น ข้าวผัดหมู"
+                <label className="text-xs text-gray-500 mb-1 block">{tr.foodNameLabel}</label>
+                <input placeholder={tr.foodNamePh}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                   value={manualEntry.foodName} onChange={e => setManualEntry(p => ({ ...p, foodName: e.target.value }))} />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">แคลอรี่ (kcal)</label>
+                <label className="text-xs text-gray-500 mb-1 block">{tr.calLabel}</label>
                 <input type="number" min="0"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                   value={manualEntry.calories} onChange={e => setManualEntry(p => ({ ...p, calories: e.target.value }))} />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                {[['โปรตีน (g)', 'protein'], ['คาร์โบไฮเดรต (g)', 'carbs'], ['ไขมัน (g)', 'fat'], ['ใยอาหาร (g)', 'fiber']].map(([label, key]) => (
+                {[[tr.proteinG, 'protein'], [tr.carbG, 'carbs'], [tr.fatG, 'fat'], [tr.fiberG, 'fiber']].map(([label, key]) => (
                   <div key={key}>
                     <label className="text-xs text-gray-500 mb-1 block">{label}</label>
                     <input type="number" min="0"
@@ -633,7 +630,7 @@ export default function NubCal() {
               </div>
               <button onClick={saveManualEntry} disabled={!manualEntry.foodName.trim()}
                 className="w-full py-3 rounded-2xl font-semibold text-white text-sm disabled:opacity-40 active:scale-95 bg-teal-500 hover:bg-teal-600 transition-colors">
-                บันทึกลงประวัติ
+                {tr.saveRecord}
               </button>
             </div>
           </div>
@@ -645,7 +642,7 @@ export default function NubCal() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-semibold text-gray-800">วิเคราะห์อาหาร</h3>
+              <h3 className="font-semibold text-gray-800">{tr.analyzeFood}</h3>
               <button onClick={closeModal} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-4">
@@ -654,25 +651,25 @@ export default function NubCal() {
               {analyzing && (
                 <div className="flex items-center justify-center gap-2 py-4">
                   <span className="w-5 h-5 border-2 border-teal-100 border-t-teal-500 rounded-full animate-spin" />
-                  <span className="text-sm font-medium text-teal-600">กำลังวิเคราะห์...</span>
+                  <span className="text-sm font-medium text-teal-600">{tr.analyzing}</span>
                 </div>
               )}
               {!analyzed && !analyzing && (
                 <button onClick={analyzeImage}
                   className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl py-3 font-semibold transition-colors">
-                  วิเคราะห์สารอาหาร
+                  {tr.analyzeBtn}
                 </button>
               )}
               {editResult && (
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-700 text-sm">ผลการวิเคราะห์ (แก้ไขได้)</h4>
+                  <h4 className="font-semibold text-gray-700 text-sm">{tr.analysisResult}</h4>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">ชื่ออาหาร</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{tr.foodNameInput}</label>
                     <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
                       value={editResult.foodName || ''} onChange={e => setEditResult(p => ({ ...p, foodName: e.target.value }))} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    {[['แคลอรี่ (kcal)', 'calories'], ['โปรตีน (g)', 'protein'], ['คาร์โบไฮเดรต (g)', 'carbs'], ['ไขมัน (g)', 'fat']].map(([label, key]) => (
+                    {[[tr.calLabel, 'calories'], [tr.proteinG, 'protein'], [tr.carbG, 'carbs'], [tr.fatG, 'fat']].map(([label, key]) => (
                       <div key={key}>
                         <label className="text-xs text-gray-500 mb-1 block">{label}</label>
                         <input type="number" min="0"
@@ -683,7 +680,7 @@ export default function NubCal() {
                   </div>
                   {editResult.description && <p className="text-xs text-gray-500 bg-gray-50 rounded-xl p-3">{editResult.description}</p>}
                   <button onClick={saveEntry} className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl py-3 font-semibold transition-colors">
-                    บันทึกลงประวัติ
+                    {tr.saveRecord}
                   </button>
                 </div>
               )}
@@ -697,76 +694,79 @@ export default function NubCal() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-semibold text-gray-800">ตั้งค่าพลังงานต่อวัน</h3>
+              <h3 className="font-semibold text-gray-800">{tr.settings}</h3>
               <button onClick={() => setShowSettings(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-4">
 
               {autoGoal ? (
                 <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 space-y-2">
-                  <p className="text-sm font-semibold text-teal-800">📊 คำนวณจากข้อมูลของคุณ</p>
+                  <p className="text-sm font-semibold text-teal-800">📊 {tr.calcFromData}</p>
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between text-gray-600">
-                      <span>น้ำหนัก / ส่วนสูง / อายุ</span>
+                      <span>{tr.weightHeightAge}</span>
                       <span className="font-semibold text-gray-800">
                         {bmiData?.weight} kg / {bmiData?.height} cm / {user?.age} ปี
                       </span>
                     </div>
                     <div className="flex justify-between text-gray-600">
-                      <span>ค่าการเผาผลาญพื้นฐาน (BMR)</span>
+                      <span>{tr.bmrLabel}</span>
                       <span className="font-semibold text-gray-800">
                         {calcBMR(bmiData?.weight, bmiData?.height, user?.age, user?.gender)} kcal
                       </span>
                     </div>
                     <div className="flex justify-between font-semibold border-t border-teal-100 pt-1.5">
-                      <span className="text-teal-700">พลังงานที่แนะนำ (TDEE)</span>
-                      <span className="text-teal-600">{autoGoal} kcal/วัน</span>
+                      <span className="text-teal-700">{tr.tdeeLabel}</span>
+                      <span className="text-teal-600">{autoGoal} {tr.tdeeUnit}</span>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center">
-                  <p className="text-sm text-gray-500">⚖️ ไปคำนวณ <b>BMI</b> ก่อนเพื่อให้ระบบตั้งค่าพลังงานอัตโนมัติ</p>
+                  <p className="text-sm text-gray-500">⚖️ {tr.bmiFirstText}</p>
                 </div>
               )}
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 mb-2 block">ระดับกิจกรรมของคุณ</label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">{tr.activityLevelLabel}</label>
                 <div className="space-y-1.5">
-                  {ACTIVITY_LEVELS.map(a => (
-                    <button key={a.key} onClick={() => setActivityLevel(a.key)}
-                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${activityLevel === a.key ? 'border-teal-300 bg-teal-50' : 'border-gray-100 bg-white hover:border-teal-200'}`}>
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-medium text-gray-800">{a.label}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{a.desc}</p>
+                  {tr.activityLevels.map(al => {
+                    const factor = ACTIVITY_LEVELS.find(x => x.key === al.key)?.factor ?? 1.375
+                    return (
+                      <button key={al.key} onClick={() => setActivityLevel(al.key)}
+                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${activityLevel === al.key ? 'border-teal-300 bg-teal-50' : 'border-gray-100 bg-white hover:border-teal-200'}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{al.label}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{al.desc}</p>
+                          </div>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${activityLevel === al.key ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                            ×{factor}
+                          </span>
                         </div>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${activityLevel === a.key ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                          ×{a.factor}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 mb-2 block">วิธีกำหนดเป้าหมาย</label>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">{tr.goalMethodLabel}</label>
                 <div className="flex gap-2">
                   <button onClick={() => setGoalMode('auto')} disabled={!autoGoal}
                     className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all disabled:opacity-40 ${goalMode === 'auto' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-teal-50'}`}>
-                    🤖 อัตโนมัติ
+                    {tr.goalAuto}
                   </button>
                   <button onClick={() => setGoalMode('manual')}
                     className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${goalMode === 'manual' ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-teal-50'}`}>
-                    ✏️ กำหนดเอง
+                    {tr.goalManual}
                   </button>
                 </div>
               </div>
 
               {goalMode === 'manual' && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">พลังงานต่อวัน (kcal)</label>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">{tr.dailyEnergyLabel}</label>
                   <input type="number" min="500" max="9999"
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
                     value={goalInput} onChange={e => setGoalInput(e.target.value)} />
@@ -774,12 +774,12 @@ export default function NubCal() {
               )}
 
               <div className="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between">
-                <span className="text-sm text-gray-500">เป้าหมายปัจจุบัน</span>
+                <span className="text-sm text-gray-500">{tr.currentGoalLabel}</span>
                 <span className="text-lg font-black text-teal-600">{goal.toLocaleString()} kcal</span>
               </div>
 
               <button onClick={saveSettings} className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl py-3 font-semibold transition-colors">
-                บันทึก
+                {tr.save}
               </button>
             </div>
           </div>
