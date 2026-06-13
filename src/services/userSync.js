@@ -399,6 +399,41 @@ export function subscribeAssessments(callback) {
   }, () => callback([]))
 }
 
+// ── Announcements ─────────────────────────────────────────────
+
+const LOCAL_ANN_KEY = 'hc_announcements'
+
+function getLocalAnn() {
+  try { return JSON.parse(localStorage.getItem(LOCAL_ANN_KEY) || '[]') } catch { return [] }
+}
+function saveLocalAnn(items) {
+  try { localStorage.setItem(LOCAL_ANN_KEY, JSON.stringify(items)) } catch {}
+}
+
+export async function fetchAnnouncements() {
+  if (!db) return getLocalAnn()
+  const snap = await getDocs(collection(db, 'announcements'))
+  return snap.docs
+    .map(d => ({ ...d.data(), id: d.id }))
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+}
+
+export async function addAnnouncement(ann) {
+  const item = { ...ann, id: `ann_${Date.now()}`, createdAt: new Date().toISOString() }
+  if (!db) { saveLocalAnn([item, ...getLocalAnn()]); return }
+  await setDoc(doc(db, 'announcements', item.id), item)
+}
+
+export async function updateAnnouncement(ann) {
+  if (!db) { saveLocalAnn(getLocalAnn().map(a => a.id === ann.id ? ann : a)); return }
+  await setDoc(doc(db, 'announcements', ann.id), ann)
+}
+
+export async function deleteAnnouncement(id) {
+  if (!db) { saveLocalAnn(getLocalAnn().filter(a => a.id !== id)); return }
+  await deleteDoc(doc(db, 'announcements', id))
+}
+
 export async function claimApprovedPoints(userId) {
   const all = await fetchSubmissions()
   const unclaimed = all.filter(

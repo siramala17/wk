@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '../services/userSync'
+import { sendPushToAll, fcmReady } from '../services/fcm'
 import { useHealth } from '../context/HealthContext'
 import { firebaseReady } from '../config/firebase'
 
@@ -160,6 +161,15 @@ export default function Admin() {
   // grade filter
   const [filterGrade, setFilterGrade] = useState('all')
 
+  // announcements tab
+  const [announcements, setAnnouncements] = useState([])
+  const [annLoading, setAnnLoading] = useState(false)
+  const [editingAnn, setEditingAnn] = useState(null)
+  const [deletingAnnId, setDeletingAnnId] = useState(null)
+  const [annSaving, setAnnSaving] = useState(false)
+  const [pushSending, setPushSending] = useState(null) // ann.id ที่กำลังส่ง
+  const [pushResult, setPushResult] = useState(null)   // { sent, errors, total }
+
   // tab
   const [adminTab, setAdminTab] = useState('users')
 
@@ -207,9 +217,16 @@ export default function Admin() {
     finally { setCatalogLoading(false) }
   }, [])
 
+  const loadAnnouncements = useCallback(async () => {
+    setAnnLoading(true)
+    try { setAnnouncements(await fetchAnnouncements()) }
+    catch { /* silent */ }
+    finally { setAnnLoading(false) }
+  }, [])
+
   useEffect(() => {
-    if (authenticated) { loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions(); loadCatalog() }
-  }, [authenticated, loadUsers, loadSubmissions, loadSurveys, loadRedemptions, loadCatalog])
+    if (authenticated) { loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions(); loadCatalog(); loadAnnouncements() }
+  }, [authenticated, loadUsers, loadSubmissions, loadSurveys, loadRedemptions, loadCatalog, loadAnnouncements])
 
   async function handleReview(id, status) {
     setReviewingId(id)
@@ -251,6 +268,44 @@ export default function Admin() {
       await loadRedemptions()
     } catch { /* silent */ }
     finally { setReviewingRedeemId(null) }
+  }
+
+  async function handleSaveAnn(form) {
+    setAnnSaving(true)
+    try {
+      if (form.id) { await updateAnnouncement(form) }
+      else { await addAnnouncement(form) }
+      await loadAnnouncements()
+      setEditingAnn(null)
+    } catch { /* silent */ }
+    finally { setAnnSaving(false) }
+  }
+
+  async function handleDeleteAnn(id) {
+    setDeletingAnnId(id)
+    try { await deleteAnnouncement(id); await loadAnnouncements() }
+    catch { /* silent */ }
+    finally { setDeletingAnnId(null) }
+  }
+
+  async function handleToggleAnn(ann) {
+    await updateAnnouncement({ ...ann, active: !ann.active })
+    await loadAnnouncements()
+  }
+
+  async function handleSendPush(ann) {
+    setPushSending(ann.id)
+    setPushResult(null)
+    try {
+      const result = await sendPushToAll({ title: `${ann.emoji} ${ann.title}`, body: ann.body || '' })
+      setPushResult(result)
+      setTimeout(() => setPushResult(null), 5000)
+    } catch (e) {
+      setPushResult({ error: e?.message || 'เกิดข้อผิดพลาด' })
+      setTimeout(() => setPushResult(null), 5000)
+    } finally {
+      setPushSending(null)
+    }
   }
 
   async function handleDeleteSurvey(id) {
@@ -400,12 +455,13 @@ export default function Admin() {
         )}
 
         {/* tab selector */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
+        <div className="grid grid-cols-3 sm:grid-cols-5 bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
           {[
-            { key: 'users',       label: '👥 ผู้ใช้',      badge: null },
-            { key: 'submissions', label: '📸 ภาพ',          badge: pendingCount > 0 ? pendingCount : null },
-            { key: 'redemptions', label: '🎁 แลกรางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
-            { key: 'surveys',     label: '📊 พึงพอใจ',     badge: null },
+            { key: 'users',         label: '👥 ผู้ใช้',    badge: null },
+            { key: 'submissions',   label: '📸 ภาพ',        badge: pendingCount > 0 ? pendingCount : null },
+            { key: 'redemptions',   label: '🎁 รางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
+            { key: 'surveys',       label: '📊 สำรวจ',     badge: null },
+            { key: 'announcements', label: '📢 ประกาศ',    badge: announcements.filter(a => a.active).length || null },
           ].map(({ key, label, badge }) => (
             <button key={key} onClick={() => setAdminTab(key)}
               className={`relative py-2.5 rounded-xl text-xs font-semibold transition-all ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
@@ -772,6 +828,24 @@ export default function Admin() {
             loading={surveyLoading}
             onDelete={handleDeleteSurvey}
             deletingId={deletingSurveyId}
+          />
+        )}
+
+        {/* ══ TAB: ประกาศ ══ */}
+        {adminTab === 'announcements' && (
+          <AnnouncementTab
+            announcements={announcements}
+            loading={annLoading}
+            editingAnn={editingAnn}
+            setEditingAnn={setEditingAnn}
+            onSave={handleSaveAnn}
+            onDelete={handleDeleteAnn}
+            onToggle={handleToggleAnn}
+            deletingId={deletingAnnId}
+            saving={annSaving}
+            onSendPush={handleSendPush}
+            pushSending={pushSending}
+            pushResult={pushResult}
           />
         )}
 
@@ -1220,6 +1294,215 @@ function FirebaseSetupGuide({ compact } = {}) {
           <ExternalLink size={14} /> เปิด Firebase Console
         </a>
       </div>
+    </div>
+  )
+}
+
+// ── Announcement Components ───────────────────────────────────
+
+const ANN_TYPE_CONFIG = {
+  info:    { label: 'ข้อมูลทั่วไป', color: 'blue',   bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200',   dot: 'bg-blue-400' },
+  warning: { label: 'คำเตือน',      color: 'yellow', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', dot: 'bg-yellow-400' },
+  success: { label: 'ข่าวดี',       color: 'green',  bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200',  dot: 'bg-green-400' },
+  danger:  { label: 'เร่งด่วน',     color: 'red',    bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200',    dot: 'bg-red-400' },
+}
+
+const BLANK_ANN = { id: '', emoji: '📢', title: '', body: '', type: 'info', active: true }
+
+function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
+  const [form, setForm] = useState(initial || BLANK_ANN)
+  const isNew = !initial?.id
+  function set(k, v) { setForm(p => ({ ...p, [k]: v })) }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <h3 className="font-bold text-slate-800">{isNew ? 'เพิ่มประกาศใหม่' : 'แก้ไขประกาศ'}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="flex gap-3">
+            <div className="w-20">
+              <label className="text-xs text-slate-500 mb-1 block">Emoji</label>
+              <input
+                className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-2xl text-center focus:outline-none focus:border-blue-400"
+                value={form.emoji} maxLength={4}
+                onChange={e => set('emoji', e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="text-xs text-slate-500 mb-1 block">หัวข้อ <span className="text-red-400">*</span></label>
+              <input
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+                value={form.title} placeholder="เช่น ประกาศสำคัญ"
+                onChange={e => set('title', e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 mb-1 block">เนื้อหา</label>
+            <textarea
+              rows={3}
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 resize-none"
+              value={form.body} placeholder="รายละเอียดประกาศ..."
+              onChange={e => set('body', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 mb-2 block">ประเภท</label>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(ANN_TYPE_CONFIG).map(([key, cfg]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => set('type', key)}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-all flex items-center gap-1.5 ${
+                    form.type === key ? `${cfg.bg} ${cfg.text} ${cfg.border}` : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                  {cfg.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div onClick={() => set('active', !form.active)}
+              className={`w-11 h-6 rounded-full transition-colors relative ${form.active ? 'bg-blue-500' : 'bg-slate-300'}`}>
+              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.active ? 'left-6' : 'left-1'}`} />
+            </div>
+            <span className="text-sm font-medium text-slate-700">{form.active ? 'แสดงประกาศ' : 'ซ่อนประกาศ'}</span>
+          </label>
+          <div className="flex gap-2 pt-1">
+            <button onClick={onClose} disabled={saving}
+              className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 disabled:opacity-50">
+              ยกเลิก
+            </button>
+            <button
+              onClick={() => { if (form.title.trim()) onSave(form) }}
+              disabled={saving || !form.title.trim()}
+              className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              {saving
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> บันทึก...</>
+                : <><Check size={15} /> บันทึก</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, onSave, onDelete, onToggle, deletingId, saving, onSendPush, pushSending, pushResult }) {
+  const activeCount = announcements.filter(a => a.active).length
+  const fcmIsReady = fcmReady
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-bold text-slate-700">ประกาศทั้งหมด</p>
+          <p className="text-xs text-slate-400">กำลังแสดง {activeCount} รายการ</p>
+        </div>
+        <button
+          onClick={() => setEditingAnn({ ...BLANK_ANN })}
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors"
+        >
+          + เพิ่มประกาศ
+        </button>
+      </div>
+
+      {!fcmIsReady && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs text-amber-700">
+          <p className="font-bold mb-1">⚙️ ยังไม่ได้ตั้งค่า Push Notification</p>
+          <p>กรุณาใส่ <span className="font-mono bg-amber-100 px-1 rounded">VAPID_KEY</span> และ <span className="font-mono bg-amber-100 px-1 rounded">FCM_SERVER_KEY</span> ใน <span className="font-mono bg-amber-100 px-1 rounded">src/services/fcm.js</span></p>
+        </div>
+      )}
+
+      {pushResult && (
+        <div className={`rounded-2xl px-4 py-3 text-sm font-semibold flex items-center gap-2 ${pushResult.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+          {pushResult.error
+            ? <><AlertTriangle size={15} /> {pushResult.error}</>
+            : <><Check size={15} /> ส่งสำเร็จ {pushResult.sent}/{pushResult.total} อุปกรณ์ {pushResult.errors > 0 ? `(ล้มเหลว ${pushResult.errors})` : ''}</>
+          }
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : announcements.length === 0 ? (
+        <div className="text-center py-16 text-slate-400">
+          <span className="text-5xl block mb-3">📢</span>
+          <p className="text-sm">ยังไม่มีประกาศ — กดเพิ่มด้านบน</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {announcements.map(ann => {
+            const cfg = ANN_TYPE_CONFIG[ann.type] || ANN_TYPE_CONFIG.info
+            return (
+              <div key={ann.id} className={`rounded-2xl border-2 overflow-hidden ${ann.active ? `${cfg.bg} ${cfg.border}` : 'bg-slate-50 border-slate-200 opacity-60'}`}>
+                <div className="flex items-start gap-3 p-4">
+                  <span className="text-2xl flex-shrink-0 mt-0.5">{ann.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <p className={`font-bold text-sm ${ann.active ? cfg.text : 'text-slate-600'}`}>{ann.title}</p>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${cfg.bg} ${cfg.text} border ${cfg.border}`}>{cfg.label}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${ann.active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                        {ann.active ? 'แสดงอยู่' : 'ซ่อน'}
+                      </span>
+                    </div>
+                    {ann.body && <p className="text-xs text-slate-600 leading-relaxed">{ann.body}</p>}
+                    <p className="text-[10px] text-slate-400 mt-1">{formatDate(ann.createdAt)}</p>
+                  </div>
+                </div>
+                <div className="flex gap-1 px-4 pb-3 flex-wrap">
+                  <button onClick={() => setEditingAnn({ ...ann })}
+                    className="px-3 py-1.5 bg-white/80 hover:bg-white text-slate-600 rounded-lg text-xs font-semibold border border-slate-200 transition-colors">
+                    แก้ไข
+                  </button>
+                  <button onClick={() => onToggle(ann)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
+                      ann.active
+                        ? 'bg-white/80 hover:bg-white text-slate-500 border-slate-200'
+                        : 'bg-green-50 hover:bg-green-100 text-green-600 border-green-200'
+                    }`}>
+                    {ann.active ? 'ซ่อน' : 'แสดง'}
+                  </button>
+                  {fcmIsReady && (
+                    <button
+                      onClick={() => onSendPush(ann)}
+                      disabled={pushSending === ann.id}
+                      className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-semibold border border-blue-200 transition-colors disabled:opacity-40 flex items-center gap-1"
+                    >
+                      {pushSending === ann.id
+                        ? <><span className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /> ส่ง...</>
+                        : '🔔 ส่ง Push'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => onDelete(ann.id)}
+                    disabled={deletingId === ann.id}
+                    className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border border-red-100 transition-colors disabled:opacity-40 ml-auto">
+                    {deletingId === ann.id ? '...' : 'ลบ'}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {editingAnn && (
+        <AnnouncementEditModal
+          initial={editingAnn.id ? editingAnn : null}
+          onSave={onSave}
+          onClose={() => setEditingAnn(null)}
+          saving={saving}
+        />
+      )}
     </div>
   )
 }

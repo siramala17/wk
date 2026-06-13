@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Moon, Smartphone, Brain, Dumbbell, Droplets, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
@@ -7,6 +7,8 @@ import { getHealthLevel } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import Profile from './Profile'
+import { fetchAnnouncements } from '../services/userSync'
+import { requestPermissionAndSaveToken, fcmReady } from '../services/fcm'
 
 function getStatConfig(t) {
   return [
@@ -69,10 +71,42 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null
 }
 
+const ANN_STYLE = {
+  info:    { bg: 'rgba(239,246,255,0.95)', border: '#bfdbfe', text: '#1e40af', bar: '#3b82f6' },
+  warning: { bg: 'rgba(255,251,235,0.95)', border: '#fde68a', text: '#92400e', bar: '#f59e0b' },
+  success: { bg: 'rgba(240,253,244,0.95)', border: '#bbf7d0', text: '#14532d', bar: '#22c55e' },
+  danger:  { bg: 'rgba(254,242,242,0.95)', border: '#fecaca', text: '#7f1d1d', bar: '#ef4444' },
+}
+
 export default function Dashboard() {
   const { latestAssessment, history, bmiData, user } = useHealth()
   const { lang, toggleLang, t } = useLang()
   const [mainTab, setMainTab] = useState('home')
+  const [announcements, setAnnouncements] = useState([])
+  const [dismissedIds, setDismissedIds] = useState(new Set())
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [isInstalled, setIsInstalled] = useState(false)
+
+  useEffect(() => {
+    fetchAnnouncements()
+      .then(all => setAnnouncements(all.filter(a => a.active)))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!user?.id || !fcmReady) return
+    if (Notification.permission === 'default') {
+      requestPermissionAndSaveToken(user.id).catch(() => {})
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    const handler = e => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => setIsInstalled(true))
+    if (window.matchMedia('(display-mode: standalone)').matches) setIsInstalled(true)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
 
   const score = latestAssessment?.overallScore ?? (history.length ? history[history.length - 1].score : null)
   const level = getHealthLevel(score)
@@ -112,6 +146,67 @@ export default function Dashboard() {
 
       {mainTab === 'home' && (
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-4 animate-fade-in">
+
+          {/* ── Announcements ── */}
+          {announcements.filter(a => !dismissedIds.has(a.id)).map(ann => {
+            const s = ANN_STYLE[ann.type] || ANN_STYLE.info
+            return (
+              <div
+                key={ann.id}
+                className="rounded-2xl overflow-hidden"
+                style={{ background: s.bg, border: `1.5px solid ${s.border}`, boxShadow: `0 2px 12px ${s.border}80` }}
+              >
+                <div style={{ height: '3px', background: s.bar }} />
+                <div className="flex items-start gap-3 px-4 py-3">
+                  <span className="text-xl flex-shrink-0 mt-0.5">{ann.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm" style={{ color: s.text }}>{ann.title}</p>
+                    {ann.body && <p className="text-xs mt-0.5 leading-relaxed" style={{ color: s.text, opacity: 0.8 }}>{ann.body}</p>}
+                  </div>
+                  <button
+                    onClick={() => setDismissedIds(prev => new Set([...prev, ann.id]))}
+                    className="flex-shrink-0 p-1 rounded-full hover:bg-black/10 transition-colors"
+                    style={{ color: s.text, opacity: 0.5 }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+
+          {/* ── PWA Install Banner ── */}
+          {installPrompt && !isInstalled && (
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: 'linear-gradient(135deg,#1e3a8a,#1d4ed8)', boxShadow: '0 4px 20px rgba(29,78,216,0.4)' }}>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <img src="/icon.svg" alt="icon" className="w-10 h-10 rounded-xl flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white text-sm">ติดตั้งแอปบนมือถือ</p>
+                  <p className="text-blue-200 text-xs">รับแจ้งเตือนได้แม้ปิด browser</p>
+                </div>
+                <button
+                  onClick={async () => {
+                    installPrompt.prompt()
+                    const { outcome } = await installPrompt.userChoice
+                    if (outcome === 'accepted') setIsInstalled(true)
+                    setInstallPrompt(null)
+                  }}
+                  className="flex-shrink-0 px-3 py-1.5 bg-white text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-50 transition-colors"
+                >
+                  ติดตั้ง
+                </button>
+                <button onClick={() => setInstallPrompt(null)}
+                  className="flex-shrink-0 text-blue-300 hover:text-white p-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* ── Hero ── */}
           <div
