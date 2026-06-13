@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getMessaging, isSupported } from 'firebase/messaging'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBlrOVyRiz_zFCBpDD9_ENlsqvsN6T9AKE',
@@ -15,17 +14,25 @@ const firebaseConfig = {
 export const firebaseReady = true
 
 let _db = null
-let _messaging = null
+let _app = null
 
 try {
-  const app = initializeApp(firebaseConfig)
-  _db = getFirestore(app)
-  isSupported().then(ok => {
-    if (ok) _messaging = getMessaging(app)
-  }).catch(() => {})
+  _app = initializeApp(firebaseConfig)
+  _db = getFirestore(_app)
 } catch (e) {
   console.error('[Firebase] init failed:', e)
 }
 
 export const db = _db
-export const getMsg = () => _messaging
+
+export async function getMsg() {
+  if (!_app) return null
+  try {
+    const { getMessaging, isSupported } = await import('firebase/messaging')
+    const ok = await isSupported()
+    if (!ok) return null
+    return getMessaging(_app)
+  } catch {
+    return null
+  }
+}

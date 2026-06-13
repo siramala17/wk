@@ -95,7 +95,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user?.id || !fcmReady) return
-    if (Notification.permission === 'default') {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       requestPermissionAndSaveToken(user.id).catch(() => {})
     }
   }, [user?.id])

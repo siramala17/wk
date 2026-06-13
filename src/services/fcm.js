@@ -1,4 +1,3 @@
-import { getToken } from 'firebase/messaging'
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore'
 import { getMsg, db } from '../config/firebase'
 
@@ -64,9 +63,10 @@ export async function requestPermissionAndSaveToken(userId) {
     const permission = await Notification.requestPermission()
     if (permission !== 'granted') return null
 
-    const messaging = getMsg()
+    const messaging = await getMsg()
     if (!messaging) return null
 
+    const { getToken } = await import('firebase/messaging')
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
     const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg })
 
