@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { Camera, X, Trash2, Plus, Edit3, BookOpen, Search, Settings } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
@@ -109,6 +109,196 @@ function SummaryRing({ consumed, goal, remaining2Label }) {
   )
 }
 
+// ── Intermittent Fasting ─────────────────────────────────────
+const IF_PROTOCOLS = [
+  { hours: 12, label: '12:12', fastH: 12, feedH: 12, name: 'Circadian Rhythm', desc: 'เหมาะสำหรับผู้เริ่มต้น',   color: '#10b981', benefit: 'ปรับนาฬิกาชีวิต ลดน้ำตาลในเลือด' },
+  { hours: 16, label: '16:8',  fastH: 16, feedH: 8,  name: '16:8 Fast',        desc: 'ยอดนิยมที่สุด',           color: '#f97316', benefit: 'เผาผลาญไขมัน ลดน้ำหนักได้ดี' },
+  { hours: 18, label: '18:6',  fastH: 18, feedH: 6,  name: '18:6 Fast',        desc: 'ระดับกลาง',               color: '#ef4444', benefit: 'เพิ่มประสิทธิภาพการเผาผลาญ' },
+  { hours: 20, label: '20:4',  fastH: 20, feedH: 4,  name: 'Warrior Diet',     desc: 'ระดับสูง',                color: '#7c3aed', benefit: 'Autophagy สูง ล้างเซลล์เก่า' },
+]
+
+function IFTimer() {
+  const [protocol, setProtocol] = useState(() => {
+    const saved = Number(localStorage.getItem('if_protocol'))
+    return IF_PROTOCOLS.find(p => p.hours === saved) || IF_PROTOCOLS[1]
+  })
+  const [startTime, setStartTime] = useState(() => {
+    const s = localStorage.getItem('if_start')
+    return s && localStorage.getItem('if_active') === 'true' ? Number(s) : null
+  })
+  const [now, setNow]             = useState(Date.now())
+  const [showGuide, setShowGuide] = useState(false)
+  const prevInFastRef             = useRef(null)
+
+  const isActive = !!startTime
+
+  useEffect(() => {
+    if (!isActive) return
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [isActive])
+
+  const elapsed   = isActive ? Math.max(0, Math.floor((now - startTime) / 1000)) : 0
+  const fastSecs  = protocol.fastH * 3600
+  const cycleSecs = (protocol.fastH + protocol.feedH) * 3600
+  const phase     = elapsed % cycleSecs
+  const inFast    = phase < fastSecs
+
+  // fire notification when fasting period ends
+  useEffect(() => {
+    if (!isActive) { prevInFastRef.current = null; return }
+    if (prevInFastRef.current === null) { prevInFastRef.current = inFast; return }
+    if (prevInFastRef.current === true && inFast === false) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('🎉 อดอาหารครบแล้ว!', {
+          body: `ยินดีด้วย! คุณอดอาหารครบ ${protocol.fastH} ชั่วโมงแล้ว ถึงเวลากินอาหารได้เลย! 🍽️`,
+          icon: '/icons/icon-192.png',
+        })
+      }
+    }
+    prevInFastRef.current = inFast
+  }, [inFast, isActive, protocol.fastH])
+
+  async function start() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      await Notification.requestPermission()
+    }
+    const t = Date.now()
+    setStartTime(t)
+    setNow(t)
+    localStorage.setItem('if_start',    String(t))
+    localStorage.setItem('if_active',   'true')
+    localStorage.setItem('if_protocol', String(protocol.hours))
+  }
+  function stop() {
+    setStartTime(null)
+    localStorage.removeItem('if_start')
+    localStorage.setItem('if_active', 'false')
+  }
+  function changeProtocol(p) {
+    setProtocol(p)
+    localStorage.setItem('if_protocol', String(p.hours))
+    stop()
+  }
+
+  const remaining  = inFast ? fastSecs - phase : cycleSecs - phase
+  const pct        = isActive ? (inFast ? phase / fastSecs : (phase - fastSecs) / (protocol.feedH * 3600)) : 0
+
+  const fmt = s => `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+  const elapsedH = Math.floor(elapsed / 3600)
+  const elapsedM = Math.floor((elapsed % 3600) / 60)
+  const R = 88, C = 2 * Math.PI * R
+
+  const phaseLabel = !isActive ? 'พร้อมเริ่ม' : inFast ? (elapsedH >= 12 ? 'FAT BURN 🔥' : 'FASTING') : 'FEEDING 🍽️'
+  const ringColor  = isActive ? (inFast ? protocol.color : '#10b981') : '#e2e8f0'
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-50">
+        <div className="flex items-center gap-2">
+          <span className="text-base">⏱️</span>
+          <span className="font-semibold text-gray-900 text-sm">Intermittent Fasting</span>
+        </div>
+        <button onClick={() => setShowGuide(p => !p)} className="text-xs text-blue-500 font-semibold">
+          {showGuide ? 'ซ่อนคำแนะนำ' : '📋 คำแนะนำ IF'}
+        </button>
+      </div>
+
+      {/* Protocol selector */}
+      <div className="px-4 pt-4 grid grid-cols-4 gap-2">
+        {IF_PROTOCOLS.map(p => (
+          <button key={p.hours} onClick={() => changeProtocol(p)}
+            className="py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95"
+            style={protocol.hours === p.hours
+              ? { backgroundColor: p.color, color: '#fff', boxShadow: `0 4px 12px ${p.color}55` }
+              : { backgroundColor: '#f1f5f9', color: '#94a3b8' }}>
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Ring timer */}
+      <div className="flex flex-col items-center py-5 px-4">
+        <div className="relative" style={{ width: 200, height: 200 }}>
+          <svg width="200" height="200" viewBox="0 0 200 200" className="absolute inset-0 -rotate-90">
+            <circle cx="100" cy="100" r={R} fill="none" stroke="#f1f5f9" strokeWidth="14" />
+            <circle cx="100" cy="100" r={R} fill="none" stroke={ringColor} strokeWidth="14"
+              strokeLinecap="round"
+              strokeDasharray={`${pct * C} ${C}`} />
+            <circle cx="100" cy="100" r="70" fill="none" stroke="#f8fafc" strokeWidth="8" />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-4xl leading-none mb-1">🔥</span>
+            <span className="text-xl font-black text-gray-900 font-mono tracking-tight leading-none">
+              {isActive ? fmt(remaining) : `${String(protocol.fastH).padStart(2,'0')}:00:00`}
+            </span>
+            <span className="text-[10px] font-bold tracking-widest mt-1 uppercase"
+              style={{ color: ringColor === '#e2e8f0' ? '#94a3b8' : ringColor }}>
+              {phaseLabel}
+            </span>
+          </div>
+        </div>
+
+        {isActive && (
+          <div className="flex gap-6 mt-1 text-center">
+            <div>
+              <p className="text-[10px] text-gray-400">เริ่มอด</p>
+              <p className="text-xs font-bold text-gray-700">
+                {new Date(startTime).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">ผ่านมา</p>
+              <p className="text-xs font-bold" style={{ color: protocol.color }}>{elapsedH}ชม. {elapsedM}น.</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400">เป้าหมาย</p>
+              <p className="text-xs font-bold text-gray-700">{protocol.fastH} ชม.</p>
+            </div>
+          </div>
+        )}
+
+        <button onClick={isActive ? stop : start}
+          className="mt-4 px-10 py-3 rounded-2xl font-bold text-white text-sm transition-all active:scale-95 shadow-lg"
+          style={{ backgroundColor: isActive ? '#ef4444' : protocol.color, boxShadow: `0 6px 20px ${isActive ? '#ef444455' : protocol.color + '55'}` }}>
+          {isActive ? '⏹ หยุดอดอาหาร' : '▶ เริ่มอดอาหาร'}
+        </button>
+      </div>
+
+      {/* Guide */}
+      {showGuide && (
+        <div className="px-4 pb-4 border-t border-gray-50 pt-3 space-y-2">
+          <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">ตารางคำแนะนำ IF</p>
+          {IF_PROTOCOLS.map(p => (
+            <div key={p.hours} className="rounded-2xl p-3 flex gap-3 items-center"
+              style={{ backgroundColor: p.color + '14' }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-xs text-center leading-tight"
+                style={{ backgroundColor: p.color }}>
+                {p.label.split(':').map((v,i) => <div key={i}>{v}</div>)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-gray-800 text-xs">{p.name}
+                  <span className="font-normal text-gray-400 ml-1">— {p.desc}</span>
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">อด {p.fastH} ชม. / กิน {p.feedH} ชม.</p>
+                <p className="text-xs font-medium mt-0.5" style={{ color: p.color }}>{p.benefit}</p>
+              </div>
+            </div>
+          ))}
+          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3 mt-1">
+            <p className="text-xs font-bold text-amber-700 mb-1.5">⚠️ ข้อควรระวัง</p>
+            <ul className="text-xs text-amber-600 space-y-0.5 list-disc list-inside leading-relaxed">
+              <li>ดื่มน้ำเปล่าหรือชา/กาแฟดำได้ตลอดช่วงอดอาหาร</li>
+              <li>ไม่เหมาะกับผู้ตั้งครรภ์ เด็ก และผู้มีโรคประจำตัว</li>
+              <li>หากเวียนหัวหรืออ่อนเพลีย ให้หยุดและรับประทานอาหารทันที</li>
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function NubCal() {
   const ctx = useHealth()
   const { t } = useLang()
@@ -155,6 +345,7 @@ export default function NubCal() {
   React.useEffect(() => { localStorage.setItem('nubcal_activity', activityLevel) }, [activityLevel])
   React.useEffect(() => { localStorage.setItem('nubcal_goal_mode', goalMode) }, [goalMode])
 
+  const [pageTab, setPageTab]     = useState('diary')
   const [activeMeal, setActiveMeal] = useState('breakfast')
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -386,10 +577,28 @@ export default function NubCal() {
             )
           })}
         </div>
+
+        {/* Tab bar */}
+        <div className="flex mt-3 bg-slate-100 rounded-2xl p-1 gap-1">
+          {[
+            { key: 'diary', label: '🍽️ ไดอารี่อาหาร' },
+            { key: 'if',    label: '⏱️ IF & น้ำ' },
+          ].map(tab => (
+            <button key={tab.key} onClick={() => setPageTab(tab.key)}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                pageTab === tab.key
+                  ? 'bg-white text-gray-800 shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-4 space-y-3">
 
+        {pageTab === 'diary' && <>
         {/* Summary card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm font-semibold text-gray-500 mb-3">{tr.dailySummary}</p>
@@ -490,6 +699,9 @@ export default function NubCal() {
           )
         })}
 
+        </>}
+
+        {pageTab === 'if' && <>
         {/* Water section */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3.5">
@@ -515,6 +727,11 @@ export default function NubCal() {
             </button>
           )}
         </div>
+
+        {/* IF Timer */}
+        <IFTimer />
+
+        </>}
 
       </div>
 

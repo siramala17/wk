@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink } from 'lucide-react'
+import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '../services/userSync'
 import { sendPushToAll, fcmReady } from '../services/fcm'
@@ -1307,7 +1307,7 @@ const ANN_TYPE_CONFIG = {
   danger:  { label: 'เร่งด่วน',     color: 'red',    bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200',    dot: 'bg-red-400' },
 }
 
-const BLANK_ANN = { id: '', emoji: '📢', title: '', body: '', type: 'info', active: true }
+const BLANK_ANN = { id: '', emoji: '📢', title: '', body: '', type: 'info', active: true, scheduledAt: '', pushSent: false }
 
 function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
   const [form, setForm] = useState(initial || BLANK_ANN)
@@ -1367,6 +1367,18 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
               ))}
             </div>
           </div>
+          <div>
+            <label className="text-xs text-slate-500 mb-1 flex items-center gap-1"><Clock size={11} /> กำหนดเวลาส่ง Push อัตโนมัติ</label>
+            <input
+              type="datetime-local"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              value={form.scheduledAt || ''}
+              onChange={e => set('scheduledAt', e.target.value)}
+            />
+            {form.scheduledAt && (
+              <p className="text-xs text-blue-600 mt-1">⚡ จะส่ง Push ให้ผู้ใช้ทุกคนอัตโนมัติตามเวลาที่กำหนด</p>
+            )}
+          </div>
           <label className="flex items-center gap-3 cursor-pointer">
             <div onClick={() => set('active', !form.active)}
               className={`w-11 h-6 rounded-full transition-colors relative ${form.active ? 'bg-blue-500' : 'bg-slate-300'}`}>
@@ -1397,6 +1409,22 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
 function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, onSave, onDelete, onToggle, deletingId, saving, onSendPush, pushSending, pushResult }) {
   const activeCount = announcements.filter(a => a.active).length
   const fcmIsReady = fcmReady
+
+  // auto-send when scheduled time arrives
+  useEffect(() => {
+    if (!fcmIsReady) return
+    async function checkScheduled() {
+      const now = new Date()
+      const due = announcements.filter(a => a.scheduledAt && !a.pushSent && new Date(a.scheduledAt) <= now)
+      for (const ann of due) {
+        await onSendPush(ann)
+        await onSave({ ...ann, pushSent: true })
+      }
+    }
+    checkScheduled()
+    const interval = setInterval(checkScheduled, 60000)
+    return () => clearInterval(interval)
+  }, [announcements, fcmIsReady, onSendPush, onSave])
 
   return (
     <div className="space-y-4">
@@ -1455,6 +1483,14 @@ function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, on
                       </span>
                     </div>
                     {ann.body && <p className="text-xs text-slate-600 leading-relaxed">{ann.body}</p>}
+                    {ann.scheduledAt && (
+                      <p className="text-[10px] mt-1 flex items-center gap-1">
+                        {ann.pushSent
+                          ? <span className="text-green-600 font-semibold">✅ ส่ง Push แล้ว</span>
+                          : <><Clock size={9} className="text-blue-500" /><span className="text-blue-600">จะส่ง Push: {formatDate(ann.scheduledAt)}</span></>
+                        }
+                      </p>
+                    )}
                     <p className="text-[10px] text-slate-400 mt-1">{formatDate(ann.createdAt)}</p>
                   </div>
                 </div>
