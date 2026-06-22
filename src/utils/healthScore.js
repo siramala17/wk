@@ -179,6 +179,24 @@ export function generateRecommendations(a) {
     })
   }
 
+  if (a.nutritionScore < 65) {
+    recs.push({
+      id: 'nutrition',
+      category: 'โภชนาการ',
+      icon: '🥗',
+      priority: a.nutritionScore < 40 ? 'สูง' : 'กลาง',
+      priorityColor: a.nutritionScore < 40 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700',
+      score: a.nutritionScore,
+      aiInsight: 'พฤติกรรมโภชนาการยังต้องปรับปรุง ควรรับประทานผักผลไม้และอาหารครบ 5 หมู่ให้เพียงพอทุกวัน',
+      tips: [
+        { id: 'n1', text: 'รับประทานผักอย่างน้อย 3 ส่วนและผลไม้ 2 ส่วนทุกวัน' },
+        { id: 'n2', text: 'เลือกวิธีปรุงอาหารแบบต้ม นึ่ง หรือย่าง แทนการทอด' },
+        { id: 'n3', text: 'ดื่มนมวันละ 1–2 แก้วเพื่อให้ได้แคลเซียมเพียงพอ' },
+        { id: 'n4', text: 'อ่านฉลากโภชนาการก่อนซื้อ หลีกเลี่ยงอาหารที่มีน้ำตาลหรือโซเดียมสูง' },
+      ],
+    })
+  }
+
   return recs
 }
 

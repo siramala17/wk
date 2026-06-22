@@ -8,11 +8,12 @@ import BMI from './BMI'
 
 // Language-neutral domain config (colors, emojis, question IDs)
 const DOMAIN_CONFIG = [
-  { key: 'sleep',    emoji: '🌙', color: 'bg-blue-500',    light: 'bg-blue-50',    text: 'text-blue-600',    border: 'border-blue-200',    ring: '#3B82F6',  qIds: [1,2,3,4],    reverses: [false,false,false,true]  },
-  { key: 'water',    emoji: '💧', color: 'bg-cyan-500',    light: 'bg-cyan-50',    text: 'text-cyan-600',    border: 'border-cyan-200',    ring: '#06B6D4',  qIds: [5,6,7,8],    reverses: [false,false,true,true]   },
-  { key: 'exercise', emoji: '🏃', color: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', ring: '#10B981',  qIds: [9,10,11,12], reverses: [false,false,false,true]  },
-  { key: 'digital',  emoji: '📱', color: 'bg-purple-500',  light: 'bg-purple-50',  text: 'text-purple-600',  border: 'border-purple-200',  ring: '#8B5CF6',  qIds: [13,14,15,16],reverses: [true,true,false,true]   },
-  { key: 'stress',   emoji: '🧘', color: 'bg-yellow-500',  light: 'bg-yellow-50',  text: 'text-yellow-600',  border: 'border-yellow-200',  ring: '#F59E0B',  qIds: [17,18,19,20],reverses: [true,true,false,true]   },
+  { key: 'sleep',     emoji: '🌙', color: 'bg-blue-500',    light: 'bg-blue-50',    text: 'text-blue-600',    border: 'border-blue-200',    ring: '#3B82F6',  qIds: [1,2,3,4],    reverses: [false,false,false,true]  },
+  { key: 'water',     emoji: '💧', color: 'bg-cyan-500',    light: 'bg-cyan-50',    text: 'text-cyan-600',    border: 'border-cyan-200',    ring: '#06B6D4',  qIds: [5,6,7,8],    reverses: [false,false,true,true]   },
+  { key: 'exercise',  emoji: '🏃', color: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', ring: '#10B981',  qIds: [9,10,11,12], reverses: [false,false,false,true]  },
+  { key: 'digital',   emoji: '📱', color: 'bg-purple-500',  light: 'bg-purple-50',  text: 'text-purple-600',  border: 'border-purple-200',  ring: '#8B5CF6',  qIds: [13,14,15,16],reverses: [true,true,false,true]   },
+  { key: 'stress',    emoji: '🧘', color: 'bg-yellow-500',  light: 'bg-yellow-50',  text: 'text-yellow-600',  border: 'border-yellow-200',  ring: '#F59E0B',  qIds: [17,18,19,20],reverses: [true,true,false,true]   },
+  { key: 'nutrition', emoji: '🥗', color: 'bg-orange-500',  light: 'bg-orange-50',  text: 'text-orange-600',  border: 'border-orange-200',  ring: '#F97316',  qIds: [21,22,23,24],reverses: [false,false,false,false]  },
 ]
 
 function buildDomains(t) {
@@ -41,7 +42,9 @@ function calcDomainScore(answers, domain) {
 }
 
 function calcTotal(answers, domains) {
-  return domains.reduce((s, d) => s + d.questions.reduce((ds, q) => ds + applyScore(answers[q.id] ?? 3, q.reverse), 0), 0)
+  const raw = domains.reduce((s, d) => s + d.questions.reduce((ds, q) => ds + applyScore(answers[q.id] ?? 3, q.reverse), 0), 0)
+  const n = domains.length * 4
+  return Math.round(((raw - n) / (n * 4)) * 100)
 }
 
 function getLevel(total, t) {
@@ -199,13 +202,14 @@ export default function Assessment() {
       setStep(s => s + 1)
       window.scrollTo(0, 0)
     } else {
-      const sleepScore    = calcDomainScore(answers, DOMAINS[0])
-      const waterScore    = calcDomainScore(answers, DOMAINS[1])
-      const exerciseScore = calcDomainScore(answers, DOMAINS[2])
-      const digitalScore  = calcDomainScore(answers, DOMAINS[3])
-      const stressScore   = calcDomainScore(answers, DOMAINS[4])
-      const overallScore  = calcTotal(answers, DOMAINS)
-      const assessment    = { sleepScore, waterScore, exerciseScore, digitalScore, stressScore, overallScore, answers }
+      const sleepScore     = calcDomainScore(answers, DOMAINS[0])
+      const waterScore     = calcDomainScore(answers, DOMAINS[1])
+      const exerciseScore  = calcDomainScore(answers, DOMAINS[2])
+      const digitalScore   = calcDomainScore(answers, DOMAINS[3])
+      const stressScore    = calcDomainScore(answers, DOMAINS[4])
+      const nutritionScore = calcDomainScore(answers, DOMAINS[5])
+      const overallScore   = calcTotal(answers, DOMAINS)
+      const assessment     = { sleepScore, waterScore, exerciseScore, digitalScore, stressScore, nutritionScore, overallScore, answers }
       const info = saveAssessment(assessment)
       setEarnInfo(info)
       setResult(assessment)
@@ -217,8 +221,8 @@ export default function Assessment() {
     const total = calcTotal(answers, DOMAINS)
     const level = getLevel(total, t)
     const text = lang === 'en'
-      ? `🏥 My Health Assessment\n${level.emoji} Total: ${total}/100 — ${level.label}\n🌙 Sleep: ${calcDomainScore(answers, DOMAINS[0])}\n💧 Hydration: ${calcDomainScore(answers, DOMAINS[1])}\n🏃 Exercise: ${calcDomainScore(answers, DOMAINS[2])}\n📱 Digital Media: ${calcDomainScore(answers, DOMAINS[3])}\n🧘 Stress: ${calcDomainScore(answers, DOMAINS[4])}`
-      : `🏥 ผลประเมินพฤติกรรมสุขภาพของฉัน\n${level.emoji} คะแนนรวม: ${total}/100 — ${level.label}\n🌙 การนอนหลับ: ${calcDomainScore(answers, DOMAINS[0])}\n💧 การดื่มน้ำ: ${calcDomainScore(answers, DOMAINS[1])}\n🏃 การออกกำลังกาย: ${calcDomainScore(answers, DOMAINS[2])}\n📱 สื่อดิจิทัล: ${calcDomainScore(answers, DOMAINS[3])}\n🧘 ความเครียด: ${calcDomainScore(answers, DOMAINS[4])}`
+      ? `🏥 My Health Assessment\n${level.emoji} Total: ${total}/100 — ${level.label}\n🌙 Sleep: ${calcDomainScore(answers, DOMAINS[0])}\n💧 Hydration: ${calcDomainScore(answers, DOMAINS[1])}\n🏃 Exercise: ${calcDomainScore(answers, DOMAINS[2])}\n📱 Digital Media: ${calcDomainScore(answers, DOMAINS[3])}\n🧘 Stress: ${calcDomainScore(answers, DOMAINS[4])}\n🥗 Nutrition: ${calcDomainScore(answers, DOMAINS[5])}`
+      : `🏥 ผลประเมินพฤติกรรมสุขภาพของฉัน\n${level.emoji} คะแนนรวม: ${total}/100 — ${level.label}\n🌙 การนอนหลับ: ${calcDomainScore(answers, DOMAINS[0])}\n💧 การดื่มน้ำ: ${calcDomainScore(answers, DOMAINS[1])}\n🏃 การออกกำลังกาย: ${calcDomainScore(answers, DOMAINS[2])}\n📱 สื่อดิจิทัล: ${calcDomainScore(answers, DOMAINS[3])}\n🧘 ความเครียด: ${calcDomainScore(answers, DOMAINS[4])}\n🥗 โภชนาการ: ${calcDomainScore(answers, DOMAINS[5])}`
     if (navigator.share) {
       navigator.share({ title: lang === 'en' ? 'My Health Results' : 'ผลสุขภาพของฉัน', text })
     } else {

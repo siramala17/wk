@@ -7,11 +7,12 @@ import { generateRecommendations, getHealthLevel } from '../utils/healthScore'
 function AiInsightBanner({ assessment }) {
   const level = getHealthLevel(assessment.overallScore)
   const weakAreas = [
-    assessment.sleepScore < 65 && 'การนอนหลับ',
-    assessment.screenScore < 65 && 'เวลาหน้าจอ',
-    assessment.stressScore < 65 && 'ความเครียด',
-    assessment.exerciseScore < 65 && 'การออกกำลังกาย',
-    assessment.waterScore < 65 && 'การดื่มน้ำ',
+    assessment.sleepScore     < 65 && 'การนอนหลับ',
+    assessment.digitalScore   < 65 && 'เวลาหน้าจอ',
+    assessment.stressScore    < 65 && 'ความเครียด',
+    assessment.exerciseScore  < 65 && 'การออกกำลังกาย',
+    assessment.waterScore     < 65 && 'การดื่มน้ำ',
+    assessment.nutritionScore < 65 && 'โภชนาการ',
   ].filter(Boolean)
 
   return (

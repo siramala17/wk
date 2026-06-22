@@ -63,11 +63,12 @@ function AnalyticsContent({ history, latestAssessment, t }) {
   const [chartTab, setChartTab] = useState('score')
 
   const radarData = latestAssessment ? [
-    { subject: a.weakAreas.sleep,    value: latestAssessment.sleepScore,    fullMark: 100 },
-    { subject: a.weakAreas.screen,   value: latestAssessment.screenScore,   fullMark: 100 },
-    { subject: a.weakAreas.stress,   value: latestAssessment.stressScore,   fullMark: 100 },
-    { subject: a.weakAreas.exercise, value: latestAssessment.exerciseScore, fullMark: 100 },
-    { subject: a.weakAreas.water,    value: latestAssessment.waterScore,    fullMark: 100 },
+    { subject: a.weakAreas.sleep,      value: latestAssessment.sleepScore,     fullMark: 100 },
+    { subject: a.weakAreas.screen,     value: latestAssessment.digitalScore,   fullMark: 100 },
+    { subject: a.weakAreas.stress,     value: latestAssessment.stressScore,    fullMark: 100 },
+    { subject: a.weakAreas.exercise,   value: latestAssessment.exerciseScore,  fullMark: 100 },
+    { subject: a.weakAreas.water,      value: latestAssessment.waterScore,     fullMark: 100 },
+    { subject: a.weakAreas.nutrition,  value: latestAssessment.nutritionScore, fullMark: 100 },
   ] : []
 
   const chartTabs = a.chartTabs
@@ -214,11 +215,12 @@ function AiInsightBanner({ assessment, t }) {
   const a = t.analytics
   const level = getHealthLevel(assessment.overallScore)
   const weakAreas = [
-    assessment.sleepScore    < 65 && a.weakAreas.sleep,
-    assessment.screenScore   < 65 && a.weakAreas.screen,
-    assessment.stressScore   < 65 && a.weakAreas.stress,
-    assessment.exerciseScore < 65 && a.weakAreas.exercise,
-    assessment.waterScore    < 65 && a.weakAreas.water,
+    assessment.sleepScore     < 65 && a.weakAreas.sleep,
+    assessment.digitalScore   < 65 && a.weakAreas.screen,
+    assessment.stressScore    < 65 && a.weakAreas.stress,
+    assessment.exerciseScore  < 65 && a.weakAreas.exercise,
+    assessment.waterScore     < 65 && a.weakAreas.water,
+    assessment.nutritionScore < 65 && a.weakAreas.nutrition,
   ].filter(Boolean)
 
   return (

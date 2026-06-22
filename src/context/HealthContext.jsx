@@ -175,12 +175,13 @@ export function HealthProvider({ children }) {
     const entry = {
       date: days[new Date().getDay()],
       fullDate: todayStr,
-      sleep: data.sleepScore ?? 0,
-      water: data.waterScore ?? 0,
-      stress: data.stressScore ?? 0,
-      screen: data.digitalScore ?? 0,
-      exercise: data.exerciseScore ?? 0,
-      score: data.overallScore,
+      sleep:     data.sleepScore     ?? 0,
+      water:     data.waterScore     ?? 0,
+      stress:    data.stressScore    ?? 0,
+      screen:    data.digitalScore   ?? 0,
+      exercise:  data.exerciseScore  ?? 0,
+      nutrition: data.nutritionScore ?? 0,
+      score:     data.overallScore,
     }
     setHistory(prev => {
       const filtered = prev.filter(h => h.fullDate !== todayStr)
