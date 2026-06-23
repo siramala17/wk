@@ -305,8 +305,8 @@ export default function SchoolDashboard() {
           <KPI label={totalLabel} value={filteredUsers.length.toLocaleString() || totalStudents.toLocaleString()} sub="ลงทะเบียนแล้ว" color="#818cf8" trend={`${users.length} คนรวม`} up />
           <KPI label="คะแนนเฉลี่ยรวม" value={avgScore || '—'} sub="จาก 100 คะแนน" color="#fbbf24" trend={avgScore ? '+3.2' : null} up />
           <KPI label="อัตราผ่านเกณฑ์" value={filtered.length ? passRate+'%' : '—'} sub="คะแนน ≥ 50" color="#34d399" trend={filtered.length ? '+5.1%' : null} up />
-          <KPI label="ระดับดีเยี่ยม" value={filtered.length ? exRate+'%' : '—'} sub="คะแนน ≥ 80" color="#a78bfa" />
-          <KPI label="ต้องปรับปรุง" value={filtered.length ? poorRate+'%' : '—'} sub="คะแนน < 50" color="#f87171" trend={filtered.length ? '-2.3%' : null} up={false} />
+          <KPI label="ระดับดีเยี่ยม" value={filtered.length ? exRate+'%' : '—'} sub="คะแนน ≥ 80" color="#10b981" />
+          <KPI label="ต้องปรับปรุง" value={filtered.length ? poorRate+'%' : '—'} sub="คะแนน < 50" color="#ef4444" trend={filtered.length ? '-2.3%' : null} up={false} />
           {!filtered.length && (
             <div style={{ ...CARD, padding:12, marginTop:4 }}>
               <div style={{ fontSize:11, color:'#64748b', lineHeight:1.5 }}>

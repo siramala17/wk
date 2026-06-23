@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Moon, Smartphone, Brain, Dumbbell, Droplets, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
@@ -22,39 +22,52 @@ function getStatConfig(t) {
 
 function getQuickLinks(t) {
   return [
-    { to: '/assessment',      label: t.quick.assessment, grad: ['#3730a3','#6366f1'], shadow: 'rgba(99,102,241,0.50)' },
-    { to: '/assessment',      label: t.quick.bmi,        grad: ['#b45309','#fbbf24'], shadow: 'rgba(245,158,11,0.50)' },
-    { to: '/nubcal',          label: t.quick.calories,   grad: ['#c2410c','#fb923c'], shadow: 'rgba(249,115,22,0.50)' },
-    { to: '/analytics',       label: t.quick.graph,      grad: ['#0e7490','#22d3ee'], shadow: 'rgba(6,182,212,0.50)'  },
-    { to: '/recommendations', label: t.quick.ai,         grad: ['#065f46','#34d399'], shadow: 'rgba(16,185,129,0.50)' },
-    { to: '/knowledge',       label: t.quick.knowledge,  grad: ['#4338ca','#a78bfa'], shadow: 'rgba(139,92,246,0.50)' },
+    { to: '/assessment',      label: t.quick.assessment, emoji: '📋', grad: ['#3730a3','#6366f1'], shadow: 'rgba(99,102,241,0.40)' },
+    { to: '/assessment',      label: t.quick.bmi,        emoji: '⚖️', grad: ['#b45309','#f59e0b'], shadow: 'rgba(245,158,11,0.40)' },
+    { to: '/nubcal',          label: t.quick.calories,   emoji: '🔥', grad: ['#c2410c','#fb923c'], shadow: 'rgba(249,115,22,0.40)'  },
+    { to: '/analytics',       label: t.quick.graph,      emoji: '📊', grad: ['#0e7490','#22d3ee'], shadow: 'rgba(6,182,212,0.40)'   },
+    { to: '/recommendations', label: t.quick.ai,         emoji: '🤖', grad: ['#065f46','#34d399'], shadow: 'rgba(16,185,129,0.40)'  },
+    { to: '/knowledge',       label: t.quick.knowledge,  emoji: '📚', grad: ['#4338ca','#a78bfa'], shadow: 'rgba(139,92,246,0.40)'  },
   ]
 }
 
-const QUICK_EMOJI = ['📋','⚖️','🔥','📊','🤖','📚']
+function SectionHeader({ label, right }) {
+  return (
+    <div className="flex items-center justify-between mb-3 px-0.5">
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-4 rounded-full" style={{ background: 'linear-gradient(180deg,#6366f1,#06b6d4)' }} />
+        <p className="text-xs font-black text-slate-600 uppercase tracking-wider">{label}</p>
+      </div>
+      {right}
+    </div>
+  )
+}
 
 function StatCard({ icon: Icon, label, value, unit, max, color, bg }) {
   const pct = Math.min(100, Math.round((value / max) * 100))
   return (
     <div
-      className="rounded-2xl p-3.5 flex-shrink-0 w-[135px] relative overflow-hidden"
-      style={{ background: 'white', border: `1.5px solid ${color}30`, boxShadow: `0 4px 20px ${color}20` }}
+      className="rounded-2xl p-3.5 flex items-center gap-3"
+      style={{ background: 'white', border: `1.5px solid ${color}22`, boxShadow: `0 2px 10px ${color}18` }}
     >
-      <div className="absolute -top-5 -right-5 w-20 h-20 rounded-full pointer-events-none"
-        style={{ background: color, opacity: 0.08 }} />
-      <div className="relative flex items-center justify-between mb-2.5">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: `linear-gradient(135deg, ${bg}, white)`, border: `1.5px solid ${color}25` }}>
-          <Icon size={16} style={{ color }} />
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: bg }}
+      >
+        <Icon size={17} style={{ color }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline justify-between mb-1.5">
+          <p className="text-[11px] text-slate-500 font-semibold truncate pr-1">{label}</p>
+          <span className="text-[11px] font-black flex-shrink-0" style={{ color }}>{value} <span className="font-semibold opacity-75">{unit}</span></span>
         </div>
-        <span className="text-[11px] font-black" style={{ color }}>{value} {unit}</span>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: `${color}18` }}>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}90, ${color})` }}
+          />
+        </div>
       </div>
-      <p className="relative text-[11px] text-slate-500 mb-2 font-semibold">{label}</p>
-      <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all duration-700"
-          style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}90, ${color})`, boxShadow: `0 0 6px ${color}80` }} />
-      </div>
-      <p className="text-[10px] font-bold mt-1.5 text-right" style={{ color: `${color}cc` }}>{pct}%</p>
     </div>
   )
 }
@@ -145,7 +158,7 @@ export default function Dashboard() {
       {mainTab === 'profile' && <Profile />}
 
       {mainTab === 'home' && (
-        <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-4 animate-fade-in">
+        <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-5 animate-fade-in">
 
           {/* ── Announcements ── */}
           {announcements.filter(a => !dismissedIds.has(a.id)).map(ann => {
@@ -292,35 +305,28 @@ export default function Dashboard() {
 
           {/* ── Quick Actions ── */}
           <div>
-            <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3 px-0.5">{t.dashboard.quickMenu}</p>
-            <div className="grid grid-cols-3 gap-3">
-              {QUICK.map(({ to, label, grad, shadow }, i) => (
+            <SectionHeader label={t.dashboard.quickMenu} />
+            <div className="grid grid-cols-3 gap-2.5">
+              {QUICK.map(({ to, label, emoji, grad, shadow }, i) => (
                 <Link
                   key={to + i}
                   to={to}
-                  className="rounded-2xl p-4 flex flex-col items-center gap-2.5 transition-all active:scale-95 hover:scale-[1.03]"
-                  style={{ background: `linear-gradient(140deg, ${grad[0]}, ${grad[1]})`, boxShadow: `0 8px 24px ${shadow}` }}
+                  className="rounded-2xl p-3.5 flex flex-col items-center gap-2 transition-all active:scale-95 hover:scale-[1.03]"
+                  style={{ background: `linear-gradient(140deg, ${grad[0]}, ${grad[1]})`, boxShadow: `0 6px 18px ${shadow}` }}
                 >
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-                    style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(6px)', border: '1.5px solid rgba(255,255,255,0.30)' }}
-                  >
-                    {QUICK_EMOJI[i]}
-                  </div>
-                  <p className="text-[11px] font-black text-white text-center leading-tight whitespace-pre-line drop-shadow">
-                    {label}
-                  </p>
+                  <span className="text-2xl leading-none">{emoji}</span>
+                  <p className="text-[11px] font-black text-white text-center leading-snug drop-shadow">{label}</p>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* ── Stats ── */}
+          {/* ── Today's Stats ── */}
           {latestAssessment && (
             <div>
-              <div className="flex items-center justify-between mb-2.5 px-0.5">
-                <p className="text-xs font-black text-slate-500 uppercase tracking-wider">{t.dashboard.latestData}</p>
-                {bmiData && (
+              <SectionHeader
+                label={t.dashboard.latestData}
+                right={bmiData && (
                   <span
                     className="text-[11px] font-bold px-2.5 py-1 rounded-full"
                     style={{ background: 'linear-gradient(135deg, #3730a3, #4f46e5)', color: 'white', boxShadow: '0 4px 12px rgba(99,102,241,0.35)' }}
@@ -328,8 +334,8 @@ export default function Dashboard() {
                     {t.dashboard.bmiLabel} {bmiData.bmi} · {bmiData.category}
                   </span>
                 )}
-              </div>
-              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4">
+              />
+              <div className="grid grid-cols-2 gap-2.5">
                 {STAT_CONFIG.map(cfg => (
                   <StatCard
                     key={cfg.key}
@@ -348,54 +354,56 @@ export default function Dashboard() {
 
           {/* ── Weekly Chart ── */}
           {history.length > 0 && (
-            <div
-              className="rounded-2xl p-5 overflow-hidden relative"
-              style={{ background: 'white', boxShadow: '0 6px 24px rgba(99,102,241,0.12)', border: '1.5px solid rgba(99,102,241,0.12)' }}
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
-                style={{ background: 'linear-gradient(90deg, #3730a3, #6366f1, #06b6d4)' }} />
-              <div className="flex items-center justify-between mb-4 mt-1">
-                <div>
-                  <p className="font-black text-slate-800 text-sm">{t.dashboard.weeklyTrend}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{t.dashboard.trackProgress}</p>
-                </div>
-                <Link
-                  to="/analytics"
-                  className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-xl transition-colors"
-                  style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)', color: '#4f46e5', border: '1.5px solid rgba(99,102,241,0.18)' }}
-                >
-                  {t.dashboard.seeMore} <ChevronRight size={12} />
-                </Link>
+            <div>
+              <SectionHeader
+                label={t.dashboard.weeklyTrend}
+                right={
+                  <Link
+                    to="/analytics"
+                    className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-xl transition-colors"
+                    style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)', color: '#4f46e5', border: '1.5px solid rgba(99,102,241,0.18)' }}
+                  >
+                    {t.dashboard.seeMore} <ChevronRight size={12} />
+                  </Link>
+                }
+              />
+              <div
+                className="rounded-2xl p-4 overflow-hidden relative"
+                style={{ background: 'white', boxShadow: '0 4px 20px rgba(99,102,241,0.10)', border: '1.5px solid rgba(99,102,241,0.10)' }}
+              >
+                <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
+                  style={{ background: 'linear-gradient(90deg, #3730a3, #6366f1, #06b6d4)' }} />
+                <p className="text-xs text-slate-400 mb-3 mt-0.5">{t.dashboard.trackProgress}</p>
+                <ResponsiveContainer width="100%" height={120}>
+                  <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#4f46e5" stopOpacity={0.30} />
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.02} />
+                      </linearGradient>
+                      <linearGradient id="strokeGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"   stopColor="#3730a3" />
+                        <stop offset="100%" stopColor="#06b6d4" />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area type="monotone" dataKey="score" stroke="url(#strokeGrad)" strokeWidth={3}
+                      fill="url(#scoreGrad)"
+                      dot={{ r: 3.5, fill: '#4f46e5', strokeWidth: 0 }}
+                      activeDot={{ r: 6, fill: '#4338ca', stroke: '#c7d2fe', strokeWidth: 2 }} />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-              <ResponsiveContainer width="100%" height={130}>
-                <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#4f46e5" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.04} />
-                    </linearGradient>
-                    <linearGradient id="strokeGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%"   stopColor="#3730a3" />
-                      <stop offset="100%" stopColor="#06b6d4" />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="score" stroke="url(#strokeGrad)" strokeWidth={3}
-                    fill="url(#scoreGrad)"
-                    dot={{ r: 3.5, fill: '#4f46e5', strokeWidth: 0 }}
-                    activeDot={{ r: 6, fill: '#4338ca', stroke: '#c7d2fe', strokeWidth: 2 }} />
-                </AreaChart>
-              </ResponsiveContainer>
             </div>
           )}
 
-          {/* ── Tip Banner ── */}
+          {/* ── Daily Tip ── */}
           <div
             className="rounded-2xl p-4 flex gap-3 items-start relative overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, #312e81 0%, #4338ca 60%, #0e7490 100%)',
-              boxShadow: '0 8px 24px rgba(29,78,216,0.35)',
+              boxShadow: '0 8px 24px rgba(29,78,216,0.30)',
             }}
           >
             <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full pointer-events-none"
