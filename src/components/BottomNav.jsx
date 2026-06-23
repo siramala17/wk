@@ -1,6 +1,6 @@
 ﻿import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, ClipboardList, Flame, Award } from 'lucide-react'
+import { Home, ClipboardList, Flame, Scale, Award } from 'lucide-react'
 import { useLang } from '../context/LangContext'
 
 export default function BottomNav() {
@@ -10,8 +10,9 @@ export default function BottomNav() {
   const tabs = [
     { to: '/',           icon: Home,         labelKey: 'home',            activeGrad: ['#3730a3','#6366f1'], glow: 'rgba(99,102,241,0.50)' },
     { to: '/assessment', icon: ClipboardList, labelKey: 'assessment',      activeGrad: ['#4338ca','#818cf8'], glow: 'rgba(96,165,250,0.50)' },
-    { to: '/nubcal',     icon: Flame,         labelKey: 'personalTrainer', activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
-    { to: '/rewards',    icon: Award,         labelKey: 'points',          activeGrad: ['#b45309','#fbbf24'], glow: 'rgba(251,191,36,0.50)' },
+    { to: '/nubcal',           icon: Flame, labelKey: 'personalTrainer', activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
+    { to: '/body-composition', icon: Scale, labelKey: 'bodyComposition', activeGrad: ['#0e7490','#22d3ee'], glow: 'rgba(6,182,212,0.50)'  },
+    { to: '/rewards',          icon: Award, labelKey: 'points',          activeGrad: ['#b45309','#fbbf24'], glow: 'rgba(251,191,36,0.50)' },
   ]
 
   return (
@@ -25,7 +26,7 @@ export default function BottomNav() {
         border: '1.5px solid rgba(255,255,255,0.70)',
       }}
     >
-      <div className="grid grid-cols-4 h-[62px] px-1">
+      <div className="grid grid-cols-5 h-[62px] px-1">
         {tabs.map(({ to, icon: Icon, labelKey, activeGrad, glow }) => {
           const active = pathname === to
           const label = t.nav[labelKey]

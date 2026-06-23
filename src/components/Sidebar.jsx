@@ -1,6 +1,6 @@
 ﻿import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, ClipboardList, TrendingUp, Award, Flame, LogOut, Shield, UserCircle, Star, LayoutDashboard } from 'lucide-react'
+import { Home, ClipboardList, TrendingUp, Award, Flame, Scale, LogOut, Shield, UserCircle, Star, LayoutDashboard } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 
@@ -15,6 +15,7 @@ export default function Sidebar() {
     { to: '/analytics',  icon: TrendingUp,    labelKey: 'graphAi' },
     { to: '/rewards',    icon: Award,         labelKey: 'pointsActivity' },
     { to: '/nubcal',           icon: Flame,           labelKey: 'trainer' },
+    { to: '/body-composition', icon: Scale,           labelKey: 'bodyCompositionFull' },
     { to: '/school-dashboard', icon: LayoutDashboard, labelKey: 'schoolDash' },
   ]
 

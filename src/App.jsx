@@ -18,6 +18,7 @@ import Knowledge from './pages/Knowledge'
 import NubCal from './pages/NubCal'
 import Survey from './pages/Survey'
 import SchoolDashboard from './pages/SchoolDashboard'
+import BodyComposition from './pages/BodyComposition'
 
 function AppContent() {
   const { isLoggedIn, showRegister } = useHealth()
@@ -46,6 +47,7 @@ function AppContent() {
           <Route path="/knowledge" element={<Knowledge />} />
           <Route path="/activity" element={<Navigate to="/rewards" replace />} />
           <Route path="/nubcal" element={<NubCal />} />
+          <Route path="/body-composition" element={<BodyComposition />} />
           <Route path="/survey" element={<Survey />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
