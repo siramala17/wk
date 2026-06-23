@@ -1,7 +1,8 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react'
-import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink, Clock } from 'lucide-react'
+import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink, Clock, FileDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, fetchAllAssessments } from '../services/userSync'
+import { exportImprovementPDF } from '../utils/exportPdf'
 import { sendPushToAll, fcmReady } from '../services/fcm'
 import { useHealth } from '../context/HealthContext'
 import { firebaseReady } from '../config/firebase'
@@ -172,6 +173,8 @@ export default function Admin() {
 
   // tab
   const [adminTab, setAdminTab] = useState('users')
+  const [allAssessments, setAllAssessments] = useState([])
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   const loadUsers = useCallback(async () => {
     setLoading(true); setFetchError(false); setFetchErrorMsg('')
@@ -225,8 +228,24 @@ export default function Admin() {
   }, [])
 
   useEffect(() => {
-    if (authenticated) { loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions(); loadCatalog(); loadAnnouncements() }
+    if (authenticated) {
+      loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions(); loadCatalog(); loadAnnouncements()
+      fetchAllAssessments().then(setAllAssessments).catch(() => {})
+    }
   }, [authenticated, loadUsers, loadSubmissions, loadSurveys, loadRedemptions, loadCatalog, loadAnnouncements])
+
+  async function handleExportPDF() {
+    setPdfLoading(true)
+    try {
+      const assessments = allAssessments.length > 0 ? allAssessments : await fetchAllAssessments()
+      setAllAssessments(assessments)
+      exportImprovementPDF(cloudUsers, assessments)
+    } catch (e) {
+      alert('เกิดข้อผิดพลาด: ' + e.message)
+    } finally {
+      setPdfLoading(false)
+    }
+  }
 
   async function handleReview(id, status) {
     setReviewingId(id)
@@ -547,6 +566,17 @@ export default function Admin() {
                     </div>
                   </div>
                 )}
+
+                {/* Export PDF button */}
+                <button
+                  onClick={handleExportPDF}
+                  disabled={pdfLoading}
+                  className="w-full mb-4 py-3 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
+                  style={{ background: 'linear-gradient(135deg,#be123c,#f43f5e)', boxShadow: '0 4px 14px rgba(244,63,94,0.35)' }}
+                >
+                  <FileDown size={18} />
+                  {pdfLoading ? 'กำลังโหลด...' : 'Export PDF — ผู้ที่ต้องปรับปรุง'}
+                </button>
 
                 {/* role filter */}
                 <div className="flex gap-2 mb-3 flex-wrap">

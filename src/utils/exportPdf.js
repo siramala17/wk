@@ -1,0 +1,155 @@
+const DIMENSIONS = [
+  { key: 'sleepScore',     label: 'การนอนหลับ',    icon: '🌙' },
+  { key: 'waterScore',     label: 'การดื่มน้ำ',     icon: '💧' },
+  { key: 'exerciseScore',  label: 'การออกกำลังกาย', icon: '🏃' },
+  { key: 'digitalScore',   label: 'การใช้หน้าจอ',  icon: '📱' },
+  { key: 'stressScore',    label: 'ความเครียด',     icon: '🧠' },
+  { key: 'nutritionScore', label: 'โภชนาการ',       icon: '🥗' },
+]
+
+function scoreLevel(s) {
+  if (s >= 80) return { label: 'ดีเยี่ยม',   color: '#059669', bg: '#d1fae5' }
+  if (s >= 65) return { label: 'ดี',          color: '#2563eb', bg: '#dbeafe' }
+  if (s >= 50) return { label: 'พอใช้ได้',   color: '#d97706', bg: '#fef3c7' }
+  if (s >= 35) return { label: 'ควรปรับปรุง', color: '#ea580c', bg: '#ffedd5' }
+  return               { label: 'ต้องแก้ไขด่วน', color: '#dc2626', bg: '#fee2e2' }
+}
+
+function overallLevel(s) {
+  if (s >= 80) return { label: 'สุขภาพดีเยี่ยม', color: '#059669' }
+  if (s >= 65) return { label: 'สุขภาพดี',        color: '#2563eb' }
+  if (s >= 50) return { label: 'พอใช้ได้',        color: '#d97706' }
+  if (s >= 35) return { label: 'ควรปรับปรุง',     color: '#ea580c' }
+  return               { label: 'ต้องแก้ไขด่วน',  color: '#dc2626' }
+}
+
+function bar(score) {
+  const color = score >= 65 ? '#2563eb' : score >= 50 ? '#d97706' : '#dc2626'
+  return `<div style="background:#e5e7eb;border-radius:99px;height:8px;margin-top:4px;">
+    <div style="width:${Math.round(score)}%;background:${color};height:8px;border-radius:99px;"></div>
+  </div>`
+}
+
+function userCard(user, assessment, index) {
+  const overall = assessment.overallScore ?? 0
+  const ol = overallLevel(overall)
+  const needImprove = DIMENSIONS.filter(d => (assessment[d.key] ?? 0) < 65)
+  const date = assessment.date
+    ? new Date(assessment.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '-'
+
+  const dimRows = DIMENSIONS.map(d => {
+    const s = assessment[d.key] ?? 0
+    const lv = scoreLevel(s)
+    const warn = s < 65 ? `background:${lv.bg};border-left:3px solid ${lv.color};` : ''
+    return `<tr style="${warn}">
+      <td style="padding:6px 8px;">${d.icon} ${d.label}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;color:${lv.color};">${Math.round(s)}</td>
+      <td style="padding:6px 8px;width:140px;">${bar(s)}</td>
+      <td style="padding:6px 8px;">
+        <span style="font-size:11px;padding:2px 8px;border-radius:99px;background:${lv.bg};color:${lv.color};font-weight:600;">${lv.label}</span>
+      </td>
+    </tr>`
+  }).join('')
+
+  const improveTags = needImprove.map(d =>
+    `<span style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;padding:3px 10px;border-radius:99px;font-size:12px;margin:2px;">⚠️ ${d.label}</span>`
+  ).join('')
+
+  return `
+  <div style="page-break-inside:avoid;margin-bottom:24px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;font-family:'Sarabun',sans-serif;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#1e40af,#6366f1);color:white;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:18px;font-weight:800;">${index}. ${user.firstName || ''} ${user.lastName || ''}</div>
+        <div style="font-size:12px;opacity:0.85;margin-top:2px;">
+          ${user.gradeLevel ? `ชั้น ${user.gradeLevel} · ` : ''}${user.gender || ''} · ประเมินวันที่ ${date}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:28px;font-weight:900;">${Math.round(overall)}</div>
+        <div style="font-size:11px;opacity:0.85;">/ 100 คะแนน</div>
+        <div style="font-size:12px;font-weight:700;margin-top:2px;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:99px;">${ol.label}</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:#f8fafc;color:#64748b;font-size:11px;">
+          <th style="padding:6px 8px;text-align:left;">ด้าน</th>
+          <th style="padding:6px 8px;text-align:right;">คะแนน</th>
+          <th style="padding:6px 8px;">กราฟ</th>
+          <th style="padding:6px 8px;">ระดับ</th>
+        </tr>
+      </thead>
+      <tbody>${dimRows}</tbody>
+    </table>
+
+    <!-- Improve section -->
+    ${needImprove.length > 0 ? `
+    <div style="padding:10px 16px;background:#fff8f1;border-top:1px solid #fde68a;">
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px;">ด้านที่ควรปรับปรุง:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">${improveTags}</div>
+    </div>` : `
+    <div style="padding:10px 16px;background:#f0fdf4;border-top:1px solid #bbf7d0;">
+      <span style="font-size:12px;color:#166534;">✅ ผ่านเกณฑ์ทุกด้าน</span>
+    </div>`}
+  </div>`
+}
+
+export function exportImprovementPDF(users, assessments) {
+  // จับคู่ assessment ล่าสุดของแต่ละ user
+  const latestMap = {}
+  for (const a of assessments) {
+    const uid = String(a.userId)
+    if (!latestMap[uid] || a.date > latestMap[uid].date) latestMap[uid] = a
+  }
+
+  // กรองเฉพาะ user ที่มีผลประเมินและ overallScore < 65
+  const targets = users
+    .map(u => ({ user: u, assessment: latestMap[String(u.id)] }))
+    .filter(({ assessment }) => assessment && (assessment.overallScore ?? 100) < 65)
+    .sort((a, b) => (a.assessment.overallScore ?? 0) - (b.assessment.overallScore ?? 0))
+
+  if (targets.length === 0) {
+    alert('ไม่พบผู้ใช้ที่มีคะแนนต้องปรับปรุง (< 65 คะแนน)')
+    return
+  }
+
+  const today = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
+  const cards  = targets.map(({ user, assessment }, i) => userCard(user, assessment, i + 1)).join('')
+
+  const html = `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>รายงานผู้ที่ต้องปรับปรุงสุขภาพ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sarabun', sans-serif; background: white; color: #1e293b; padding: 32px; font-size: 14px; }
+    @media print {
+      body { padding: 16px; }
+      @page { margin: 16mm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Cover header -->
+  <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e2e8f0;">
+    <div style="font-size:22px;font-weight:800;color:#1e40af;">W.K. Health — รายงานผู้ที่ต้องปรับปรุงสุขภาพ</div>
+    <div style="color:#64748b;margin-top:6px;font-size:13px;">วันที่ออกรายงาน: ${today} · พบ ${targets.length} ราย (คะแนนรวม &lt; 65)</div>
+  </div>
+  ${cards}
+  <div style="text-align:center;color:#94a3b8;font-size:11px;margin-top:20px;">
+    รายงานนี้สร้างโดยระบบ W.K. Health — เป็นความลับ ห้ามเผยแพร่โดยไม่ได้รับอนุญาต
+  </div>
+</body>
+</html>`
+
+  const win = window.open('', '_blank')
+  win.document.write(html)
+  win.document.close()
+  win.onload = () => win.print()
+}
