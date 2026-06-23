@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+﻿import React, { useState, useRef, useEffect } from 'react'
 import {
   User, Calendar, Star, Flame, LogOut,
   Camera, Upload, RefreshCw, Check, X, AlertCircle, Pencil,
@@ -6,7 +6,7 @@ import {
 import { useHealth } from '../context/HealthContext'
 
 const GENDER_STYLE = {
-  'ชาย':    { bg: 'bg-blue-100',   text: 'text-blue-700',   emoji: '♂' },
+  'ชาย':    { bg: 'bg-indigo-100',   text: 'text-indigo-700',   emoji: '♂' },
   'หญิง':   { bg: 'bg-pink-100',   text: 'text-pink-700',   emoji: '♀' },
   'LGBTQ+': { bg: 'bg-purple-100', text: 'text-purple-700', emoji: '🏳️‍🌈' },
 }
@@ -159,17 +159,17 @@ export default function Profile() {
       <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
 
         {/* banner */}
-        <div className="h-24 bg-gradient-to-r from-blue-500 to-blue-700" />
+        <div className="h-24 bg-gradient-to-r from-indigo-500 to-indigo-700" />
 
         {/* avatar + name */}
         <div className="flex flex-col items-center -mt-12 px-6 pb-6">
           {/* avatar with edit overlay */}
           <div className="flex flex-col items-center gap-2">
             <div className="relative group">
-              <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-blue-100 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-indigo-100 flex items-center justify-center">
                 {user.faceImage
                   ? <img src={user.faceImage} alt="avatar" className="w-full h-full object-cover" />
-                  : <User size={40} className="text-blue-400" />
+                  : <User size={40} className="text-indigo-400" />
                 }
               </div>
               <button
@@ -182,7 +182,7 @@ export default function Profile() {
               {/* always-visible edit badge */}
               <button
                 onClick={openModal}
-                className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full border-2 border-white flex items-center justify-center shadow transition-colors"
+                className="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-600 hover:bg-indigo-700 rounded-full border-2 border-white flex items-center justify-center shadow transition-colors"
                 title="เปลี่ยนรูปโปรไฟล์"
               >
                 <Pencil size={13} className="text-white" />
@@ -193,7 +193,7 @@ export default function Profile() {
             {!user.faceImage && (
               <button
                 onClick={openModal}
-                className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors border border-blue-200"
+                className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-colors border border-indigo-200"
               >
                 <Camera size={13} /> เพิ่มรูปโปรไฟล์
               </button>
@@ -281,7 +281,7 @@ export default function Profile() {
                   onClick={() => switchMode(key)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                     mode === key
-                      ? 'bg-white text-blue-600 shadow-sm border border-blue-100'
+                      ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
                       : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
@@ -298,11 +298,11 @@ export default function Profile() {
                   {!preview ? (
                     <button
                       onClick={() => fileRef.current?.click()}
-                      className="w-full border-2 border-dashed border-blue-200 rounded-2xl py-12 flex flex-col items-center gap-3 text-blue-400 hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                      className="w-full border-2 border-dashed border-indigo-200 rounded-2xl py-12 flex flex-col items-center gap-3 text-indigo-400 hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
                     >
                       <Upload size={36} strokeWidth={1.5} />
                       <div className="text-center">
-                        <p className="font-semibold text-sm text-blue-600">คลิกเพื่อเลือกรูป</p>
+                        <p className="font-semibold text-sm text-indigo-600">คลิกเพื่อเลือกรูป</p>
                         <p className="text-xs mt-0.5">รองรับ JPG, PNG, HEIC</p>
                       </div>
                     </button>
@@ -349,7 +349,7 @@ export default function Profile() {
                         <p className="text-sm text-center">{cameraError}</p>
                         <button
                           onClick={() => { setCameraError(null); startCamera() }}
-                          className="mt-1 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold"
+                          className="mt-1 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold"
                         >
                           ลองอีกครั้ง
                         </button>
@@ -371,10 +371,10 @@ export default function Profile() {
                             scanning ? 'border-yellow-400 animate-pulse' : 'border-white/70'
                           }`} />
                         </div>
-                        <div className="absolute top-3 left-3 w-5 h-5 border-t-4 border-l-4 border-blue-400 rounded-tl-md" />
-                        <div className="absolute top-3 right-3 w-5 h-5 border-t-4 border-r-4 border-blue-400 rounded-tr-md" />
-                        <div className="absolute bottom-3 left-3 w-5 h-5 border-b-4 border-l-4 border-blue-400 rounded-bl-md" />
-                        <div className="absolute bottom-3 right-3 w-5 h-5 border-b-4 border-r-4 border-blue-400 rounded-br-md" />
+                        <div className="absolute top-3 left-3 w-5 h-5 border-t-4 border-l-4 border-indigo-400 rounded-tl-md" />
+                        <div className="absolute top-3 right-3 w-5 h-5 border-t-4 border-r-4 border-indigo-400 rounded-tr-md" />
+                        <div className="absolute bottom-3 left-3 w-5 h-5 border-b-4 border-l-4 border-indigo-400 rounded-bl-md" />
+                        <div className="absolute bottom-3 right-3 w-5 h-5 border-b-4 border-r-4 border-indigo-400 rounded-br-md" />
                         {!cameraReady && (
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white bg-slate-900/80">
                             <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -410,7 +410,7 @@ export default function Profile() {
                       <button
                         onClick={startScan}
                         disabled={!cameraReady || scanning}
-                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
                       >
                         <Camera size={18} />
                         {scanning ? 'กำลังสแกน...' : 'สแกนใบหน้า'}
@@ -432,7 +432,7 @@ export default function Profile() {
               <button
                 onClick={handleSave}
                 disabled={!preview}
-                className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-blue-200 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-200 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-1.5"
               >
                 <Check size={15} /> บันทึกรูปใหม่
               </button>

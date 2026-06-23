@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
@@ -14,13 +14,13 @@ import { useLang } from '../context/LangContext'
 import { generateRecommendations, getHealthLevel } from '../utils/healthScore'
 
 const tooltipStyle = {
-  contentStyle: { borderRadius: '12px', border: '1px solid #DBEAFE', fontSize: '12px', fontFamily: 'Sarabun' },
-  labelStyle: { fontWeight: '700', color: '#1E40AF' },
+  contentStyle: { borderRadius: '12px', border: '1px solid #e0e7ff', fontSize: '12px', fontFamily: 'Sarabun' },
+  labelStyle: { fontWeight: '700', color: '#3730a3' },
 }
 
 function ChartCard({ title, icon: Icon, iconColor, children }) {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-blue-50">
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-indigo-50">
       <div className="flex items-center gap-2 mb-4">
         <div className={`w-8 h-8 rounded-lg ${iconColor} flex items-center justify-center`}>
           <Icon size={16} className="text-white" />
@@ -42,7 +42,7 @@ function StatSummary({ history, t }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       {[
-        { label: a.avgScore,    value: avgScore,     unit: a.unitScore,   emoji: '⭐', bg: 'bg-blue-50',    text: 'text-blue-700' },
+        { label: a.avgScore,    value: avgScore,     unit: a.unitScore,   emoji: '⭐', bg: 'bg-indigo-50',    text: 'text-indigo-700' },
         { label: a.avgSleep,    value: avgSleep,     unit: a.unitHrs,     emoji: '🌙', bg: 'bg-indigo-50',  text: 'text-indigo-700' },
         { label: a.avgWater,    value: avgWater,     unit: a.unitGlasses, emoji: '💧', bg: 'bg-cyan-50',    text: 'text-cyan-700' },
         { label: a.avgExercise, value: exerciseDays, unit: a.unitDays,    emoji: '🏃', bg: 'bg-emerald-50', text: 'text-emerald-700' },
@@ -82,28 +82,28 @@ function AnalyticsContent({ history, latestAssessment, t }) {
         {chartTabs.map(ct => (
           <button key={ct.key} onClick={() => setChartTab(ct.key)}
             className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
-              chartTab === ct.key ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-600 border border-blue-100 hover:border-blue-300'
+              chartTab === ct.key ? 'bg-indigo-600 text-white shadow' : 'bg-white text-slate-600 border border-indigo-100 hover:border-indigo-300'
             }`}>
             {ct.label}
           </button>
         ))}
       </div>
 
-      <ChartCard title={currentLabel + ' ' + a.last7} icon={Activity} iconColor="bg-blue-600">
+      <ChartCard title={currentLabel + ' ' + a.last7} icon={Activity} iconColor="bg-indigo-600">
         <ResponsiveContainer width="100%" height={200}>
           {chartTab === 'score' ? (
             <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#EFF6FF" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#eef2ff" />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip {...tooltipStyle} formatter={v => [`${v} ${a.ttScoreUnit}`, a.ttScoreLabel]} />
-              <Area type="monotone" dataKey="score" stroke="#2563EB" strokeWidth={2.5} fill="url(#g1)" dot={{ r: 4, fill: '#2563EB' }} activeDot={{ r: 6 }} />
+              <Area type="monotone" dataKey="score" stroke="#4f46e5" strokeWidth={2.5} fill="url(#g1)" dot={{ r: 4, fill: '#4f46e5' }} activeDot={{ r: 6 }} />
             </AreaChart>
           ) : chartTab === 'sleep' ? (
             <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -167,7 +167,7 @@ function AnalyticsContent({ history, latestAssessment, t }) {
               <PolarGrid stroke="#E2E8F0" />
               <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fontFamily: 'Sarabun', fill: '#64748B' }} />
               <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 10 }} tickCount={5} />
-              <Radar name={a.ttScoreUnit} dataKey="value" stroke="#2563EB" fill="#2563EB" fillOpacity={0.25} strokeWidth={2} dot={{ r: 4, fill: '#2563EB' }} />
+              <Radar name={a.ttScoreUnit} dataKey="value" stroke="#4f46e5" fill="#4f46e5" fillOpacity={0.25} strokeWidth={2} dot={{ r: 4, fill: '#4f46e5' }} />
               <Tooltip {...tooltipStyle} formatter={v => [`${v} ${a.ttScoreUnit}`]} />
             </RadarChart>
           </ResponsiveContainer>
@@ -224,7 +224,7 @@ function AiInsightBanner({ assessment, t }) {
   ].filter(Boolean)
 
   return (
-    <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-3xl p-5 text-white relative overflow-hidden">
+    <div className="bg-gradient-to-br from-indigo-700 to-indigo-900 rounded-3xl p-5 text-white relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
@@ -232,11 +232,11 @@ function AiInsightBanner({ assessment, t }) {
             <Sparkles size={16} className="text-yellow-900" />
           </div>
           <div>
-            <p className="text-blue-200 text-xs">AI Health Analysis</p>
+            <p className="text-indigo-200 text-xs">AI Health Analysis</p>
             <p className="font-bold text-sm">{a.aiTitle}</p>
           </div>
         </div>
-        <p className="text-blue-100 text-sm leading-relaxed">
+        <p className="text-indigo-100 text-sm leading-relaxed">
           {level.emoji} {a.overallAt} <strong className="text-white">{level.label}</strong>
           {weakAreas.length > 0 && (
             <> {a.improveAt} <strong className="text-yellow-300">{weakAreas.join(', ')}</strong></>
@@ -261,8 +261,8 @@ function RecCard({ rec, completedTips, toggleTip, t }) {
   const total = rec.tips.length
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-blue-50 overflow-hidden">
-      <button onClick={() => setExpanded(!expanded)} className="w-full px-4 py-4 flex items-center gap-3 text-left hover:bg-blue-50/50 transition-colors">
+    <div className="bg-white rounded-2xl shadow-sm border border-indigo-50 overflow-hidden">
+      <button onClick={() => setExpanded(!expanded)} className="w-full px-4 py-4 flex items-center gap-3 text-left hover:bg-indigo-50/50 transition-colors">
         <span className="text-2xl">{rec.icon}</span>
         <div className="flex-1">
           <div className="flex items-center gap-2">
@@ -273,18 +273,18 @@ function RecCard({ rec, completedTips, toggleTip, t }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(done / total) * 100}%` }} />
+            <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(done / total) * 100}%` }} />
           </div>
           {expanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
         </div>
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-blue-50">
-          <div className="bg-blue-50 rounded-xl p-3 my-3">
+        <div className="px-4 pb-4 border-t border-indigo-50">
+          <div className="bg-indigo-50 rounded-xl p-3 my-3">
             <div className="flex items-start gap-2">
-              <Brain size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-blue-700 leading-relaxed">{rec.aiInsight}</p>
+              <Brain size={14} className="text-indigo-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-indigo-700 leading-relaxed">{rec.aiInsight}</p>
             </div>
           </div>
           <div className="space-y-2">
@@ -293,7 +293,7 @@ function RecCard({ rec, completedTips, toggleTip, t }) {
               return (
                 <button key={tip.id} onClick={() => toggleTip(tip.id)}
                   className={`w-full flex items-start gap-3 p-3 rounded-xl text-left transition-all ${
-                    isDone ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 hover:bg-blue-50 border border-transparent'
+                    isDone ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 hover:bg-indigo-50 border border-transparent'
                   }`}
                 >
                   {isDone
@@ -321,7 +321,7 @@ function RecommendationsContent({ latestAssessment, completedTips, toggleTip, t 
         <p className="text-6xl mb-4">🤔</p>
         <h2 className="text-xl font-bold text-slate-800 mb-2">{a.noData}</h2>
         <p className="text-sm text-slate-500 mb-6">{a.noDataSub}</p>
-        <Link to="/assessment" className="inline-flex items-center gap-2 bg-blue-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors">
+        <Link to="/assessment" className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-700 transition-colors">
           {a.startAssess}
         </Link>
       </div>
@@ -337,16 +337,16 @@ function RecommendationsContent({ latestAssessment, completedTips, toggleTip, t 
       <AiInsightBanner assessment={latestAssessment} t={t} />
 
       {totalTips > 0 && (
-        <div className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-blue-50">
+        <div className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-indigo-50">
           <div className="flex-1">
             <p className="text-sm font-semibold text-slate-700">{a.progress}</p>
             <p className="text-xs text-slate-400">{completedCount} {a.of} {totalTips} {a.recs}</p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-black text-blue-700">{Math.round((completedCount / totalTips) * 100)}%</p>
+            <p className="text-2xl font-black text-indigo-700">{Math.round((completedCount / totalTips) * 100)}%</p>
           </div>
           <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden self-center">
-            <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${(completedCount / totalTips) * 100}%` }} />
+            <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${(completedCount / totalTips) * 100}%` }} />
           </div>
         </div>
       )}
@@ -375,7 +375,7 @@ function RecommendationsContent({ latestAssessment, completedTips, toggleTip, t 
       </div>
 
       <div className="text-center">
-        <Link to="/assessment" className="text-sm text-blue-600 font-medium hover:underline">
+        <Link to="/assessment" className="text-sm text-indigo-600 font-medium hover:underline">
           {a.reassess}
         </Link>
       </div>
@@ -392,7 +392,7 @@ export default function Analytics() {
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 animate-fade-in">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center">
           <TrendingUp size={20} className="text-white" />
         </div>
         <div>
@@ -405,7 +405,7 @@ export default function Analytics() {
         <button
           onClick={() => setMainTab('charts')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-            mainTab === 'charts' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            mainTab === 'charts' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}
         >
           <TrendingUp size={15} />

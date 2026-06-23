@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Home, ClipboardList, TrendingUp, Award, Flame, LogOut, Shield, UserCircle, Star, LayoutDashboard } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
@@ -33,7 +33,7 @@ export default function Sidebar() {
             }
           </div>
           <div className="overflow-hidden">
-            <p className="font-semibold text-sm text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+            <p className="font-semibold text-sm text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
               {user.firstName || user.name}
             </p>
             <div className="flex items-center gap-1 mt-0.5">
@@ -54,11 +54,11 @@ export default function Sidebar() {
               to={to}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5 ${
                 active
-                  ? 'bg-blue-50 text-blue-700'
+                  ? 'bg-indigo-50 text-indigo-700'
                   : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
               }`}
             >
-              <Icon size={16} strokeWidth={active ? 2.5 : 1.8} className={active ? 'text-blue-600' : 'text-gray-400'} />
+              <Icon size={16} strokeWidth={active ? 2.5 : 1.8} className={active ? 'text-indigo-600' : 'text-gray-400'} />
               {t.nav[labelKey]}
             </Link>
           )

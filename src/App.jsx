@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HealthProvider, useHealth } from './context/HealthContext'
 import { LangProvider } from './context/LangContext'
@@ -31,7 +31,7 @@ function AppContent() {
   if (!isLoggedIn) return <Login />
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-indigo-50">
       <Navbar />
       <Sidebar />
       <main className="pb-24 md:ml-56 md:pb-8 pl-safe pr-safe" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }}>

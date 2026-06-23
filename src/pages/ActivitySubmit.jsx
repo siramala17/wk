@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+﻿import React, { useState, useRef, useEffect } from 'react'
 import { Send, Check, XCircle, RefreshCw, Image, Star } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { addSubmission, fetchSubmissions } from '../services/userSync'
@@ -109,18 +109,18 @@ export default function ActivitySubmit() {
       {/* กำลังตรวจสอบแต้ม */}
       {claiming && (
         <div className="flex items-center gap-2 text-xs text-slate-400 mb-3">
-          <div className="w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-3 h-3 border border-indigo-400 border-t-transparent rounded-full animate-spin" />
           กำลังตรวจสอบแต้มที่รอรับ...
         </div>
       )}
 
       {/* header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl p-5 text-white mb-5 shadow-lg">
+      <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-3xl p-5 text-white mb-5 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">📸</div>
           <div>
             <h1 className="font-bold text-lg">ส่งภาพกิจกรรม</h1>
-            <p className="text-blue-100 text-xs mt-0.5">1 ภาพ = 5 แต้ม เมื่อ Admin อนุมัติ</p>
+            <p className="text-indigo-100 text-xs mt-0.5">1 ภาพ = 5 แต้ม เมื่อ Admin อนุมัติ</p>
           </div>
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function ActivitySubmit() {
         {[['submit','ส่งภาพใหม่'],['history','ประวัติของฉัน']].map(([t, l]) => (
           <button key={t} onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === t ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'
+              tab === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
             }`}>{l}</button>
         ))}
       </div>
@@ -147,7 +147,7 @@ export default function ActivitySubmit() {
                 <button key={c.value} onClick={() => { setCategory(c.value); setError('') }}
                   className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-2 text-xs font-semibold transition-all active:scale-95 ${
                     category === c.value
-                      ? 'bg-blue-50 border-blue-400 text-blue-700 shadow-sm'
+                      ? 'bg-indigo-50 border-indigo-400 text-indigo-700 shadow-sm'
                       : 'border-slate-200 text-slate-500 hover:border-slate-300'
                   }`}>
                   <span className="text-2xl">{c.emoji}</span>
@@ -165,7 +165,7 @@ export default function ActivitySubmit() {
               onChange={e => setDescription(e.target.value)}
               placeholder="เช่น วันนี้วิ่ง 30 นาที รอบสนามโรงเรียน..."
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
             />
           </div>
 
@@ -185,7 +185,7 @@ export default function ActivitySubmit() {
               </div>
             ) : (
               <button onClick={() => fileRef.current?.click()}
-                className="w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-blue-400 hover:text-blue-400 hover:bg-blue-50 transition-all">
+                className="w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-indigo-400 hover:text-indigo-400 hover:bg-indigo-50 transition-all">
                 <Image size={32} />
                 <span className="text-sm font-medium">กดเพื่อเลือกหรือถ่ายภาพ</span>
                 <span className="text-xs">รองรับ JPG, PNG</span>
@@ -207,7 +207,7 @@ export default function ActivitySubmit() {
             </div>
           ) : (
             <button onClick={handleSubmit} disabled={submitting}
-              className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               {submitting
                 ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> กำลังส่ง...</>
                 : <><Send size={16} /> ส่งภาพให้ Admin ตรวจสอบ</>}
@@ -222,14 +222,14 @@ export default function ActivitySubmit() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-500">ภาพที่ส่งทั้งหมด {mySubmissions.length} รายการ</p>
             <button onClick={loadHistory} disabled={loadingHistory}
-              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700">
+              className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700">
               <RefreshCw size={13} className={loadingHistory ? 'animate-spin' : ''} /> รีเฟรช
             </button>
           </div>
 
           {loadingHistory && (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 

@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Home, ClipboardList, Flame, Award } from 'lucide-react'
 import { useLang } from '../context/LangContext'
@@ -8,8 +8,8 @@ export default function BottomNav() {
   const { t } = useLang()
 
   const tabs = [
-    { to: '/',           icon: Home,         labelKey: 'home',            activeGrad: ['#1e40af','#3b82f6'], glow: 'rgba(37,99,235,0.50)' },
-    { to: '/assessment', icon: ClipboardList, labelKey: 'assessment',      activeGrad: ['#1d4ed8','#60a5fa'], glow: 'rgba(96,165,250,0.50)' },
+    { to: '/',           icon: Home,         labelKey: 'home',            activeGrad: ['#3730a3','#6366f1'], glow: 'rgba(99,102,241,0.50)' },
+    { to: '/assessment', icon: ClipboardList, labelKey: 'assessment',      activeGrad: ['#4338ca','#818cf8'], glow: 'rgba(96,165,250,0.50)' },
     { to: '/nubcal',     icon: Flame,         labelKey: 'personalTrainer', activeGrad: ['#c2410c','#f97316'], glow: 'rgba(249,115,22,0.50)' },
     { to: '/rewards',    icon: Award,         labelKey: 'points',          activeGrad: ['#b45309','#fbbf24'], glow: 'rgba(251,191,36,0.50)' },
   ]

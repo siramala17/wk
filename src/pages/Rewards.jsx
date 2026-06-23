@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import {
   Award, Star, Zap, Share2, Flame, Trophy,
   Lock, Gift, Check, X, Clock, RefreshCw, AlertCircle, Camera,
@@ -110,11 +110,11 @@ function ShareCard({ user, score, points, r }) {
     else navigator.clipboard.writeText(text).then(() => { setShared(true); setTimeout(() => setShared(false), 2000) })
   }
   return (
-    <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-5 text-white">
-      <p className="text-sm font-medium text-blue-200 mb-1">{r.shareTitle}</p>
+    <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl p-5 text-white">
+      <p className="text-sm font-medium text-indigo-200 mb-1">{r.shareTitle}</p>
       <p className="text-base font-bold mb-4">{r.shareSub}</p>
       <button onClick={handleShare}
-        className="w-full bg-white text-blue-700 font-bold rounded-xl py-3 flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors">
+        className="w-full bg-white text-indigo-700 font-bold rounded-xl py-3 flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors">
         {shared ? <><Check size={16} /> {r.copied}</> : <><Share2 size={16} /> {r.shareHealth}</>}
       </button>
     </div>
@@ -138,7 +138,7 @@ function HowToEarn({ r, isEn }) {
       <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
         <Zap size={18} className="text-yellow-500" /> {r.howToEarn}
       </h2>
-      <div className="bg-white rounded-2xl shadow-sm border border-blue-50 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-indigo-50 overflow-hidden">
         {ways.map((w, i) => (
           <div key={i} className={`flex items-center gap-3 px-4 py-3 ${i < ways.length - 1 ? 'border-b border-slate-50' : ''}`}>
             <span className="text-xl w-8 text-center">{w.emoji}</span>
@@ -196,7 +196,7 @@ function RewardCatalog({ user, onRedeem, r }) {
           <Gift size={18} className="text-pink-500" /> {r.catalogTitle}
         </h2>
         <button onClick={loadCatalog} disabled={catalogLoading}
-          className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 transition-colors">
+          className="flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 transition-colors">
           <RefreshCw size={13} className={catalogLoading ? 'animate-spin' : ''} /> {r.shuffle}
         </button>
       </div>
@@ -236,7 +236,7 @@ function RewardCatalog({ user, onRedeem, r }) {
       ) : catalogError ? (
         <div className="text-center py-10 text-slate-400 space-y-2">
           <p className="text-sm">{r.loadError}</p>
-          <button onClick={loadCatalog} className="text-xs text-blue-500 underline">{r.retryLoad}</button>
+          <button onClick={loadCatalog} className="text-xs text-indigo-500 underline">{r.retryLoad}</button>
         </div>
       ) : catalog.length === 0 ? (
         <div className="text-center py-12 text-slate-400">
@@ -353,9 +353,9 @@ function RedemptionHistory({ userId, claimRefunds, r }) {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-bold text-slate-800 flex items-center gap-2">
-          <Clock size={18} className="text-blue-500" /> {r.historyTitle}
+          <Clock size={18} className="text-indigo-500" /> {r.historyTitle}
         </h2>
-        <button onClick={load} disabled={loading} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700">
+        <button onClick={load} disabled={loading} className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700">
           <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> {r.refresh}
         </button>
       </div>
@@ -384,7 +384,7 @@ function RedemptionHistory({ userId, claimRefunds, r }) {
 
       {loading ? (
         <div className="flex justify-center py-10">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-12 text-slate-400">
@@ -453,7 +453,7 @@ export default function Rewards() {
           <button
             onClick={() => setMainTab('activity')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              mainTab === 'activity' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              mainTab === 'activity' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
             <Camera size={15} /> {r.tabActivity}
@@ -475,7 +475,7 @@ export default function Rewards() {
             ].map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
                 className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  tab === key ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'
+                  tab === key ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
                 }`}>
                 {label}
               </button>

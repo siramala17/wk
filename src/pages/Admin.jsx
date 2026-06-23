@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+﻿import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '../services/userSync'
@@ -9,7 +9,7 @@ import { firebaseReady } from '../config/firebase'
 const ADMIN_PASSWORD = '2569'
 
 const GENDER_STYLE = {
-  'ชาย':    { bg: 'bg-blue-100',   text: 'text-blue-700',   emoji: '♂' },
+  'ชาย':    { bg: 'bg-indigo-100',   text: 'text-indigo-700',   emoji: '♂' },
   'หญิง':   { bg: 'bg-pink-100',   text: 'text-pink-700',   emoji: '♀' },
   'LGBTQ+': { bg: 'bg-purple-100', text: 'text-purple-700', emoji: '🏳️‍🌈' },
 }
@@ -350,21 +350,21 @@ export default function Admin() {
   // ── LOGIN ──
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
         <div className={`w-full max-w-sm bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl ${shake ? 'animate-bounce' : ''}`}>
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-500/20 border-2 border-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Shield size={32} className="text-blue-300" />
+            <div className="w-16 h-16 bg-indigo-500/20 border-2 border-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Shield size={32} className="text-indigo-300" />
             </div>
             <h1 className="text-2xl font-bold text-white">ระบบหลังบ้าน</h1>
-            <p className="text-blue-300 text-sm mt-1">Admin Panel — กรุณาใส่รหัสผ่าน</p>
+            <p className="text-indigo-300 text-sm mt-1">Admin Panel — กรุณาใส่รหัสผ่าน</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
               <input type={showPassword ? 'text' : 'password'} value={password}
                 onChange={e => { setPassword(e.target.value); setLoginError(false) }}
                 placeholder="รหัสผ่าน"
-                className={`w-full px-4 py-3.5 pr-12 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 transition-colors ${loginError ? 'border-red-400 focus:ring-red-400' : 'border-white/20 focus:ring-blue-400'}`}
+                className={`w-full px-4 py-3.5 pr-12 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 transition-colors ${loginError ? 'border-red-400 focus:ring-red-400' : 'border-white/20 focus:ring-indigo-400'}`}
               />
               <button type="button" onClick={() => setShowPassword(p => !p)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80">
@@ -372,7 +372,7 @@ export default function Admin() {
               </button>
             </div>
             {loginError && <p className="text-red-400 text-sm text-center flex items-center justify-center gap-1.5"><Shield size={14} /> รหัสผ่านไม่ถูกต้อง</p>}
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-semibold transition-colors active:scale-[0.98]">
+            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-semibold transition-colors active:scale-[0.98]">
               เข้าสู่ระบบ
             </button>
           </form>
@@ -410,7 +410,7 @@ export default function Admin() {
       {/* top bar */}
       <div className="bg-slate-900 text-white px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0"><Shield size={16} /></div>
+          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0"><Shield size={16} /></div>
           <div className="min-w-0">
             <p className="font-bold text-sm leading-tight truncate">ระบบหลังบ้าน</p>
             <p className="text-slate-400 text-xs hidden sm:block">Admin Panel</p>
@@ -422,7 +422,7 @@ export default function Admin() {
             <span className="hidden sm:inline">หน้าหลัก</span>
           </button>
           <button onClick={() => { loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions() }} disabled={loading || subLoading || surveyLoading || redeemLoading}
-            className="flex items-center gap-1 sm:gap-1.5 text-slate-400 hover:text-blue-300 text-sm transition-colors px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-40">
+            className="flex items-center gap-1 sm:gap-1.5 text-slate-400 hover:text-indigo-300 text-sm transition-colors px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-40">
             <RefreshCw size={16} className={(loading || subLoading || surveyLoading || redeemLoading) ? 'animate-spin' : ''} />
             <span className="hidden sm:inline">รีเฟรช</span>
           </button>
@@ -479,7 +479,7 @@ export default function Admin() {
           <>
             {loading && (
               <div className="flex items-center justify-center gap-3 py-10 text-slate-500">
-                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm">กำลังโหลดข้อมูลจาก cloud...</span>
               </div>
             )}
@@ -504,7 +504,7 @@ export default function Admin() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="bg-white rounded-2xl p-5 shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center"><Users size={20} className="text-blue-600" /></div>
+                      <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center"><Users size={20} className="text-indigo-600" /></div>
                       <div><p className="text-2xl font-bold text-slate-800">{total}</p><p className="text-slate-500 text-xs">ผู้ใช้ทั้งหมด</p></div>
                     </div>
                   </div>
@@ -516,7 +516,7 @@ export default function Admin() {
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
-                  <div className="bg-blue-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">♂</span><p className="text-lg sm:text-xl font-bold text-blue-700">{male}</p><p className="text-blue-500 text-xs">ชาย</p></div>
+                  <div className="bg-indigo-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">♂</span><p className="text-lg sm:text-xl font-bold text-indigo-700">{male}</p><p className="text-indigo-500 text-xs">ชาย</p></div>
                   <div className="bg-pink-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">♀</span><p className="text-lg sm:text-xl font-bold text-pink-700">{female}</p><p className="text-pink-500 text-xs">หญิง</p></div>
                   <div className="bg-purple-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">🏳️‍🌈</span><p className="text-lg sm:text-xl font-bold text-purple-700">{lgbt}</p><p className="text-purple-500 text-xs">LGBTQ+</p></div>
                 </div>
@@ -601,7 +601,7 @@ export default function Admin() {
                   <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
                     <Users size={18} className="text-slate-500" />
                     <h2 className="font-bold text-slate-700">รายชื่อผู้ใช้งาน</h2>
-                    <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">{filteredCloudUsers.length} คน</span>
+                    <span className="ml-auto bg-indigo-100 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">{filteredCloudUsers.length} คน</span>
                   </div>
                   {filteredCloudUsers.length === 0 ? (
                     <div className="py-16 text-center text-slate-400"><Users size={40} className="mx-auto mb-3 opacity-30" /><p className="text-sm">{filterRole === 'all' ? 'ยังไม่มีผู้ลงทะเบียน' : 'ไม่มีผู้ใช้ในกลุ่มนี้'}</p></div>
@@ -690,7 +690,7 @@ export default function Admin() {
             </div>
 
             {subLoading && (
-              <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
+              <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /></div>
             )}
 
             {!subLoading && filteredSubs.length === 0 && (
@@ -762,7 +762,7 @@ export default function Admin() {
                             onChange={e => setNoteInputs(p => ({ ...p, [s.id]: e.target.value }))}
                             placeholder="หมายเหตุถึงผู้ส่ง (ไม่บังคับ)..."
                             rows={2}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none bg-white"
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none bg-white"
                           />
                           <p className="text-xs text-green-600 font-medium flex items-center gap-1 mb-1">
                             ⭐ อนุมัติ = ผู้ส่งได้รับ 5 แต้มอัตโนมัติ
@@ -957,7 +957,7 @@ function RewardEditModal({ initial, onSave, onClose, saving }) {
             <div className="w-20">
               <label className="text-xs text-slate-500 mb-1 block">Emoji</label>
               <input
-                className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-2xl text-center focus:outline-none focus:border-blue-400"
+                className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-2xl text-center focus:outline-none focus:border-indigo-400"
                 value={form.emoji} maxLength={4}
                 onChange={e => set('emoji', e.target.value)}
               />
@@ -965,7 +965,7 @@ function RewardEditModal({ initial, onSave, onClose, saving }) {
             <div className="flex-1">
               <label className="text-xs text-slate-500 mb-1 block">ชื่อของรางวัล <span className="text-red-400">*</span></label>
               <input
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400"
                 value={form.name} placeholder="เช่น บัตรกำนัล 50 บาท"
                 onChange={e => set('name', e.target.value)}
               />
@@ -974,7 +974,7 @@ function RewardEditModal({ initial, onSave, onClose, saving }) {
           <div>
             <label className="text-xs text-slate-500 mb-1 block">คำอธิบาย</label>
             <input
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400"
               value={form.desc} placeholder="รายละเอียดของรางวัล..."
               onChange={e => set('desc', e.target.value)}
             />
@@ -983,14 +983,14 @@ function RewardEditModal({ initial, onSave, onClose, saving }) {
             <label className="text-xs text-slate-500 mb-1 block">ราคา (แต้ม) <span className="text-red-400">*</span></label>
             <input
               type="number" min="1"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400"
               value={form.cost}
               onChange={e => set('cost', parseInt(e.target.value) || 0)}
             />
           </div>
           <label className="flex items-center gap-3 cursor-pointer">
             <div onClick={() => set('active', !form.active)}
-              className={`w-11 h-6 rounded-full transition-colors relative ${form.active ? 'bg-blue-500' : 'bg-slate-300'}`}>
+              className={`w-11 h-6 rounded-full transition-colors relative ${form.active ? 'bg-indigo-500' : 'bg-slate-300'}`}>
               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.active ? 'left-6' : 'left-1'}`} />
             </div>
             <span className="text-sm font-medium text-slate-700">{form.active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}</span>
@@ -1003,7 +1003,7 @@ function RewardEditModal({ initial, onSave, onClose, saving }) {
             <button
               onClick={() => { if (form.name.trim() && form.cost > 0) onSave(form) }}
               disabled={saving || !form.name.trim() || form.cost <= 0}
-              className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
               {saving
                 ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> บันทึก...</>
                 : <><Check size={15} /> บันทึก</>}
@@ -1045,7 +1045,7 @@ function RedemptionTab({
       {subTab === 'requests' && (
         <>
           {loading ? (
-            <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /></div>
           ) : (
             <>
               <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -1105,7 +1105,7 @@ function RedemptionTab({
                           onChange={e => setNoteInputs(p => ({ ...p, [r.id]: e.target.value }))}
                           placeholder="หมายเหตุถึงผู้ขอแลก (ไม่บังคับ)..."
                           rows={2}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none bg-white"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none bg-white"
                         />
                         <div className="flex gap-2">
                           <button onClick={() => onReview(r.id, 'approved')} disabled={reviewingId === r.id}
@@ -1133,12 +1133,12 @@ function RedemptionTab({
       {subTab === 'catalog' && (
         <>
           <button onClick={() => setEditingReward({ ...BLANK_REWARD })}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold text-sm transition-colors">
+            className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-semibold text-sm transition-colors">
             + เพิ่มของรางวัลใหม่
           </button>
 
           {catalogLoading ? (
-            <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /></div>
           ) : catalog.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
               <span className="text-4xl block mb-2">🎁</span>
@@ -1163,7 +1163,7 @@ function RedemptionTab({
                   </div>
                   <div className="flex flex-col gap-1.5 flex-shrink-0">
                     <button onClick={() => setEditingReward({ ...r })}
-                      className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-semibold transition-colors">
+                      className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-semibold transition-colors">
                       แก้ไข
                     </button>
                     <button onClick={() => onToggleReward(r)}
@@ -1239,14 +1239,14 @@ function StarDisplay({ value }) {
 function LocalModeBanner() {
   const [expanded, setExpanded] = useState(false)
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-2xl overflow-hidden mb-4">
+    <div className="bg-indigo-50 border border-indigo-200 rounded-2xl overflow-hidden mb-4">
       <div className="flex items-center gap-3 px-4 py-3">
-        <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-base">💾</div>
+        <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-base">💾</div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-blue-800 text-sm">โหมดเก็บข้อมูลในเครื่อง</p>
-          <p className="text-blue-600 text-xs">ข้อมูลผู้ใช้ถูกเก็บใน localStorage — ใช้งานได้ปกติในอุปกรณ์นี้</p>
+          <p className="font-bold text-indigo-800 text-sm">โหมดเก็บข้อมูลในเครื่อง</p>
+          <p className="text-indigo-600 text-xs">ข้อมูลผู้ใช้ถูกเก็บใน localStorage — ใช้งานได้ปกติในอุปกรณ์นี้</p>
         </div>
-        <button onClick={() => setExpanded(p => !p)} className="text-blue-500 hover:text-blue-700 flex-shrink-0 text-xs underline">
+        <button onClick={() => setExpanded(p => !p)} className="text-indigo-500 hover:text-indigo-700 flex-shrink-0 text-xs underline">
           {expanded ? 'ซ่อน' : 'อัปเกรด →'}
         </button>
       </div>
@@ -1301,7 +1301,7 @@ function FirebaseSetupGuide({ compact } = {}) {
 // ── Announcement Components ───────────────────────────────────
 
 const ANN_TYPE_CONFIG = {
-  info:    { label: 'ข้อมูลทั่วไป', color: 'blue',   bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200',   dot: 'bg-blue-400' },
+  info:    { label: 'ข้อมูลทั่วไป', color: 'blue',   bg: 'bg-indigo-50',   text: 'text-indigo-700',   border: 'border-indigo-200',   dot: 'bg-indigo-400' },
   warning: { label: 'คำเตือน',      color: 'yellow', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', dot: 'bg-yellow-400' },
   success: { label: 'ข่าวดี',       color: 'green',  bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200',  dot: 'bg-green-400' },
   danger:  { label: 'เร่งด่วน',     color: 'red',    bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200',    dot: 'bg-red-400' },
@@ -1326,7 +1326,7 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
             <div className="w-20">
               <label className="text-xs text-slate-500 mb-1 block">Emoji</label>
               <input
-                className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-2xl text-center focus:outline-none focus:border-blue-400"
+                className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-2xl text-center focus:outline-none focus:border-indigo-400"
                 value={form.emoji} maxLength={4}
                 onChange={e => set('emoji', e.target.value)}
               />
@@ -1334,7 +1334,7 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
             <div className="flex-1">
               <label className="text-xs text-slate-500 mb-1 block">หัวข้อ <span className="text-red-400">*</span></label>
               <input
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400"
                 value={form.title} placeholder="เช่น ประกาศสำคัญ"
                 onChange={e => set('title', e.target.value)}
               />
@@ -1344,7 +1344,7 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
             <label className="text-xs text-slate-500 mb-1 block">เนื้อหา</label>
             <textarea
               rows={3}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 resize-none"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400 resize-none"
               value={form.body} placeholder="รายละเอียดประกาศ..."
               onChange={e => set('body', e.target.value)}
             />
@@ -1371,17 +1371,17 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
             <label className="text-xs text-slate-500 mb-1 flex items-center gap-1"><Clock size={11} /> กำหนดเวลาส่ง Push อัตโนมัติ</label>
             <input
               type="datetime-local"
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400"
               value={form.scheduledAt || ''}
               onChange={e => set('scheduledAt', e.target.value)}
             />
             {form.scheduledAt && (
-              <p className="text-xs text-blue-600 mt-1">⚡ จะส่ง Push ให้ผู้ใช้ทุกคนอัตโนมัติตามเวลาที่กำหนด</p>
+              <p className="text-xs text-indigo-600 mt-1">⚡ จะส่ง Push ให้ผู้ใช้ทุกคนอัตโนมัติตามเวลาที่กำหนด</p>
             )}
           </div>
           <label className="flex items-center gap-3 cursor-pointer">
             <div onClick={() => set('active', !form.active)}
-              className={`w-11 h-6 rounded-full transition-colors relative ${form.active ? 'bg-blue-500' : 'bg-slate-300'}`}>
+              className={`w-11 h-6 rounded-full transition-colors relative ${form.active ? 'bg-indigo-500' : 'bg-slate-300'}`}>
               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.active ? 'left-6' : 'left-1'}`} />
             </div>
             <span className="text-sm font-medium text-slate-700">{form.active ? 'แสดงประกาศ' : 'ซ่อนประกาศ'}</span>
@@ -1394,7 +1394,7 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
             <button
               onClick={() => { if (form.title.trim()) onSave(form) }}
               disabled={saving || !form.title.trim()}
-              className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
               {saving
                 ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> บันทึก...</>
                 : <><Check size={15} /> บันทึก</>}
@@ -1435,7 +1435,7 @@ function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, on
         </div>
         <button
           onClick={() => setEditingAnn({ ...BLANK_ANN })}
-          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-colors"
         >
           + เพิ่มประกาศ
         </button>
@@ -1459,7 +1459,7 @@ function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, on
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : announcements.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
@@ -1487,7 +1487,7 @@ function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, on
                       <p className="text-[10px] mt-1 flex items-center gap-1">
                         {ann.pushSent
                           ? <span className="text-green-600 font-semibold">✅ ส่ง Push แล้ว</span>
-                          : <><Clock size={9} className="text-blue-500" /><span className="text-blue-600">จะส่ง Push: {formatDate(ann.scheduledAt)}</span></>
+                          : <><Clock size={9} className="text-indigo-500" /><span className="text-indigo-600">จะส่ง Push: {formatDate(ann.scheduledAt)}</span></>
                         }
                       </p>
                     )}
@@ -1511,10 +1511,10 @@ function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, on
                     <button
                       onClick={() => onSendPush(ann)}
                       disabled={pushSending === ann.id}
-                      className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-semibold border border-blue-200 transition-colors disabled:opacity-40 flex items-center gap-1"
+                      className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-semibold border border-indigo-200 transition-colors disabled:opacity-40 flex items-center gap-1"
                     >
                       {pushSending === ann.id
-                        ? <><span className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /> ส่ง...</>
+                        ? <><span className="w-3 h-3 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" /> ส่ง...</>
                         : '🔔 ส่ง Push'}
                     </button>
                   )}
@@ -1549,7 +1549,7 @@ function SurveyTab({ surveys, loading, onDelete, deletingId }) {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -1597,7 +1597,7 @@ function SurveyTab({ surveys, loading, onDelete, deletingId }) {
                 <div key={feat} className="flex items-center gap-2">
                   <span className="text-sm text-slate-700 flex-1">{FEATURE_LABELS[feat] || feat}</span>
                   <div className="flex items-center gap-1.5">
-                    <div className="h-2 bg-blue-400 rounded-full" style={{ width: `${Math.round((count / surveys.length) * 80)}px`, minWidth: '8px' }} />
+                    <div className="h-2 bg-indigo-400 rounded-full" style={{ width: `${Math.round((count / surveys.length) * 80)}px`, minWidth: '8px' }} />
                     <span className="text-xs font-bold text-slate-500">{count}</span>
                   </div>
                 </div>
@@ -1611,7 +1611,7 @@ function SurveyTab({ surveys, loading, onDelete, deletingId }) {
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <p className="font-bold text-slate-700 text-sm">รายการทั้งหมด</p>
-          <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full">{surveys.length} รายการ</span>
+          <span className="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2 py-0.5 rounded-full">{surveys.length} รายการ</span>
         </div>
         <div className="divide-y divide-slate-100">
           {surveys.map(s => {
@@ -1625,7 +1625,7 @@ function SurveyTab({ surveys, loading, onDelete, deletingId }) {
                   onClick={() => setExpandedId(isOpen ? null : s.id)}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
                 >
-                  <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 text-base">
+                  <div className="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0 text-base">
                     {s.userRole === 'นักเรียน' ? '🎒' : s.userRole === 'ครู' ? '👩‍🏫' : '👤'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1665,7 +1665,7 @@ function SurveyTab({ surveys, loading, onDelete, deletingId }) {
                         <p className="text-xs text-slate-400 mb-2">ฟีเจอร์ที่ชอบ</p>
                         <div className="flex flex-wrap gap-1.5">
                           {s.favorites.map(f => (
-                            <span key={f} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                            <span key={f} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
                               {FEATURE_LABELS[f] || f}
                             </span>
                           ))}

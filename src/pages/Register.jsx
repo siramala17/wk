@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+﻿import React, { useState, useRef, useEffect } from 'react'
 import { Camera, User, ChevronRight, Check, RefreshCw, AlertCircle, Lock, Upload, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useHealth } from '../context/HealthContext'
@@ -248,7 +248,7 @@ export default function Register() {
   const inputClass = (field) =>
     `w-full px-4 py-3 rounded-xl border ${
       errors[field] ? 'border-red-400 bg-red-50' : 'border-slate-200'
-    } focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 placeholder-slate-400`
+    } focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 placeholder-slate-400`
 
   // ── single form render (refs live here only) ──────────────
   function renderForm() {
@@ -264,8 +264,8 @@ export default function Register() {
 
         {/* icon + title */}
         <div className="text-center mb-5">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-2.5 ${step === 1 ? 'bg-blue-100' : 'bg-yellow-100'}`}>
-            {step === 1 ? <User size={28} className="text-blue-600" /> : <Camera size={28} className="text-yellow-600" />}
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-2.5 ${step === 1 ? 'bg-indigo-100' : 'bg-yellow-100'}`}>
+            {step === 1 ? <User size={28} className="text-indigo-600" /> : <Camera size={28} className="text-yellow-600" />}
           </div>
           <h1 className="text-xl font-bold text-slate-800">{step === 1 ? t.step1Title : t.step2Title}</h1>
           <p className="text-slate-400 text-xs mt-1">{step === 1 ? t.step1Sub : t.step2Sub}</p>
@@ -273,11 +273,11 @@ export default function Register() {
 
         {/* step indicator */}
         <div className="flex items-center justify-center gap-3 mb-6">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step >= 1 ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-400'}`}>
             {step > 1 ? <Check size={14} /> : '1'}
           </div>
-          <div className={`h-1 w-14 rounded-full transition-colors ${step > 1 ? 'bg-blue-500' : 'bg-blue-100'}`} />
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step === 2 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-400'}`}>2</div>
+          <div className={`h-1 w-14 rounded-full transition-colors ${step > 1 ? 'bg-indigo-500' : 'bg-indigo-100'}`} />
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step === 2 ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-400'}`}>2</div>
         </div>
 
         {/* ── STEP 1 ── */}
@@ -302,7 +302,7 @@ export default function Register() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">{t.gender}</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value:'ชาย',   label:t.gMale,   emoji:'♂',        bg:'bg-blue-50',   border:'border-blue-400',   text:'text-blue-600',   ring:'ring-blue-400' },
+                  { value:'ชาย',   label:t.gMale,   emoji:'♂',        bg:'bg-indigo-50',   border:'border-indigo-400',   text:'text-indigo-600',   ring:'ring-indigo-400' },
                   { value:'หญิง',  label:t.gFemale, emoji:'♀',        bg:'bg-pink-50',   border:'border-pink-400',   text:'text-pink-600',   ring:'ring-pink-400' },
                   { value:'LGBTQ+',label:'LGBTQ+',  emoji:'🏳️‍🌈',  bg:'bg-purple-50', border:'border-purple-400', text:'text-purple-600', ring:'ring-purple-400' },
                 ].map(({ value, label, emoji, bg, border, text, ring }) => (
@@ -323,7 +323,7 @@ export default function Register() {
                   { value:'บุคคลทั่วไป',label:t.rGeneral, emoji:'👤',   color:'slate' },
                 ].map(({ value, label, emoji, color }) => {
                   const active = form.role === value
-                  const s = { blue:'bg-blue-50 border-blue-400 text-blue-700 ring-blue-400', green:'bg-green-50 border-green-400 text-green-700 ring-green-400', slate:'bg-slate-100 border-slate-500 text-slate-700 ring-slate-400' }
+                  const s = { blue:'bg-indigo-50 border-indigo-400 text-indigo-700 ring-indigo-400', green:'bg-green-50 border-green-400 text-green-700 ring-green-400', slate:'bg-slate-100 border-slate-500 text-slate-700 ring-slate-400' }
                   return (
                     <button key={value} type="button" onClick={() => { setForm(p => ({ ...p, role: value, gradeLevel: '' })); setErrors(p => ({ ...p, role: undefined, gradeLevel: undefined })) }}
                       className={`flex flex-col items-center gap-1 py-3 px-1 rounded-xl border-2 font-semibold text-sm transition-all active:scale-95 ${active ? `${s[color]} ring-2 ring-offset-1` : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}>
@@ -349,7 +349,7 @@ export default function Register() {
                       <div className="flex flex-wrap gap-1.5">
                         {grades.map(g => (
                           <button key={g} type="button" onClick={() => { setForm(p => ({ ...p, gradeLevel: g })); setErrors(p => ({ ...p, gradeLevel: undefined })) }}
-                            className={`px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all active:scale-95 ${form.gradeLevel === g ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'}`}>
+                            className={`px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all active:scale-95 ${form.gradeLevel === g ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'}`}>
                             {g}
                           </button>
                         ))}
@@ -370,7 +370,7 @@ export default function Register() {
               <input type="password" inputMode="numeric" maxLength={4} value={form.confirmPin} onChange={e => { setForm(p => ({ ...p, confirmPin: e.target.value.replace(/\D/g,'') })); setErrors(p => ({ ...p, confirmPin: undefined })) }} placeholder="● ● ● ●" className={`${inputClass('confirmPin')} text-center text-2xl tracking-[0.5em]`} />
               {errors.confirmPin && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.confirmPin}</p>}
             </div>
-            <button onClick={handleNext} className="w-full mt-2 bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all">
+            <button onClick={handleNext} className="w-full mt-2 bg-indigo-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-[0.98] transition-all">
               {t.next} <ChevronRight size={18} />
             </button>
             <div className="text-center pt-2 border-t border-slate-100">
@@ -384,9 +384,9 @@ export default function Register() {
         {/* ── STEP 2 ── */}
         {step === 2 && (
           <div className="space-y-5">
-            <div className={`rounded-2xl border-2 p-4 transition-colors ${ageVerified ? 'border-green-400 bg-green-50' : 'border-blue-200 bg-blue-50'}`}>
+            <div className={`rounded-2xl border-2 p-4 transition-colors ${ageVerified ? 'border-green-400 bg-green-50' : 'border-indigo-200 bg-indigo-50'}`}>
               <div className="flex items-center gap-2 mb-3">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center ${ageVerified ? 'bg-green-500' : 'bg-blue-500'}`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center ${ageVerified ? 'bg-green-500' : 'bg-indigo-500'}`}>
                   {ageVerified ? <Check size={14} className="text-white" /> : <Lock size={14} className="text-white" />}
                 </div>
                 <p className="text-sm font-semibold text-slate-700">{ageVerified ? t.ageVerifiedLabel : t.ageVerifyLabel}</p>
@@ -398,8 +398,8 @@ export default function Register() {
                   <p className="text-slate-500 text-xs mb-2">{t.ageConfirmGuide}</p>
                   <div className="flex gap-2">
                     <input type="number" value={ageConfirm} onChange={e => { setAgeConfirm(e.target.value); setAgeConfirmError(null) }} onKeyDown={e => e.key === 'Enter' && handleVerifyAge()} placeholder={t.ageConfirmPh} min="1" max="120"
-                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm ${ageConfirmError ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white'} focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800`} />
-                    <button onClick={handleVerifyAge} className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors">{t.ageConfirmBtn}</button>
+                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm ${ageConfirmError ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white'} focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800`} />
+                    <button onClick={handleVerifyAge} className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">{t.ageConfirmBtn}</button>
                   </div>
                   {ageConfirmError && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} />{ageConfirmError}</p>}
                 </>
@@ -425,10 +425,10 @@ export default function Register() {
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className={`w-44 h-52 border-4 rounded-[50%] transition-colors ${scanning ? 'border-yellow-400 animate-pulse' : 'border-white/70'}`} />
                       </div>
-                      <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-blue-400 rounded-tl-lg" />
-                      <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-blue-400 rounded-tr-lg" />
-                      <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-blue-400 rounded-bl-lg" />
-                      <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-blue-400 rounded-br-lg" />
+                      <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-indigo-400 rounded-tl-lg" />
+                      <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-indigo-400 rounded-tr-lg" />
+                      <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-indigo-400 rounded-bl-lg" />
+                      <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-indigo-400 rounded-br-lg" />
                       {!cameraReady && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white bg-slate-900/80">
                           <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -450,7 +450,7 @@ export default function Register() {
                 <div className="space-y-3">
                   {captured ? (
                     <>
-                      <button onClick={() => handleRegister(captured)} disabled={registering} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-70">
+                      <button onClick={() => handleRegister(captured)} disabled={registering} className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-70">
                         {registering ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> กำลังสมัคร...</> : <><Check size={18} /> {t.getStarted}</>}
                       </button>
                       <button onClick={retake} disabled={registering} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors disabled:opacity-50">
@@ -459,18 +459,18 @@ export default function Register() {
                     </>
                   ) : cameraError ? (
                     <>
-                      <button onClick={() => { setCameraError(null); startCamera() }} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors">{t.tryAgain}</button>
+                      <button onClick={() => { setCameraError(null); startCamera() }} className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors">{t.tryAgain}</button>
                       <button onClick={() => handleRegister(null)} disabled={registering} className="w-full py-3 rounded-xl border border-slate-200 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5">
                         <ChevronRight size={15} />{lang === 'th' ? 'ข้ามขั้นตอนนี้ (ไม่มีรูปโปรไฟล์)' : 'Skip (no profile photo)'}
                       </button>
                     </>
                   ) : (
                     <>
-                      <button onClick={startScan} disabled={!cameraReady || scanning} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      <button onClick={startScan} disabled={!cameraReady || scanning} className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                         <Camera size={18} />{scanning ? t.scanning : t.scanFace}
                       </button>
                       <div className="flex items-center gap-3"><div className="flex-1 h-px bg-slate-200" /><span className="text-xs text-slate-400">{t.or}</span><div className="flex-1 h-px bg-slate-200" /></div>
-                      <button onClick={() => uploadRef.current?.click()} className="w-full border-2 border-dashed border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-500 hover:text-blue-600 py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors">
+                      <button onClick={() => uploadRef.current?.click()} className="w-full border-2 border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors">
                         <Upload size={16} /> {t.upload}
                       </button>
                       <input ref={uploadRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
@@ -507,22 +507,22 @@ export default function Register() {
       <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none' }}>
         {/* top-left stripe cluster */}
         <div style={{ position:'absolute', top:'-8%', left:'-5%', width:'60%', height:'55%',
-          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #2563eb 52%,#2563eb 58%, transparent 58%)',
+          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #4f46e5 52%,#4f46e5 58%, transparent 58%)',
           opacity:.75, transform:'skewY(-2deg)' }} />
         {/* bottom-right stripe cluster */}
         <div style={{ position:'absolute', bottom:'-8%', right:'-5%', width:'60%', height:'55%',
-          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #2563eb 52%,#2563eb 58%, transparent 58%)',
+          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #4f46e5 52%,#4f46e5 58%, transparent 58%)',
           opacity:.75, transform:'skewY(-2deg)' }} />
         {/* shine dots */}
         {[{top:'8%',left:'12%'},{top:'15%',right:'18%'},{bottom:'20%',left:'8%'},{bottom:'12%',right:'12%'}].map((p,i)=>(
-          <div key={i} style={{ position:'absolute', ...p, width:6, height:6, borderRadius:'50%', background:'#93c5fd', opacity:.6 }} />
+          <div key={i} style={{ position:'absolute', ...p, width:6, height:6, borderRadius:'50%', background:'#a5b4fc', opacity:.6 }} />
         ))}
       </div>
 
       {/* ── Left character (desktop only) ── */}
       <div className="hidden lg:flex" style={{ position:'absolute', left:0, bottom:0, width:'20%', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', pointerEvents:'none', userSelect:'none' }}>
         <div style={{ fontSize:'clamp(80px,9vw,140px)', lineHeight:1, filter:'drop-shadow(0 0 24px rgba(59,130,246,.6))' }}>🏃</div>
-        <div style={{ width:'85%', height:3, background:'linear-gradient(90deg,transparent,#3b82f6,transparent)', marginTop:4 }} />
+        <div style={{ width:'85%', height:3, background:'linear-gradient(90deg,transparent,#6366f1,transparent)', marginTop:4 }} />
       </div>
 
       {/* ── Right character (desktop only) ── */}
@@ -569,8 +569,8 @@ export default function Register() {
           <div style={{ background:'white', borderRadius:42, overflow:'hidden', height:680, display:'flex', flexDirection:'column' }}>
             {/* Notch bar */}
             <div style={{ background:'#f8fafc', padding:'8px 20px 4px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #f1f5f9', flexShrink:0 }}>
-              <div style={{ width:28, height:28, background:'linear-gradient(135deg,#2563eb,#1d4ed8)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>🏥</div>
-              <span style={{ fontSize:13, fontWeight:800, color:'#1e3a8a' }}>W.K. Health</span>
+              <div style={{ width:28, height:28, background:'linear-gradient(135deg,#4f46e5,#4338ca)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>🏥</div>
+              <span style={{ fontSize:13, fontWeight:800, color:'#312e81' }}>W.K. Health</span>
               <div style={{ marginLeft:'auto', display:'flex', gap:3 }}>
                 <div style={{ width:8, height:8, borderRadius:'50%', background:'#fbbf24' }} />
                 <div style={{ width:8, height:8, borderRadius:'50%', background:'#34d399' }} />

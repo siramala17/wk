@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { Star, ChevronRight, ChevronLeft, Check, Send, RotateCcw } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { submitSurvey } from '../services/userSync'
@@ -133,21 +133,21 @@ export default function Survey() {
     <div className="max-w-lg mx-auto px-4 py-6">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-6 text-white mb-6 shadow-lg shadow-blue-200">
+      <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-6 text-white mb-6 shadow-lg shadow-indigo-200">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
             📝
           </div>
           <div>
             <h1 className="font-extrabold text-xl leading-tight">แบบประเมินความพึงพอใจ</h1>
-            <p className="text-blue-200 text-sm mt-0.5">ช่วยพัฒนาแอปให้ดียิ่งขึ้น ใช้เวลาเพียง 1 นาที</p>
+            <p className="text-indigo-200 text-sm mt-0.5">ช่วยพัฒนาแอปให้ดียิ่งขึ้น ใช้เวลาเพียง 1 นาที</p>
           </div>
         </div>
 
         {/* progress bar */}
         {step < 3 && (
           <div className="mt-5">
-            <div className="flex justify-between text-xs text-blue-200 mb-1.5">
+            <div className="flex justify-between text-xs text-indigo-200 mb-1.5">
               <span>ขั้นตอน {step} / {TOTAL_STEPS - 1}</span>
               <span>{step === 1 ? 'ให้คะแนน' : 'ความคิดเห็น'}</span>
             </div>
@@ -187,7 +187,7 @@ export default function Survey() {
 
           <button
             onClick={handleNext}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
           >
             ถัดไป <ChevronRight size={18} />
           </button>
@@ -214,13 +214,13 @@ export default function Survey() {
                     onClick={() => toggleFeature(f.value)}
                     className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all active:scale-95 text-left ${
                       active
-                        ? 'bg-blue-50 border-blue-400 text-blue-700'
+                        ? 'bg-indigo-50 border-indigo-400 text-indigo-700'
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     <span className="text-lg flex-shrink-0">{f.emoji}</span>
                     <span className="leading-tight">{f.label}</span>
-                    {active && <Check size={14} className="ml-auto flex-shrink-0 text-blue-500" />}
+                    {active && <Check size={14} className="ml-auto flex-shrink-0 text-indigo-500" />}
                   </button>
                 )
               })}
@@ -237,7 +237,7 @@ export default function Survey() {
               onChange={e => setSuggestion(e.target.value)}
               placeholder="เช่น อยากให้เพิ่มการแจ้งเตือน, ต้องการธีมสีอื่น..."
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
             />
           </div>
 
@@ -251,7 +251,7 @@ export default function Survey() {
               onChange={e => setComment(e.target.value)}
               placeholder="บอกเราตรงๆ ว่าคิดเห็นอย่างไร..."
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
             />
           </div>
 
@@ -269,7 +269,7 @@ export default function Survey() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
             >
               {submitting
                 ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> กำลังส่ง...</>
@@ -307,7 +307,7 @@ export default function Survey() {
 
           <button
             onClick={reset}
-            className="flex items-center gap-2 mx-auto text-sm text-slate-400 hover:text-blue-500 transition-colors"
+            className="flex items-center gap-2 mx-auto text-sm text-slate-400 hover:text-indigo-500 transition-colors"
           >
             <RotateCcw size={14} /> ทำแบบประเมินอีกครั้ง
           </button>

@@ -1,6 +1,6 @@
-import React from 'react'
+﻿import React from 'react'
 
-export default function ScoreRing({ score = 0, size = 160, strokeWidth = 12, color = '#2563EB' }) {
+export default function ScoreRing({ score = 0, size = 160, strokeWidth = 12, color = '#4f46e5' }) {
   const r = (size - strokeWidth) / 2
   const circ = 2 * Math.PI * r
   const offset = circ - (score / 100) * circ

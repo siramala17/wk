@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+﻿import React, { useEffect, useState, useMemo } from 'react'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
@@ -10,7 +10,7 @@ import { subscribeUsers, subscribeAssessments } from '../services/userSync'
 const DOMAINS  = ['นอนหลับ','ดื่มน้ำ','ออกกำลังกาย','สื่อดิจิทัล','ความเครียด','โภชนาการ']
 const D_KEYS   = ['sleepScore','waterScore','exerciseScore','digitalScore','stressScore','nutritionScore']
 const D_EMOJIS = ['🌙','💧','🏃','📱','🧘','🥗']
-const D_COLORS = ['#3b82f6','#06b6d4','#10b981','#8b5cf6','#f59e0b','#f97316']
+const D_COLORS = ['#6366f1','#06b6d4','#10b981','#8b5cf6','#f59e0b','#f97316']
 const GRADES   = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
 const GRADE_KEYS = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:14 }
@@ -18,7 +18,7 @@ const TT_STYLE = { backgroundColor:'rgba(8,15,36,.95)', border:'1px solid rgba(2
 
 function lvl(s) {
   if (s >= 80) return ['ดีเยี่ยม','#10b981']
-  if (s >= 65) return ['ดี','#3b82f6']
+  if (s >= 65) return ['ดี','#6366f1']
   if (s >= 50) return ['ปานกลาง','#f59e0b']
   return ['ต้องปรับปรุง','#ef4444']
 }
@@ -166,7 +166,7 @@ export default function SchoolDashboard() {
   }
   const donutData = filtered.length ? [
     { name:'ดีเยี่ยม (≥80)',  value: donutCounts.ex,   color:'#10b981' },
-    { name:'ดี (65–79)',       value: donutCounts.good, color:'#3b82f6' },
+    { name:'ดี (65–79)',       value: donutCounts.good, color:'#6366f1' },
     { name:'ปานกลาง (50–64)', value: donutCounts.mid,  color:'#f59e0b' },
     { name:'ต้องปรับปรุง',    value: donutCounts.poor, color:'#ef4444' },
   ] : [{ name:'ยังไม่มีข้อมูล', value:1, color:'rgba(255,255,255,0.08)' }]
@@ -302,7 +302,7 @@ export default function SchoolDashboard() {
 
         {/* ── LEFT KPIs ── */}
         <div>
-          <KPI label={totalLabel} value={filteredUsers.length.toLocaleString() || totalStudents.toLocaleString()} sub="ลงทะเบียนแล้ว" color="#60a5fa" trend={`${users.length} คนรวม`} up />
+          <KPI label={totalLabel} value={filteredUsers.length.toLocaleString() || totalStudents.toLocaleString()} sub="ลงทะเบียนแล้ว" color="#818cf8" trend={`${users.length} คนรวม`} up />
           <KPI label="คะแนนเฉลี่ยรวม" value={avgScore || '—'} sub="จาก 100 คะแนน" color="#fbbf24" trend={avgScore ? '+3.2' : null} up />
           <KPI label="อัตราผ่านเกณฑ์" value={filtered.length ? passRate+'%' : '—'} sub="คะแนน ≥ 50" color="#34d399" trend={filtered.length ? '+5.1%' : null} up />
           <KPI label="ระดับดีเยี่ยม" value={filtered.length ? exRate+'%' : '—'} sub="คะแนน ≥ 80" color="#a78bfa" />
@@ -351,7 +351,7 @@ export default function SchoolDashboard() {
                   {filtered.length > 0 ? (
                     [
                       { name:'ดีเยี่ยม (≥80)',  value:donutCounts.ex,   color:'#10b981' },
-                      { name:'ดี (65–79)',        value:donutCounts.good, color:'#3b82f6' },
+                      { name:'ดี (65–79)',        value:donutCounts.good, color:'#6366f1' },
                       { name:'ปานกลาง (50–64)',  value:donutCounts.mid,  color:'#f59e0b' },
                       { name:'ต้องปรับปรุง',     value:donutCounts.poor, color:'#ef4444' },
                     ].map((d,i)=>(
@@ -454,7 +454,7 @@ export default function SchoolDashboard() {
               <RadarChart data={radarData} margin={{ top:8, right:20, bottom:0, left:20 }}>
                 <PolarGrid stroke="rgba(255,255,255,.07)" />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize:10, fill:'#94a3b8', fontFamily:'Sarabun' }} />
-                <Radar name="คะแนน" dataKey="คะแนน" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.18} strokeWidth={2} dot={{ r:3, fill:'#3b82f6' }} />
+                <Radar name="คะแนน" dataKey="คะแนน" stroke="#6366f1" fill="#6366f1" fillOpacity={0.18} strokeWidth={2} dot={{ r:3, fill:'#6366f1' }} />
                 <Radar name="เป้าหมาย" dataKey="เป้าหมาย" stroke="rgba(245,158,11,.4)" fill="rgba(245,158,11,.04)" strokeWidth={1} strokeDasharray="4 3" dot={false} />
                 <Tooltip content={<CUSTOM_TT />} />
                 <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10.5, color:'#64748b' }} />
@@ -472,7 +472,7 @@ export default function SchoolDashboard() {
                 <YAxis tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} unit="%" />
                 <Tooltip content={<CUSTOM_TT />} />
                 <Bar dataKey="ดีเยี่ยม" stackId="s" fill="#10b981" />
-                <Bar dataKey="ดี" stackId="s" fill="#3b82f6" />
+                <Bar dataKey="ดี" stackId="s" fill="#6366f1" />
                 <Bar dataKey="ปานกลาง" stackId="s" fill="#f59e0b" />
                 <Bar dataKey="ต้องปรับปรุง" stackId="s" fill="#ef4444" radius={[3,3,0,0]} />
                 <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10, color:'#64748b' }} />

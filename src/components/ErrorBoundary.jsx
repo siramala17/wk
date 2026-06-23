@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { RefreshCw, AlertTriangle } from 'lucide-react'
 
 export default class ErrorBoundary extends React.Component {
@@ -39,7 +39,7 @@ export default class ErrorBoundary extends React.Component {
           {!isFirebaseConfig && (
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors"
             >
               <RefreshCw size={16} /> รีโหลดหน้าเว็บ
             </button>

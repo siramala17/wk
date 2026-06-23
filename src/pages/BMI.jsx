@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Scale, RefreshCw, Star, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
@@ -10,14 +10,14 @@ function getBmiAdvice(lang) {
     return {
       underweight: {
         title: 'Underweight — Needs Attention',
-        icon: '⚠️', headerBg: 'bg-blue-600', cardBg: 'bg-blue-50', border: 'border-blue-200',
+        icon: '⚠️', headerBg: 'bg-indigo-600', cardBg: 'bg-indigo-50', border: 'border-indigo-200',
         sections: [
-          { icon: '🍱', title: 'Nutrition', bg: 'bg-white', border: 'border-blue-100', items: ['Add quality calories: nuts, avocado, oats, sesame', 'Eat 3–5 small meals/day in addition to main meals', 'Focus on high protein: eggs, dairy, fish, lean meat, soy', 'Add healthy fats: olive oil, salmon, pumpkin seeds'] },
-          { icon: '💪', title: 'Exercise', bg: 'bg-white', border: 'border-blue-100', items: ['Resistance / light weight training 2–3x/week to build muscle', 'Avoid heavy cardio that burns too many calories', 'Exercise 1 hour after meals for better nutrient absorption'] },
-          { icon: '👨‍⚕️', title: 'Medical Advice', bg: 'bg-blue-100', border: 'border-blue-200', items: ['See a doctor to investigate the cause of low weight', 'Check blood work, vitamins, and essential nutrients', 'Consult a nutritionist for a personalized meal plan'] },
+          { icon: '🍱', title: 'Nutrition', bg: 'bg-white', border: 'border-indigo-100', items: ['Add quality calories: nuts, avocado, oats, sesame', 'Eat 3–5 small meals/day in addition to main meals', 'Focus on high protein: eggs, dairy, fish, lean meat, soy', 'Add healthy fats: olive oil, salmon, pumpkin seeds'] },
+          { icon: '💪', title: 'Exercise', bg: 'bg-white', border: 'border-indigo-100', items: ['Resistance / light weight training 2–3x/week to build muscle', 'Avoid heavy cardio that burns too many calories', 'Exercise 1 hour after meals for better nutrient absorption'] },
+          { icon: '👨‍⚕️', title: 'Medical Advice', bg: 'bg-indigo-100', border: 'border-indigo-200', items: ['See a doctor to investigate the cause of low weight', 'Check blood work, vitamins, and essential nutrients', 'Consult a nutritionist for a personalized meal plan'] },
         ],
         goal: 'Goal: Gain 0.3–0.5 kg/week gradually',
-        goalColor: 'text-blue-700 bg-blue-100',
+        goalColor: 'text-indigo-700 bg-indigo-100',
       },
       overweight: {
         title: 'Overweight — Improvable',
@@ -46,14 +46,14 @@ function getBmiAdvice(lang) {
   return {
     underweight: {
       title: 'น้ำหนักน้อยกว่าเกณฑ์ — ต้องการความใส่ใจ',
-      icon: '⚠️', headerBg: 'bg-blue-600', cardBg: 'bg-blue-50', border: 'border-blue-200',
+      icon: '⚠️', headerBg: 'bg-indigo-600', cardBg: 'bg-indigo-50', border: 'border-indigo-200',
       sections: [
-        { icon: '🍱', title: 'อาหารและโภชนาการ', bg: 'bg-white', border: 'border-blue-100', items: ['เพิ่มแคลอรี่จากอาหารคุณภาพ เช่น ถั่ว อะโวคาโด ข้าวโอ๊ต งา', 'กินมื้อย่อย 3–5 ครั้ง/วัน เพิ่มเติมจากมื้อหลัก', 'เน้นโปรตีนสูง เช่น ไข่ นม ปลา เนื้อไม่ติดมัน ถั่วเหลือง', 'เพิ่มไขมันดี เช่น น้ำมันมะกอก ปลาแซลมอน เมล็ดฟักทอง'] },
-        { icon: '💪', title: 'การออกกำลังกาย', bg: 'bg-white', border: 'border-blue-100', items: ['ฝึก Resistance Training / ยกน้ำหนักเบา 2–3 ครั้ง/สัปดาห์ เพิ่มมวลกล้ามเนื้อ', 'หลีกเลี่ยง Cardio หนักๆ ที่เผาผลาญแคลอรี่มากเกินไป', 'ออกกำลังกายหลังอาหาร 1 ชั่วโมง เพื่อให้ร่างกายดูดซึมได้ดี'] },
-        { icon: '👨‍⚕️', title: 'คำแนะนำทางการแพทย์', bg: 'bg-blue-100', border: 'border-blue-200', items: ['พบแพทย์เพื่อตรวจหาสาเหตุที่น้ำหนักต่ำกว่าเกณฑ์', 'ตรวจค่าเลือด วิตามิน และธาตุอาหารที่จำเป็น', 'ปรึกษานักโภชนาการเพื่อวางแผนอาหารเฉพาะบุคคล'] },
+        { icon: '🍱', title: 'อาหารและโภชนาการ', bg: 'bg-white', border: 'border-indigo-100', items: ['เพิ่มแคลอรี่จากอาหารคุณภาพ เช่น ถั่ว อะโวคาโด ข้าวโอ๊ต งา', 'กินมื้อย่อย 3–5 ครั้ง/วัน เพิ่มเติมจากมื้อหลัก', 'เน้นโปรตีนสูง เช่น ไข่ นม ปลา เนื้อไม่ติดมัน ถั่วเหลือง', 'เพิ่มไขมันดี เช่น น้ำมันมะกอก ปลาแซลมอน เมล็ดฟักทอง'] },
+        { icon: '💪', title: 'การออกกำลังกาย', bg: 'bg-white', border: 'border-indigo-100', items: ['ฝึก Resistance Training / ยกน้ำหนักเบา 2–3 ครั้ง/สัปดาห์ เพิ่มมวลกล้ามเนื้อ', 'หลีกเลี่ยง Cardio หนักๆ ที่เผาผลาญแคลอรี่มากเกินไป', 'ออกกำลังกายหลังอาหาร 1 ชั่วโมง เพื่อให้ร่างกายดูดซึมได้ดี'] },
+        { icon: '👨‍⚕️', title: 'คำแนะนำทางการแพทย์', bg: 'bg-indigo-100', border: 'border-indigo-200', items: ['พบแพทย์เพื่อตรวจหาสาเหตุที่น้ำหนักต่ำกว่าเกณฑ์', 'ตรวจค่าเลือด วิตามิน และธาตุอาหารที่จำเป็น', 'ปรึกษานักโภชนาการเพื่อวางแผนอาหารเฉพาะบุคคล'] },
       ],
       goal: 'เป้าหมาย: เพิ่มน้ำหนัก 0.3–0.5 kg/สัปดาห์ อย่างค่อยเป็นค่อยไป',
-      goalColor: 'text-blue-700 bg-blue-100',
+      goalColor: 'text-indigo-700 bg-indigo-100',
     },
     overweight: {
       title: 'น้ำหนักเกิน — สามารถปรับปรุงได้',
@@ -128,7 +128,7 @@ function BmiRecommendations({ bmi, lang }) {
 function BmiGauge({ bmi, zones }) {
   const clampedBmi = Math.max(10, Math.min(40, bmi))
   const pct = ((clampedBmi - 10) / 30) * 100
-  const colors = ['#60A5FA', '#34D399', '#FBBF24', '#F97316', '#EF4444']
+  const colors = ['#818cf8', '#34D399', '#FBBF24', '#F97316', '#EF4444']
   const widths = [28.3, 15, 6.7, 16.7, 33.3]
 
   return (
@@ -160,10 +160,10 @@ function IdealWeightCard({ height, t }) {
   const minWeight = (18.5 * Math.pow(height / 100, 2)).toFixed(1)
   const maxWeight = (22.9 * Math.pow(height / 100, 2)).toFixed(1)
   return (
-    <div className="bg-blue-50 rounded-2xl p-4">
-      <p className="text-sm font-semibold text-blue-800 mb-1">{b.idealTitle}</p>
-      <p className="text-xl font-black text-blue-700">{minWeight} – {maxWeight} kg</p>
-      <p className="text-xs text-blue-500 mt-1">{b.idealFor.replace('{h}', height)}</p>
+    <div className="bg-indigo-50 rounded-2xl p-4">
+      <p className="text-sm font-semibold text-indigo-800 mb-1">{b.idealTitle}</p>
+      <p className="text-xl font-black text-indigo-700">{minWeight} – {maxWeight} kg</p>
+      <p className="text-xs text-indigo-500 mt-1">{b.idealFor.replace('{h}', height)}</p>
     </div>
   )
 }
@@ -214,14 +214,14 @@ export default function BMI() {
       </div>
 
       {/* Input Card */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-50 space-y-5">
+      <div className="bg-white rounded-3xl p-5 shadow-sm border border-indigo-50 space-y-5">
         <div>
           <label className="text-sm font-semibold text-slate-700 block mb-2">{b.heightLabel}</label>
           <div className="flex items-center gap-3">
-            <input type="range" min={100} max={220} value={height} onChange={e => setHeight(+e.target.value)} className="flex-1 accent-blue-600" />
+            <input type="range" min={100} max={220} value={height} onChange={e => setHeight(+e.target.value)} className="flex-1 accent-indigo-600" />
             <div className="w-20">
               <input type="number" value={height} onChange={e => setHeight(+e.target.value)}
-                className="w-full text-center border-2 border-blue-100 rounded-xl py-2 font-bold text-blue-700 focus:outline-none focus:border-blue-500" />
+                className="w-full text-center border-2 border-indigo-100 rounded-xl py-2 font-bold text-indigo-700 focus:outline-none focus:border-indigo-500" />
             </div>
           </div>
         </div>
@@ -229,10 +229,10 @@ export default function BMI() {
         <div>
           <label className="text-sm font-semibold text-slate-700 block mb-2">{b.weightLabel}</label>
           <div className="flex items-center gap-3">
-            <input type="range" min={30} max={150} value={weight} onChange={e => setWeight(+e.target.value)} className="flex-1 accent-blue-600" />
+            <input type="range" min={30} max={150} value={weight} onChange={e => setWeight(+e.target.value)} className="flex-1 accent-indigo-600" />
             <div className="w-20">
               <input type="number" value={weight} onChange={e => setWeight(+e.target.value)}
-                className="w-full text-center border-2 border-blue-100 rounded-xl py-2 font-bold text-blue-700 focus:outline-none focus:border-blue-500" />
+                className="w-full text-center border-2 border-indigo-100 rounded-xl py-2 font-bold text-indigo-700 focus:outline-none focus:border-indigo-500" />
             </div>
           </div>
         </div>
@@ -250,7 +250,7 @@ export default function BMI() {
         )}
 
         <button onClick={calculate}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors">
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors">
           <Scale size={18} />
           {b.calcBtn}
         </button>
@@ -299,11 +299,11 @@ export default function BMI() {
           <BmiRecommendations bmi={result.bmi} lang={lang} />
 
           {/* BMI Reference Table */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-blue-50">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-indigo-50">
             <p className="text-sm font-bold text-slate-700 mb-3">{b.tableTitle}</p>
             <div className="space-y-2">
               {[
-                { range: '< 18.5',      color: 'bg-blue-100 text-blue-700'    },
+                { range: '< 18.5',      color: 'bg-indigo-100 text-indigo-700'    },
                 { range: '18.5 – 22.9', color: 'bg-emerald-100 text-emerald-700' },
                 { range: '23 – 24.9',   color: 'bg-yellow-100 text-yellow-700'  },
                 { range: '25 – 29.9',   color: 'bg-orange-100 text-orange-700'  },
@@ -311,7 +311,7 @@ export default function BMI() {
               ].map((row, i) => (
                 <div key={row.range} className={`flex items-center justify-between px-3 py-2 rounded-xl ${
                   row.range.includes(result.bmi.toString().split('.')[0]) || (result.bmi >= 30 && row.range.includes('30'))
-                    ? 'ring-2 ring-blue-400' : ''
+                    ? 'ring-2 ring-indigo-400' : ''
                 } ${row.color}`}>
                   <span className="font-semibold text-sm">{row.range}</span>
                   <span className="text-sm">{b.tableRows[i].label}</span>
@@ -321,7 +321,7 @@ export default function BMI() {
           </div>
 
           <button onClick={() => setResult(null)}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-blue-100 text-blue-600 font-semibold hover:bg-blue-50 transition-colors">
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-indigo-100 text-indigo-600 font-semibold hover:bg-indigo-50 transition-colors">
             <RefreshCw size={16} />
             {b.recalc}
           </button>

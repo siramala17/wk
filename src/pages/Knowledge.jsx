@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 const sections = [
@@ -20,7 +20,7 @@ const sections = [
         <div className="grid grid-cols-3 gap-3 mt-2">
           {[
             { label: 'อ. อาหาร', emoji: '🥗', color: 'bg-green-100 text-green-700' },
-            { label: 'อ. ออกกำลังกาย', emoji: '🏃', color: 'bg-blue-100 text-blue-700' },
+            { label: 'อ. ออกกำลังกาย', emoji: '🏃', color: 'bg-indigo-100 text-indigo-700' },
             { label: 'อ. อารมณ์', emoji: '😊', color: 'bg-pink-100 text-pink-700' },
           ].map(item => (
             <div key={item.label} className={`${item.color} rounded-2xl p-3 text-center font-bold text-xs`}>
@@ -57,7 +57,7 @@ const sections = [
                   <th className="px-2 py-2 text-left text-green-800">กลุ่มอาหาร</th>
                   <th className="px-2 py-2 text-green-800">หน่วย</th>
                   <th className="px-2 py-2 text-pink-700">ชาย/หญิง 9-13 ปี หญิง 14-18 ปี<br/><span className="font-bold">1,600 แคล</span></th>
-                  <th className="px-2 py-2 text-blue-700">ชาย 14-18 ปี<br/><span className="font-bold">2,000 แคล</span></th>
+                  <th className="px-2 py-2 text-indigo-700">ชาย 14-18 ปี<br/><span className="font-bold">2,000 แคล</span></th>
                   <th className="px-2 py-2 text-purple-700">นักกีฬา<br/><span className="font-bold">2,400 แคล</span></th>
                 </tr>
               </thead>
@@ -93,7 +93,7 @@ const sections = [
               { icon: '🌾', name: 'คาร์โบไฮเดรต', desc: '55-60% ของพลังงานทั้งหมด ได้แก่ ข้าว แป้ง เผือก มัน ข้าวโพด', color: 'bg-yellow-50 border-yellow-200' },
               { icon: '🥩', name: 'โปรตีน', desc: '1.0-1.2 ก./กก. น้ำหนักตัว ได้แก่ เนื้อสัตว์ ปลา ไข่ นม ถั่ว', color: 'bg-red-50 border-red-200' },
               { icon: '🫒', name: 'ไขมัน', desc: '~30% ของพลังงาน ได้แก่ น้ำมันพืช น้ำมันปลา เนย งา', color: 'bg-amber-50 border-amber-200' },
-              { icon: '🥛', name: 'แคลเซียม', desc: 'สร้างกระดูก เพิ่มความสูง ได้แก่ นม ปลาเล็ก กุ้ง ผักใบเขียว', color: 'bg-blue-50 border-blue-200' },
+              { icon: '🥛', name: 'แคลเซียม', desc: 'สร้างกระดูก เพิ่มความสูง ได้แก่ นม ปลาเล็ก กุ้ง ผักใบเขียว', color: 'bg-indigo-50 border-indigo-200' },
               { icon: '🫀', name: 'ธาตุเหล็ก', desc: 'องค์ประกอบเม็ดเลือดแดง ได้แก่ ตับ เลือด เนื้อแดง', color: 'bg-orange-50 border-orange-200' },
               { icon: '🥦', name: 'วิตามิน', desc: 'สำคัญต่อการสลายอาหาร มีในผัก ผลไม้ทุกชนิด', color: 'bg-emerald-50 border-emerald-200' },
               { icon: '💧', name: 'น้ำ', desc: 'ร่างกายต้องการ 8-10 แก้ว/วัน ช่วยรักษาสมดุลอุณหภูมิ', color: 'bg-cyan-50 border-cyan-200' },
@@ -150,15 +150,15 @@ const sections = [
     id: 'exercise',
     emoji: '🏃',
     title: 'สุขภาพดีสมวัยด้วย อ. ออกกำลังกาย',
-    color: 'from-blue-400 to-indigo-500',
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
+    color: 'from-indigo-400 to-indigo-500',
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
     content: (
       <div className="space-y-4 text-sm text-slate-700">
-        <div className="bg-blue-100 rounded-2xl p-4 text-center">
+        <div className="bg-indigo-100 rounded-2xl p-4 text-center">
           <div className="text-5xl mb-1">⏱️</div>
-          <p className="font-bold text-blue-800 text-lg">อย่างน้อย 60 นาทีต่อวัน</p>
-          <p className="text-blue-600 text-xs mt-1">ขยับกาย เคลื่อนไหว ออกกำลังกายรวมกัน</p>
+          <p className="font-bold text-indigo-800 text-lg">อย่างน้อย 60 นาทีต่อวัน</p>
+          <p className="text-indigo-600 text-xs mt-1">ขยับกาย เคลื่อนไหว ออกกำลังกายรวมกัน</p>
         </div>
 
         <p className="text-xs text-slate-500 leading-relaxed">

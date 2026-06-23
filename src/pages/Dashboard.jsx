@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Moon, Smartphone, Brain, Dumbbell, Droplets, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
@@ -12,7 +12,7 @@ import { requestPermissionAndSaveToken, fcmReady } from '../services/fcm'
 
 function getStatConfig(t) {
   return [
-    { key: 'sleep',    icon: Moon,       label: t.stats.sleep,    unit: t.units.hrs,       max: 9,  color: '#3b82f6', bg: '#eff6ff', getVal: a => a.sleepHours },
+    { key: 'sleep',    icon: Moon,       label: t.stats.sleep,    unit: t.units.hrs,       max: 9,  color: '#6366f1', bg: '#eef2ff', getVal: a => a.sleepHours },
     { key: 'screen',   icon: Smartphone, label: t.stats.screen,   unit: t.units.hrs,       max: 12, color: '#8b5cf6', bg: '#f5f3ff', getVal: a => a.screenHours },
     { key: 'stress',   icon: Brain,      label: t.stats.stress,   unit: t.units.outOf10,   max: 10, color: '#f59e0b', bg: '#fffbeb', getVal: a => a.stressLevel },
     { key: 'exercise', icon: Dumbbell,   label: t.stats.exercise, unit: t.units.daysPerWk, max: 7,  color: '#10b981', bg: '#ecfdf5', getVal: a => a.exerciseDays },
@@ -22,7 +22,7 @@ function getStatConfig(t) {
 
 function getQuickLinks(t) {
   return [
-    { to: '/assessment',      label: t.quick.assessment, grad: ['#1e40af','#3b82f6'], shadow: 'rgba(37,99,235,0.50)' },
+    { to: '/assessment',      label: t.quick.assessment, grad: ['#3730a3','#6366f1'], shadow: 'rgba(99,102,241,0.50)' },
     { to: '/assessment',      label: t.quick.bmi,        grad: ['#b45309','#fbbf24'], shadow: 'rgba(245,158,11,0.50)' },
     { to: '/nubcal',          label: t.quick.calories,   grad: ['#c2410c','#fb923c'], shadow: 'rgba(249,115,22,0.50)' },
     { to: '/analytics',       label: t.quick.graph,      grad: ['#0e7490','#22d3ee'], shadow: 'rgba(6,182,212,0.50)'  },
@@ -62,9 +62,9 @@ function StatCard({ icon: Icon, label, value, unit, max, color, bg }) {
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) {
     return (
-      <div className="bg-white border border-blue-100 rounded-xl px-3 py-2 shadow-lg text-xs">
+      <div className="bg-white border border-indigo-100 rounded-xl px-3 py-2 shadow-lg text-xs">
         <p className="text-slate-400">{label}</p>
-        <p className="font-bold text-blue-600">{payload[0].value}</p>
+        <p className="font-bold text-indigo-600">{payload[0].value}</p>
       </div>
     )
   }
@@ -72,7 +72,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 const ANN_STYLE = {
-  info:    { bg: 'rgba(239,246,255,0.95)', border: '#bfdbfe', text: '#1e40af', bar: '#3b82f6' },
+  info:    { bg: 'rgba(239,246,255,0.95)', border: '#c7d2fe', text: '#3730a3', bar: '#6366f1' },
   warning: { bg: 'rgba(255,251,235,0.95)', border: '#fde68a', text: '#92400e', bar: '#f59e0b' },
   success: { bg: 'rgba(240,253,244,0.95)', border: '#bbf7d0', text: '#14532d', bar: '#22c55e' },
   danger:  { bg: 'rgba(254,242,242,0.95)', border: '#fecaca', text: '#7f1d1d', bar: '#ef4444' },
@@ -131,9 +131,9 @@ export default function Dashboard() {
               onClick={() => setMainTab(key)}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
               style={mainTab === key ? {
-                background: 'linear-gradient(135deg, #1e40af, #2563eb)',
+                background: 'linear-gradient(135deg, #3730a3, #4f46e5)',
                 color: 'white',
-                boxShadow: '0 4px 14px rgba(37,99,235,0.40)',
+                boxShadow: '0 4px 14px rgba(99,102,241,0.40)',
               } : { color: '#64748b' }}
             >
               {icon} {label}
@@ -180,12 +180,12 @@ export default function Dashboard() {
           {/* ── PWA Install Banner ── */}
           {installPrompt && !isInstalled && (
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'linear-gradient(135deg,#1e3a8a,#1d4ed8)', boxShadow: '0 4px 20px rgba(29,78,216,0.4)' }}>
+              style={{ background: 'linear-gradient(135deg,#312e81,#4338ca)', boxShadow: '0 4px 20px rgba(29,78,216,0.4)' }}>
               <div className="flex items-center gap-3 px-4 py-3">
                 <img src="/icon.svg" alt="icon" className="w-10 h-10 rounded-xl flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-white text-sm">ติดตั้งแอปบนมือถือ</p>
-                  <p className="text-blue-200 text-xs">รับแจ้งเตือนได้แม้ปิด browser</p>
+                  <p className="text-indigo-200 text-xs">รับแจ้งเตือนได้แม้ปิด browser</p>
                 </div>
                 <button
                   onClick={async () => {
@@ -194,12 +194,12 @@ export default function Dashboard() {
                     if (outcome === 'accepted') setIsInstalled(true)
                     setInstallPrompt(null)
                   }}
-                  className="flex-shrink-0 px-3 py-1.5 bg-white text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-50 transition-colors"
+                  className="flex-shrink-0 px-3 py-1.5 bg-white text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-50 transition-colors"
                 >
                   ติดตั้ง
                 </button>
                 <button onClick={() => setInstallPrompt(null)}
-                  className="flex-shrink-0 text-blue-300 hover:text-white p-1">
+                  className="flex-shrink-0 text-indigo-300 hover:text-white p-1">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
@@ -212,7 +212,7 @@ export default function Dashboard() {
           <div
             className="relative rounded-3xl p-5 text-white overflow-hidden"
             style={{
-              background: 'linear-gradient(140deg, #0c1b4d 0%, #1e3a8a 35%, #1d4ed8 68%, #2563eb 100%)',
+              background: 'linear-gradient(140deg, #0c1b4d 0%, #312e81 35%, #4338ca 68%, #4f46e5 100%)',
               boxShadow: '0 16px 48px rgba(29,78,216,0.55), 0 4px 16px rgba(0,0,0,0.20)',
             }}
           >
@@ -227,7 +227,7 @@ export default function Dashboard() {
             {hasData ? (
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex-1">
-                  <p className="text-blue-200 text-sm mb-0.5 font-medium">{t.dashboard.greet}, {user.firstName || user.name} 👋</p>
+                  <p className="text-indigo-200 text-sm mb-0.5 font-medium">{t.dashboard.greet}, {user.firstName || user.name} 👋</p>
                   <h1 className="text-2xl font-black mb-2 leading-tight">
                     {t.dashboard.healthScore}<br/>
                     <span style={{
@@ -247,7 +247,7 @@ export default function Dashboard() {
                     <span>{level.label}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs font-bold text-blue-200">
+                    <span className="text-xs font-bold text-indigo-200">
                       🔥 {t.dashboard.streak} {user.streak} {t.dashboard.days}
                     </span>
                     <span className="text-xs font-bold"
@@ -262,15 +262,15 @@ export default function Dashboard() {
                   <ScoreRing score={score} size={112} strokeWidth={9} color="#fbbf24" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-3xl font-black">{score}</span>
-                    <p className="text-[10px] text-blue-200 font-semibold">/ 100</p>
+                    <p className="text-[10px] text-indigo-200 font-semibold">/ 100</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="relative text-center py-2">
-                <p className="text-blue-200 text-sm mb-1">{t.dashboard.greet}, {user.firstName || user.name} 👋</p>
+                <p className="text-indigo-200 text-sm mb-1">{t.dashboard.greet}, {user.firstName || user.name} 👋</p>
                 <h1 className="text-2xl font-black mb-1">{t.dashboard.noData}</h1>
-                <p className="text-blue-200 text-sm mb-4">{t.dashboard.noDataSub}</p>
+                <p className="text-indigo-200 text-sm mb-4">{t.dashboard.noDataSub}</p>
               </div>
             )}
 
@@ -323,7 +323,7 @@ export default function Dashboard() {
                 {bmiData && (
                   <span
                     className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-                    style={{ background: 'linear-gradient(135deg, #1e40af, #2563eb)', color: 'white', boxShadow: '0 4px 12px rgba(37,99,235,0.35)' }}
+                    style={{ background: 'linear-gradient(135deg, #3730a3, #4f46e5)', color: 'white', boxShadow: '0 4px 12px rgba(99,102,241,0.35)' }}
                   >
                     {t.dashboard.bmiLabel} {bmiData.bmi} · {bmiData.category}
                   </span>
@@ -350,10 +350,10 @@ export default function Dashboard() {
           {history.length > 0 && (
             <div
               className="rounded-2xl p-5 overflow-hidden relative"
-              style={{ background: 'white', boxShadow: '0 6px 24px rgba(37,99,235,0.12)', border: '1.5px solid rgba(37,99,235,0.12)' }}
+              style={{ background: 'white', boxShadow: '0 6px 24px rgba(99,102,241,0.12)', border: '1.5px solid rgba(99,102,241,0.12)' }}
             >
               <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
-                style={{ background: 'linear-gradient(90deg, #1e40af, #3b82f6, #06b6d4)' }} />
+                style={{ background: 'linear-gradient(90deg, #3730a3, #6366f1, #06b6d4)' }} />
               <div className="flex items-center justify-between mb-4 mt-1">
                 <div>
                   <p className="font-black text-slate-800 text-sm">{t.dashboard.weeklyTrend}</p>
@@ -362,7 +362,7 @@ export default function Dashboard() {
                 <Link
                   to="/analytics"
                   className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-xl transition-colors"
-                  style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', color: '#2563eb', border: '1.5px solid rgba(37,99,235,0.18)' }}
+                  style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)', color: '#4f46e5', border: '1.5px solid rgba(99,102,241,0.18)' }}
                 >
                   {t.dashboard.seeMore} <ChevronRight size={12} />
                 </Link>
@@ -371,11 +371,11 @@ export default function Dashboard() {
                 <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#2563eb" stopOpacity={0.35} />
+                      <stop offset="5%"  stopColor="#4f46e5" stopOpacity={0.35} />
                       <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.04} />
                     </linearGradient>
                     <linearGradient id="strokeGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%"   stopColor="#1e40af" />
+                      <stop offset="0%"   stopColor="#3730a3" />
                       <stop offset="100%" stopColor="#06b6d4" />
                     </linearGradient>
                   </defs>
@@ -383,8 +383,8 @@ export default function Dashboard() {
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="score" stroke="url(#strokeGrad)" strokeWidth={3}
                     fill="url(#scoreGrad)"
-                    dot={{ r: 3.5, fill: '#2563eb', strokeWidth: 0 }}
-                    activeDot={{ r: 6, fill: '#1d4ed8', stroke: '#bfdbfe', strokeWidth: 2 }} />
+                    dot={{ r: 3.5, fill: '#4f46e5', strokeWidth: 0 }}
+                    activeDot={{ r: 6, fill: '#4338ca', stroke: '#c7d2fe', strokeWidth: 2 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -394,7 +394,7 @@ export default function Dashboard() {
           <div
             className="rounded-2xl p-4 flex gap-3 items-start relative overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #0e7490 100%)',
+              background: 'linear-gradient(135deg, #312e81 0%, #4338ca 60%, #0e7490 100%)',
               boxShadow: '0 8px 24px rgba(29,78,216,0.35)',
             }}
           >
@@ -403,7 +403,7 @@ export default function Dashboard() {
             <span className="text-2xl flex-shrink-0 relative z-10 animate-float">💡</span>
             <div className="relative z-10">
               <p className="text-sm font-black text-yellow-300">{t.dashboard.tipTitle}</p>
-              <p className="text-xs text-blue-100 mt-0.5 leading-relaxed">{todayTip}</p>
+              <p className="text-xs text-indigo-100 mt-0.5 leading-relaxed">{todayTip}</p>
             </div>
           </div>
 

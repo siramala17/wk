@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react'
+﻿import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { Camera, X, Trash2, Plus, Edit3, BookOpen, Search, Settings } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
@@ -199,7 +199,7 @@ function IFTimer() {
           <span className="text-base">⏱️</span>
           <span className="font-semibold text-gray-900 text-sm">Intermittent Fasting</span>
         </div>
-        <button onClick={() => setShowGuide(p => !p)} className="text-xs text-blue-500 font-semibold">
+        <button onClick={() => setShowGuide(p => !p)} className="text-xs text-indigo-500 font-semibold">
           {showGuide ? 'ซ่อนคำแนะนำ' : '📋 คำแนะนำ IF'}
         </button>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { Eye, EyeOff, User, Lock, UserPlus } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
@@ -69,15 +69,15 @@ export default function Login() {
       <span className="absolute top-12 left-[18%] text-5xl opacity-90 pointer-events-none select-none"
         style={{ color: '#f5c800', filter: 'drop-shadow(0 0 8px #f5c800)' }}>⚡</span>
       <span className="absolute top-8 left-[30%] text-3xl opacity-70 pointer-events-none select-none"
-        style={{ color: '#2563eb', filter: 'drop-shadow(0 0 6px #3b82f6)' }}>⚡</span>
+        style={{ color: '#4f46e5', filter: 'drop-shadow(0 0 6px #6366f1)' }}>⚡</span>
       <span className="absolute bottom-16 right-[18%] text-5xl opacity-90 pointer-events-none select-none"
         style={{ color: '#f5c800', filter: 'drop-shadow(0 0 8px #f5c800)' }}>⚡</span>
       <span className="absolute top-20 right-[26%] text-3xl opacity-70 pointer-events-none select-none"
-        style={{ color: '#2563eb', filter: 'drop-shadow(0 0 6px #3b82f6)' }}>⚡</span>
+        style={{ color: '#4f46e5', filter: 'drop-shadow(0 0 6px #6366f1)' }}>⚡</span>
       <span className="absolute bottom-24 left-[22%] text-2xl opacity-60 pointer-events-none select-none"
-        style={{ color: '#2563eb' }}>⚡</span>
+        style={{ color: '#4f46e5' }}>⚡</span>
       <span className="absolute top-32 right-[16%] text-2xl opacity-60 pointer-events-none select-none"
-        style={{ color: '#2563eb' }}>⚡</span>
+        style={{ color: '#4f46e5' }}>⚡</span>
 
       {/* ── กล่อง form ── */}
       <div className="relative z-10 w-full max-w-sm mx-4">
@@ -102,7 +102,7 @@ export default function Login() {
                   value={username}
                   onChange={e => { setUsername(e.target.value); setError('') }}
                   placeholder="กรอกชื่อ (ชื่อที่ลงทะเบียน)"
-                  className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 text-sm placeholder-slate-300"
+                  className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-300"
                 />
               </div>
             </div>
@@ -119,7 +119,7 @@ export default function Login() {
                   value={pin}
                   onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError('') }}
                   placeholder="PIN 4 หลัก"
-                  className="w-full pl-9 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 text-sm placeholder-slate-300"
+                  className="w-full pl-9 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-300"
                 />
                 <button type="button" onClick={() => setShowPin(p => !p)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -131,7 +131,7 @@ export default function Login() {
             {/* จดจำฉัน */}
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-400" />
+                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" />
               <span className="text-sm text-slate-500">จดจำฉัน</span>
             </label>
 
@@ -158,7 +158,7 @@ export default function Login() {
             <span className="text-sm text-slate-400">ยังไม่มีบัญชี? </span>
             <button
               onClick={() => setShowRegister(true)}
-              className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
             >
               สมัครสมาชิก
             </button>
