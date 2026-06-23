@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
@@ -108,6 +109,7 @@ const ROLES = [
 ]
 
 export default function SchoolDashboard() {
+  const navigate = useNavigate()
   const [users, setUsers]       = useState([])
   const [assessments, setAss]   = useState([])
   const [loading, setLoading]   = useState(true)
@@ -256,8 +258,19 @@ export default function SchoolDashboard() {
     <div style={{ fontFamily:'Sarabun,sans-serif', background:'#0a1628', minHeight:'100vh', color:'#e2e8f0', fontSize:13 }}>
 
       {/* HEADER */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 24px', borderBottom:'1px solid rgba(255,255,255,.06)', flexWrap:'wrap', gap:8 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid rgba(255,255,255,.06)', flexWrap:'wrap', gap:8 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <button
+            className="sd-back-btn"
+            onClick={() => navigate('/')}
+            style={{ width:34, height:34, borderRadius:9, background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.12)', color:'#94a3b8', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, transition:'.15s' }}
+            onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.14)'}
+            onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
           <div style={{ width:34, height:34, background:'linear-gradient(135deg,#f59e0b,#fbbf24)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>🏥</div>
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
@@ -289,7 +302,10 @@ export default function SchoolDashboard() {
           )}
         </div>
       </div>
-      <style>{`@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}`}</style>
+      <style>{`
+        @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+        @media(min-width:768px){.sd-back-btn{display:none!important}}
+      `}</style>
 
       {loading ? (
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'80vh', flexDirection:'column', gap:12 }}>
