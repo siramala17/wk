@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Scale, Droplets, Dumbbell, Zap, Activity, Upload, FileText,
   X, AlertCircle, CheckCircle, TrendingUp, Heart, Utensils,
-  RefreshCw, ChevronDown, ChevronUp,
+  RefreshCw, ChevronDown, ChevronUp, Save, Clock,
 } from 'lucide-react'
+import { useHealth } from '../context/HealthContext'
+import { saveBodyComposition, fetchBodyCompositions } from '../services/userSync'
 
 const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
 
@@ -130,14 +132,43 @@ icon ให้เลือกจาก: muscle, fat, water, diet, exercise, hear
 priority: high, medium, low
 สร้าง recommendations อย่างน้อย 5 ข้อ อิงมาตรฐาน WHO, ACSM, ISSN ให้เหมาะสมกับค่าที่วัดได้จริง`
 
+function todayStr() { return new Date().toISOString().split('T')[0] }
+function nowTimeStr() { return new Date().toTimeString().slice(0, 5) }
+
 export default function BodyComposition() {
-  const [filePreview, setFilePreview]   = useState(null)  // URL for image, filename for pdf
+  const { user } = useHealth()
+  const [filePreview, setFilePreview]   = useState(null)
   const [fileData, setFileData]         = useState(null)
   const [loading, setLoading]           = useState(false)
   const [result, setResult]             = useState(null)
   const [error, setError]               = useState('')
   const [showSegment, setShowSegment]   = useState(false)
   const [showExercise, setShowExercise] = useState(false)
+
+  // Save state
+  const [saveDate, setSaveDate]         = useState(todayStr)
+  const [saveTime, setSaveTime]         = useState(nowTimeStr)
+  const [saveStatus, setSaveStatus]     = useState('idle') // idle | saving | saved | error
+  const [savedDates, setSavedDates]     = useState(new Set())
+  const [historyLoading, setHistoryLoading] = useState(true)
+
+  // โหลดข้อมูลล่าสุดที่บันทึกไว้เมื่อเปิดหน้า
+  useEffect(() => {
+    if (!user?.id) { setHistoryLoading(false); return }
+    fetchBodyCompositions(String(user.id))
+      .then(list => {
+        setSavedDates(new Set(list.map(r => r.date)))
+        if (list.length > 0) {
+          const latest = list[0] // sorted desc by date
+          setResult(latest.result)
+          setSaveDate(latest.date)
+          setSaveTime(latest.time || nowTimeStr())
+          setSaveStatus('saved')
+        }
+      })
+      .catch(() => {})
+      .finally(() => setHistoryLoading(false))
+  }, [user?.id])
 
   async function handleFile(file) {
     if (!file) return
@@ -193,7 +224,11 @@ export default function BodyComposition() {
       const text = data.content[0].text.trim()
       const m = text.match(/\{[\s\S]*\}/)
       if (!m) throw new Error('ไม่สามารถอ่านผลได้')
-      setResult(JSON.parse(m[0]))
+      const parsed = JSON.parse(m[0])
+      setResult(parsed)
+      setSaveDate(todayStr())
+      setSaveTime(nowTimeStr())
+      setSaveStatus('idle')
     } catch (err) {
       setError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
     } finally {
@@ -201,7 +236,33 @@ export default function BodyComposition() {
     }
   }
 
-  function reset() { setFilePreview(null); setFileData(null); setResult(null); setError('') }
+  async function handleSave() {
+    if (!result || !user?.id) return
+    setSaveStatus('saving')
+    try {
+      await saveBodyComposition(String(user.id), saveDate, saveTime, result)
+      setSavedDates(prev => new Set([...prev, saveDate]))
+      setSaveStatus('saved')
+    } catch {
+      setSaveStatus('error')
+    }
+  }
+
+  function reset() {
+    setFilePreview(null); setFileData(null); setResult(null)
+    setError(''); setSaveStatus('idle')
+  }
+
+  const isUpdate = savedDates.has(saveDate)
+
+  if (historyLoading) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-5 flex flex-col items-center gap-3 pt-16">
+        <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-slate-400">กำลังโหลดข้อมูล...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 py-5 animate-fade-in">
@@ -210,14 +271,24 @@ export default function BodyComposition() {
         style={{ background: 'linear-gradient(135deg, #0e7490, #22d3ee)' }}>
         <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10" />
         <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/10" />
-        <div className="relative flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
-            <Scale size={20} />
+        <div className="relative flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+              <Scale size={20} />
+            </div>
+            <div>
+              <h1 className="text-lg font-black">Body Composition</h1>
+              <p className="text-cyan-100 text-xs">วิเคราะห์องค์ประกอบร่างกาย + คำแนะนำ AI</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-black">Body Composition</h1>
-            <p className="text-cyan-100 text-xs">วิเคราะห์องค์ประกอบร่างกาย + คำแนะนำ AI</p>
-          </div>
+          {result && (
+            <button
+              onClick={reset}
+              className="flex-shrink-0 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl transition-all"
+            >
+              <Upload size={12} /> อัปโหลดใหม่
+            </button>
+          )}
         </div>
       </div>
 
@@ -296,12 +367,6 @@ export default function BodyComposition() {
       {/* Result */}
       {result && (
         <div className="space-y-4">
-          {/* Reset */}
-          <button onClick={reset}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors mb-1">
-            <RefreshCw size={12} /> วิเคราะห์ใหม่
-          </button>
-
           {/* Score + Info */}
           <div className="rounded-2xl p-4 text-white relative overflow-hidden shadow"
             style={{ background: 'linear-gradient(135deg, #0e7490, #22d3ee)' }}>
@@ -320,6 +385,69 @@ export default function BodyComposition() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* ── Save Panel ── */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Save size={13} className="text-cyan-600" />
+              <p className="text-xs font-bold text-slate-600">บันทึกข้อมูล</p>
+            </div>
+            <div className="flex gap-2 mb-3">
+              <div className="flex-1">
+                <label className="text-[10px] text-slate-400 font-semibold block mb-1">วันที่</label>
+                <input
+                  type="date"
+                  value={saveDate}
+                  onChange={e => { setSaveDate(e.target.value); setSaveStatus('idle') }}
+                  className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-cyan-400 transition-colors"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-[10px] text-slate-400 font-semibold block mb-1">เวลา</label>
+                <div className="relative">
+                  <Clock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                  <input
+                    type="time"
+                    value={saveTime}
+                    onChange={e => setSaveTime(e.target.value)}
+                    className="w-full text-sm border border-slate-200 rounded-xl pl-8 pr-3 py-2 outline-none focus:border-cyan-400 transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {isUpdate && saveStatus !== 'saved' && (
+              <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">
+                <AlertCircle size={13} className="text-amber-500 flex-shrink-0" />
+                <p className="text-[11px] text-amber-600">มีข้อมูลของวันนี้แล้ว — กดเพื่ออัปเดต</p>
+              </div>
+            )}
+
+            {saveStatus === 'error' && (
+              <p className="text-[11px] text-red-500 mb-2">เกิดข้อผิดพลาด กรุณาลองใหม่</p>
+            )}
+
+            <button
+              onClick={handleSave}
+              disabled={saveStatus === 'saving'}
+              className="w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+              style={{
+                background: saveStatus === 'saved'
+                  ? '#10b981'
+                  : 'linear-gradient(135deg, #0e7490, #22d3ee)',
+                opacity: saveStatus === 'saving' ? 0.7 : 1,
+                boxShadow: '0 4px 14px rgba(6,182,212,0.35)',
+              }}
+            >
+              {saveStatus === 'saving' ? (
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> กำลังบันทึก...</>
+              ) : saveStatus === 'saved' ? (
+                <><CheckCircle size={15} /> บันทึกแล้ว</>
+              ) : (
+                <><Save size={15} /> {isUpdate ? 'อัปเดตข้อมูล' : 'บันทึกข้อมูล'}</>
+              )}
+            </button>
           </div>
 
           {/* Weight control */}
@@ -361,9 +489,9 @@ export default function BodyComposition() {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
             <p className="text-xs font-bold text-slate-500 mb-2">การประเมินโรคอ้วน</p>
             {[
-              { label: 'BMI',             value: result.data?.bmi,           unit: 'kg/m²', level: result.data?.bmiLevel },
-              { label: '%ไขมัน',          value: result.data?.bodyFatPct,    unit: '%',     level: result.data?.bodyFatLevel },
-              { label: 'โรคอ้วน',         value: result.data?.obesityPct,    unit: '%',     level: result.data?.obesityLevel },
+              { label: 'BMI',    value: result.data?.bmi,        unit: 'kg/m²', level: result.data?.bmiLevel },
+              { label: '%ไขมัน', value: result.data?.bodyFatPct, unit: '%',     level: result.data?.bodyFatLevel },
+              { label: 'โรคอ้วน', value: result.data?.obesityPct, unit: '%',    level: result.data?.obesityLevel },
             ].filter(r => r.value).map(row => (
               <MetricRow key={row.label} {...row} />
             ))}
@@ -401,18 +529,14 @@ export default function BodyComposition() {
                     <p className="text-[11px] font-bold text-slate-400 mb-1">ไขมันเฉพาะส่วน</p>
                     {Object.entries(result.segmentFat).map(([part, val]) => {
                       const labels = { leftArm:'แขนซ้าย', rightArm:'แขนขวา', trunk:'ลำตัว', leftLeg:'ขาซ้าย', rightLeg:'ขาขวา' }
-                      return (
-                        <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} />
-                      )
+                      return <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} />
                     })}
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-slate-400 mb-1">กล้ามเนื้อเฉพาะส่วน</p>
                     {Object.entries(result.segmentMuscle).map(([part, val]) => {
                       const labels = { leftArm:'แขนซ้าย', rightArm:'แขนขวา', trunk:'ลำตัว', leftLeg:'ขาซ้าย', rightLeg:'ขาขวา' }
-                      return (
-                        <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} />
-                      )
+                      return <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} />
                     })}
                   </div>
                 </div>

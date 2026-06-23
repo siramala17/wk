@@ -371,6 +371,28 @@ export async function fetchAllAssessments() {
   } catch { return [] }
 }
 
+// ── Body Compositions ─────────────────────────────────────────
+
+export async function saveBodyComposition(userId, date, time, result) {
+  if (!db) return
+  const docId = `${userId}_${date}`
+  await setDoc(doc(db, 'bodyCompositions', docId), {
+    userId: String(userId),
+    date,
+    time: time || '00:00',
+    result,
+    savedAt: new Date().toISOString(),
+  })
+}
+
+export async function fetchBodyCompositions(userId) {
+  if (!db) return []
+  try {
+    const snap = await getDocs(query(collection(db, 'bodyCompositions'), where('userId', '==', String(userId))))
+    return snap.docs.map(d => d.data()).sort((a, b) => b.date.localeCompare(a.date))
+  } catch { return [] }
+}
+
 // ── Real-time subscriptions ───────────────────────────────────
 
 export function subscribeUsers(callback) {
