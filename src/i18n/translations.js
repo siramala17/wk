@@ -17,7 +17,7 @@ export const translations = {
       trainer:         'Personal Trainer',
       bodyCompositionFull: 'Body Composition',
       survey:          'แบบประเมินความพึงพอใจ',
-      schoolDash:      'Dashboard โรงเรียน',
+      schoolDash:      'Dashboard',
       adminPanel:      'Admin Panel',
     },
 
