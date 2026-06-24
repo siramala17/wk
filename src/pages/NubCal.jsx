@@ -594,8 +594,8 @@ export default function NubCal() {
         {/* Tab bar */}
         <div className="flex mt-3 bg-slate-100 rounded-2xl p-1 gap-1">
           {[
-            { key: 'diary', label: '🍽️ ไดอารี่อาหาร' },
-            { key: 'if',    label: '⏱️ IF & น้ำ' },
+            { key: 'diary', label: '🍽️ Food Diary' },
+            { key: 'if',    label: '⏱️ IF' },
           ].map(tab => (
             <button key={tab.key} onClick={() => setPageTab(tab.key)}
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -609,142 +609,145 @@ export default function NubCal() {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-4 space-y-3">
+      <div className="px-4 py-4">
 
-        {pageTab === 'diary' && <>
-        {/* Summary card */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-sm font-semibold text-gray-500 mb-3">{tr.dailySummary}</p>
+        {pageTab === 'diary' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start max-w-5xl mx-auto">
 
-          {/* Ring + stats row */}
-          <div className="flex items-center gap-4">
-            <SummaryRing consumed={totalCal} goal={goal} remaining2Label={tr.remaining2} />
-            <div className="flex-1 space-y-2">
-              <div className="bg-teal-500 rounded-xl px-3 py-2.5">
-                <p className="text-teal-100 text-xs">{tr.consumed}</p>
-                <p className="text-white font-black text-lg leading-none mt-0.5">
-                  {totalCal.toLocaleString()} <span className="text-teal-200 text-xs font-normal">kcal</span>
-                </p>
-              </div>
-              <div className="bg-slate-50 rounded-xl px-3 py-2.5">
-                <p className="text-gray-400 text-xs">{tr.goal}</p>
-                <p className="text-gray-800 font-black text-lg leading-none mt-0.5">
-                  {goal.toLocaleString()} <span className="text-gray-400 text-xs font-normal">kcal</span>
-                </p>
-              </div>
-              <p className="text-[10px] text-gray-400 px-1">
-                {goalMode === 'auto' && autoGoal ? `🤖 ${tr.fromProfile}` : `✏️ ${tr.customGoalLabel}`}
-              </p>
-            </div>
-          </div>
+            {/* ── LEFT: Summary ── */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm lg:sticky lg:top-20">
+              <p className="text-sm font-semibold text-gray-500 mb-3">{tr.dailySummary}</p>
 
-          {/* Macros with progress bars */}
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            {[
-              { l: tr.carb,    v: Math.round(totalCarb * 10) / 10, max: macroGoals.carbs,   color: '#f59e0b' },
-              { l: tr.protein, v: Math.round(totalPro  * 10) / 10, max: macroGoals.protein, color: '#0d9488' },
-              { l: tr.fat,     v: Math.round(totalFat  * 10) / 10, max: macroGoals.fat,     color: '#8b5cf6' },
-            ].map(({ l, v, max, color }) => (
-              <div key={l} className="bg-slate-50 rounded-xl p-3">
-                <p className="text-xs text-gray-400">{l}</p>
-                <p className="font-bold text-gray-800 text-sm mt-0.5">
-                  {v}<span className="font-normal text-xs text-gray-400">/{max}ก.</span>
-                </p>
-                <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min((v / Math.max(max, 1)) * 100, 100)}%`, backgroundColor: color }}
-                  />
+              <div className="flex items-center gap-4">
+                <SummaryRing consumed={totalCal} goal={goal} remaining2Label={tr.remaining2} />
+                <div className="flex-1 space-y-2">
+                  <div className="bg-teal-500 rounded-xl px-3 py-2.5">
+                    <p className="text-teal-100 text-xs">{tr.consumed}</p>
+                    <p className="text-white font-black text-lg leading-none mt-0.5">
+                      {totalCal.toLocaleString()} <span className="text-teal-200 text-xs font-normal">kcal</span>
+                    </p>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl px-3 py-2.5">
+                    <p className="text-gray-400 text-xs">{tr.goal}</p>
+                    <p className="text-gray-800 font-black text-lg leading-none mt-0.5">
+                      {goal.toLocaleString()} <span className="text-gray-400 text-xs font-normal">kcal</span>
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-gray-400 px-1">
+                    {goalMode === 'auto' && autoGoal ? `🤖 ${tr.fromProfile}` : `✏️ ${tr.customGoalLabel}`}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Meal sections */}
-        {MEALS.map(meal => {
-          const mealEntries = entries.filter(e => (e.meal || 'breakfast') === meal.key)
-          const mealCal = mealEntries.reduce((s, e) => s + (e.calories || 0), 0)
-          return (
-            <div key={meal.key} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3.5">
-                <span className="font-semibold text-gray-900 text-sm">{meal.label}</span>
-                <span className="text-sm text-gray-500 font-medium">{mealCal > 0 ? `${mealCal} kcal` : '—'}</span>
-              </div>
-
-              {mealEntries.map((entry, idx) => (
-                <div key={entry.id} className={`px-4 py-3 flex gap-3 items-start border-t border-gray-50`}>
-                  {entry.image
-                    ? <img src={entry.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-                    : <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">🍽️</div>
-                  }
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-medium text-gray-900 text-sm truncate">{entry.foodName}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{entry.description || '1 หน่วย'}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className="font-semibold text-gray-700 text-sm">{entry.calories} kcal</span>
-                        <button onClick={() => deleteCalorieEntry(viewDate, entry.id)}
-                          className="text-gray-300 hover:text-red-400 p-0.5 transition-colors">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex gap-3 mt-1">
-                      <span className="text-xs text-gray-400">{tr.carb} {Math.round((entry.carbs || 0) * 10) / 10}ก.</span>
-                      <span className="text-xs text-gray-400">{tr.protein} {Math.round((entry.protein || 0) * 10) / 10}ก.</span>
-                      <span className="text-xs text-gray-400">{tr.fat} {Math.round((entry.fat || 0) * 10) / 10}ก.</span>
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                {[
+                  { l: tr.carb,    v: Math.round(totalCarb * 10) / 10, max: macroGoals.carbs,   color: '#f59e0b' },
+                  { l: tr.protein, v: Math.round(totalPro  * 10) / 10, max: macroGoals.protein, color: '#0d9488' },
+                  { l: tr.fat,     v: Math.round(totalFat  * 10) / 10, max: macroGoals.fat,     color: '#8b5cf6' },
+                ].map(({ l, v, max, color }) => (
+                  <div key={l} className="bg-slate-50 rounded-xl p-3">
+                    <p className="text-xs text-gray-400">{l}</p>
+                    <p className="font-bold text-gray-800 text-sm mt-0.5">
+                      {v}<span className="font-normal text-xs text-gray-400">/{max}ก.</span>
+                    </p>
+                    <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min((v / Math.max(max, 1)) * 100, 100)}%`, backgroundColor: color }}
+                      />
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── RIGHT: Meals + Water ── */}
+            <div className="space-y-3">
+              {MEALS.map(meal => {
+                const mealEntries = entries.filter(e => (e.meal || 'breakfast') === meal.key)
+                const mealCal = mealEntries.reduce((s, e) => s + (e.calories || 0), 0)
+                return (
+                  <div key={meal.key} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3.5">
+                      <span className="font-semibold text-gray-900 text-sm">{meal.label}</span>
+                      <span className="text-sm text-gray-500 font-medium">{mealCal > 0 ? `${mealCal} kcal` : '—'}</span>
+                    </div>
+
+                    {mealEntries.map(entry => (
+                      <div key={entry.id} className="px-4 py-3 flex gap-3 items-start border-t border-gray-50">
+                        {entry.image
+                          ? <img src={entry.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                          : <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">🍽️</div>
+                        }
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900 text-sm truncate">{entry.foodName}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">{entry.description || '1 หน่วย'}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <span className="font-semibold text-gray-700 text-sm">{entry.calories} kcal</span>
+                              <button onClick={() => deleteCalorieEntry(viewDate, entry.id)}
+                                className="text-gray-300 hover:text-red-400 p-0.5 transition-colors">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex gap-3 mt-1">
+                            <span className="text-xs text-gray-400">{tr.carb} {Math.round((entry.carbs || 0) * 10) / 10}ก.</span>
+                            <span className="text-xs text-gray-400">{tr.protein} {Math.round((entry.protein || 0) * 10) / 10}ก.</span>
+                            <span className="text-xs text-gray-400">{tr.fat} {Math.round((entry.fat || 0) * 10) / 10}ก.</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {isToday && (
+                      <button onClick={() => openAddFor(meal.key)}
+                        className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
+                        <Plus size={15} />
+                        {tr.addFoodLabel}
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Water */}
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3.5">
+                  <span className="font-semibold text-gray-900 text-sm">{tr.waterTitle}</span>
+                  <span className="text-sm text-gray-500 font-medium">{glasses * GLASS_ML > 0 ? `${glasses * GLASS_ML} มล.` : '—'}</span>
                 </div>
-              ))}
-
-              {isToday && (
-                <button onClick={() => openAddFor(meal.key)}
-                  className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
-                  <Plus size={15} />
-                  {tr.addFoodLabel}
-                </button>
-              )}
+                <div className="px-4 pb-3">
+                  <div className="flex gap-2 flex-wrap">
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <button key={i}
+                        onClick={() => i < glasses ? removeGlass(viewDate) : addGlass(viewDate)}
+                        className="w-10 h-12 flex items-center justify-center rounded-xl hover:bg-teal-50 transition-colors">
+                        <span className={`text-2xl transition-opacity ${i < glasses ? 'opacity-100' : 'opacity-20'}`}>🥤</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {isToday && (
+                  <button onClick={() => addGlass(viewDate)}
+                    className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
+                    <Plus size={15} />
+                    {tr.waterLogBtn}
+                  </button>
+                )}
+              </div>
             </div>
-          )
-        })}
 
-        </>}
-
-        {pageTab === 'if' && <>
-        {/* Water section */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3.5">
-            <span className="font-semibold text-gray-900 text-sm">{tr.waterTitle}</span>
-            <span className="text-sm text-gray-500 font-medium">{glasses * GLASS_ML > 0 ? `${glasses * GLASS_ML} มล.` : '—'}</span>
           </div>
-          <div className="px-4 pb-3">
-            <div className="flex gap-2 flex-wrap">
-              {Array.from({ length: 8 }, (_, i) => (
-                <button key={i}
-                  onClick={() => i < glasses ? removeGlass(viewDate) : addGlass(viewDate)}
-                  className="w-10 h-12 flex items-center justify-center rounded-xl hover:bg-teal-50 transition-colors">
-                  <span className={`text-2xl transition-opacity ${i < glasses ? 'opacity-100' : 'opacity-20'}`}>🥤</span>
-                </button>
-              ))}
-            </div>
+        )}
+
+        {pageTab === 'if' && (
+          <div className="max-w-lg mx-auto space-y-3">
+            <IFTimer />
           </div>
-          {isToday && (
-            <button onClick={() => addGlass(viewDate)}
-              className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
-              <Plus size={15} />
-              {tr.waterLogBtn}
-            </button>
-          )}
-        </div>
-
-        {/* IF Timer */}
-        <IFTimer />
-
-        </>}
+        )}
 
       </div>
 
