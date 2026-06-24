@@ -393,6 +393,12 @@ export async function fetchBodyCompositions(userId) {
   } catch { return [] }
 }
 
+export async function deleteBodyComposition(userId, date) {
+  if (!db) return
+  const docId = `${userId}_${date}`
+  await deleteDoc(doc(db, 'bodyCompositions', docId))
+}
+
 // ── Real-time subscriptions ───────────────────────────────────
 
 export function subscribeUsers(callback) {

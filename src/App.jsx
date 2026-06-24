@@ -19,6 +19,7 @@ import NubCal from './pages/NubCal'
 import Survey from './pages/Survey'
 import SchoolDashboard from './pages/SchoolDashboard'
 import BodyComposition from './pages/BodyComposition'
+import BodyCompositionHistory from './pages/BodyCompositionHistory'
 
 function AppContent() {
   const { isLoggedIn, showRegister } = useHealth()
@@ -48,6 +49,7 @@ function AppContent() {
           <Route path="/activity" element={<Navigate to="/rewards" replace />} />
           <Route path="/nubcal" element={<NubCal />} />
           <Route path="/body-composition" element={<BodyComposition />} />
+          <Route path="/body-composition/history" element={<BodyCompositionHistory />} />
           <Route path="/survey" element={<Survey />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

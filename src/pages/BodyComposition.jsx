@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react'
 import {
   Scale, Droplets, Dumbbell, Zap, Activity, Upload, FileText,
   X, AlertCircle, CheckCircle, TrendingUp, Heart, Utensils,
-  RefreshCw, ChevronDown, ChevronUp, Save, Clock,
+  RefreshCw, ChevronDown, ChevronUp, Save, Clock, History,
 } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useHealth } from '../context/HealthContext'
 import { saveBodyComposition, fetchBodyCompositions } from '../services/userSync'
 
@@ -137,6 +138,8 @@ function nowTimeStr() { return new Date().toTimeString().slice(0, 5) }
 
 export default function BodyComposition() {
   const { user } = useHealth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [filePreview, setFilePreview]   = useState(null)
   const [fileData, setFileData]         = useState(null)
   const [loading, setLoading]           = useState(false)
@@ -152,17 +155,18 @@ export default function BodyComposition() {
   const [savedDates, setSavedDates]     = useState(new Set())
   const [historyLoading, setHistoryLoading] = useState(true)
 
-  // โหลดข้อมูลล่าสุดที่บันทึกไว้เมื่อเปิดหน้า
+  // โหลดข้อมูลล่าสุดที่บันทึกไว้เมื่อเปิดหน้า (หรือโหลด record ที่ส่งมาจากหน้าประวัติ)
   useEffect(() => {
+    const incoming = location.state?.record
     if (!user?.id) { setHistoryLoading(false); return }
     fetchBodyCompositions(String(user.id))
       .then(list => {
         setSavedDates(new Set(list.map(r => r.date)))
-        if (list.length > 0) {
-          const latest = list[0] // sorted desc by date
-          setResult(latest.result)
-          setSaveDate(latest.date)
-          setSaveTime(latest.time || nowTimeStr())
+        const target = incoming || (list.length > 0 ? list[0] : null)
+        if (target) {
+          setResult(target.result)
+          setSaveDate(target.date)
+          setSaveTime(target.time || nowTimeStr())
           setSaveStatus('saved')
         }
       })
@@ -281,14 +285,22 @@ export default function BodyComposition() {
               <p className="text-cyan-100 text-xs">วิเคราะห์องค์ประกอบร่างกาย + คำแนะนำ AI</p>
             </div>
           </div>
-          {result && (
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              onClick={reset}
-              className="flex-shrink-0 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl transition-all"
+              onClick={() => navigate('/body-composition/history')}
+              className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl transition-all"
             >
-              <Upload size={12} /> อัปโหลดใหม่
+              <History size={12} /> ประวัติ
             </button>
-          )}
+            {result && (
+              <button
+                onClick={reset}
+                className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl transition-all"
+              >
+                <Upload size={12} /> อัปโหลดใหม่
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
