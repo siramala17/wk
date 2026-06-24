@@ -51,7 +51,7 @@ function compressImage(dataUrl, maxSize = 200) {
   })
 }
 
-const DAY_TH = ['จ', 'อ', 'พ', 'พ', 'ศ', 'ส', 'อ']
+const DAY_TH = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อ']
 
 function getWeekDates(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
@@ -324,6 +324,7 @@ export default function NubCal() {
   const [goalInput, setGoalInput]     = useState(() => localStorage.getItem('nubcal_goal') || '2000')
   const [manualGoal, setManualGoal]   = useState(() => parseInt(localStorage.getItem('nubcal_goal') || '2000'))
   const fileRef = useRef(null)
+  const datePickerRef = useRef(null)
 
   const autoGoal = useMemo(() => {
     const w = bmiData?.weight
@@ -546,9 +547,21 @@ export default function NubCal() {
               className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
               <Settings size={18} />
             </button>
-            <button className="flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1.5">
+            <button
+              onClick={() => datePickerRef.current?.showPicker?.() ?? datePickerRef.current?.click()}
+              className="relative flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1.5"
+            >
               <span className="text-sm">📅</span>
               <span className="text-sm font-medium text-gray-700">{formatDateHeader(viewDate)}</span>
+              <input
+                ref={datePickerRef}
+                type="date"
+                value={viewDate}
+                max={TODAY()}
+                onChange={e => { if (e.target.value) setViewDate(e.target.value) }}
+                className="absolute inset-0 opacity-0 w-full cursor-pointer"
+                tabIndex={-1}
+              />
             </button>
           </div>
         </div>
