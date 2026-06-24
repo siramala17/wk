@@ -140,6 +140,23 @@ export async function loginUserFromCloud(firstName, pin) {
   return null
 }
 
+export async function fetchUserById(userId) {
+  if (!db) {
+    const users = getLocalUsers()
+    const found = users.find(u => String(u.id) === String(userId))
+    if (!found) return null
+    const { pin: _, ...safe } = found
+    return safe
+  }
+  try {
+    const snap = await getDoc(doc(db, 'users', String(userId)))
+    if (!snap.exists()) return null
+    const data = snap.data()
+    const { pin: _, ...safe } = data
+    return { ...safe, id: String(userId) }
+  } catch { return null }
+}
+
 export async function syncUserPointsToCloud(userId, points, streak) {
   if (!db) {
     saveLocalUsers(getLocalUsers().map(u =>

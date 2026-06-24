@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import {
-  pushUserToCloud, loginUserFromCloud, syncUserPointsToCloud, updateUserAvatarInCloud,
+  pushUserToCloud, loginUserFromCloud, fetchUserById, syncUserPointsToCloud, updateUserAvatarInCloud,
   claimApprovedPoints, submitRedemption, claimRedemptionRefunds, saveAssessmentToCloud,
 } from '../services/userSync'
 
@@ -51,6 +51,29 @@ export function HealthProvider({ children }) {
     catch { return {} }
   })
 
+  // ป้องกัน sync ระหว่างกำลัง hydrate จาก cloud
+  const [isHydrating, setIsHydrating] = useState(true)
+
+  // ดึงข้อมูลล่าสุดจาก Firestore ทุกครั้งที่เปิดแอป (session restore)
+  // เพื่อป้องกัน localStorage เขียนทับแต้มที่ถูกต้องจากเครื่องอื่น
+  useEffect(() => {
+    if (!isLoggedIn || !user?.id) { setIsHydrating(false); return }
+    fetchUserById(user.id)
+      .then(cloud => {
+        if (cloud) {
+          setUser(prev => ({
+            ...prev,
+            ...cloud,
+            // เก็บค่าสูงสุดเพื่อป้องกันการสูญเสียแต้มที่ได้จากเครื่องอื่น
+            points: Math.max(prev.points ?? 0, cloud.points ?? 0),
+            streak:  Math.max(prev.streak  ?? 0, cloud.streak  ?? 0),
+          }))
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsHydrating(false))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ลบ hc_users เก่าออกเพื่อเพิ่มพื้นที่ localStorage
   useEffect(() => { localStorage.removeItem('hc_users') }, [])
 
@@ -74,12 +97,13 @@ export function HealthProvider({ children }) {
   useEffect(() => { localStorage.setItem('hc_calories', JSON.stringify(calorieLog)) }, [calorieLog])
   useEffect(() => { localStorage.setItem('hc_water', JSON.stringify(waterLog)) }, [waterLog])
 
-  // sync points/streak ไป Firestore เมื่อเปลี่ยนแปลง
+  // sync points/streak ไป Firestore — รอให้ hydrate จาก cloud เสร็จก่อน
   useEffect(() => {
+    if (isHydrating) return
     if (user.id && isLoggedIn) {
       syncUserPointsToCloud(user.id, user.points, user.streak).catch(() => {})
     }
-  }, [user.points, user.streak]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user.points, user.streak, isHydrating]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loginByName(firstName, pin) {
     try {

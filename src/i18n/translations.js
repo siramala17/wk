@@ -223,7 +223,7 @@ export const translations = {
 
     analytics: {
       title:          'สุขภาพของฉัน',
-      subtitle:       'กราฟ & คำแนะนำ AI',
+      subtitle:       'คำแนะนำ AI',
       tabGraph:       'กราฟสุขภาพ',
       tabAI:          'คำแนะนำ AI',
       avgScore:       'คะแนนเฉลี่ย',
@@ -463,7 +463,7 @@ export const translations = {
       trainer:         'Personal Trainer',
       bodyCompositionFull: 'Body Composition',
       survey:          'Satisfaction Survey',
-      schoolDash:      'School Dashboard',
+      schoolDash:      'Dashboard',
       adminPanel:      'Admin Panel',
     },
 
@@ -669,7 +669,7 @@ export const translations = {
 
     analytics: {
       title:          'My Health',
-      subtitle:       'Graph & AI Tips',
+      subtitle:       'AI Tips',
       tabGraph:       'Health Graph',
       tabAI:          'AI Tips',
       avgScore:       'Avg Score',

@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, Lightbulb, CheckCircle2, Circle, ChevronDown, ChevronUp, Sparkles, Brain } from 'lucide-react'
+import { Lightbulb, CheckCircle2, Circle, ChevronDown, ChevronUp, Sparkles, Brain } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import { generateRecommendations, getHealthLevel } from '../utils/healthScore'
