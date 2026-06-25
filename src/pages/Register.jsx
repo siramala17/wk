@@ -38,6 +38,17 @@ const LANG = {
     errPinMatch: 'PIN ไม่ตรงกัน', errAgeEmpty: 'กรุณากรอกอายุ',
     errAgeMismatch: 'อายุไม่ตรงกับที่ลงทะเบียน กรุณาลองใหม่',
     errCamera: 'ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์',
+    consentTitle: 'นโยบายความเป็นส่วนตัว',
+    consentSub: 'กรุณาอ่านและยินยอมก่อนสมัครสมาชิก',
+    consentDataLabel: 'ยินยอมให้ใช้ข้อมูลเพื่อการศึกษาและวิจัย',
+    consentDataDesc: 'ข้อมูลสุขภาพของคุณจะถูกนำไปใช้เพื่อการศึกษาและพัฒนาระบบ โดยปกปิดข้อมูลส่วนตัวทั้งหมด',
+    consentCameraLabel: 'ยินยอมให้เข้าถึงกล้องถ่ายรูป',
+    consentCameraDesc: 'ใช้กล้องสำหรับสแกนใบหน้าเพื่อยืนยันตัวตนในขั้นตอนสมัครสมาชิก',
+    consentFilesLabel: 'ยินยอมให้เข้าถึงไฟล์และรูปภาพ',
+    consentFilesDesc: 'ใช้สำหรับอัปโหลดรูปโปรไฟล์จากอุปกรณ์ของคุณ',
+    consentAcceptBtn: 'ยืนยันและดำเนินการต่อ',
+    consentDeclineBtn: 'ปฏิเสธ / กลับหน้าเข้าสู่ระบบ',
+    consentNote: '* ต้องยินยอมทุกข้อเพื่อดำเนินการต่อ',
   },
   en: {
     step1Title: 'Personal Info',
@@ -73,11 +84,22 @@ const LANG = {
     errPinMatch: 'PINs do not match', errAgeEmpty: 'Please enter age',
     errAgeMismatch: "Age doesn't match. Please try again.",
     errCamera: 'Cannot access camera. Please allow camera in your browser.',
+    consentTitle: 'Privacy & Permissions',
+    consentSub: 'Please read and agree before registering',
+    consentDataLabel: 'Allow data use for research',
+    consentDataDesc: 'Your health data will be used for educational and system development, with personal details kept anonymous.',
+    consentCameraLabel: 'Allow camera access',
+    consentCameraDesc: 'Used to scan your face for identity verification during registration.',
+    consentFilesLabel: 'Allow file & image access',
+    consentFilesDesc: 'Used to upload a profile photo from your device.',
+    consentAcceptBtn: 'Confirm & Continue',
+    consentDeclineBtn: 'Decline / Back to Login',
+    consentNote: '* All consents are required to proceed',
   },
 }
 
 export default function Register() {
-  const { registerUser } = useHealth()
+  const { registerUser, setShowRegister } = useHealth()
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [lang, setLang] = useState('th')
@@ -103,6 +125,9 @@ export default function Register() {
   const [countdown, setCountdown] = useState(null)
   const [captured, setCaptured] = useState(null)
   const [flash, setFlash] = useState(false)
+
+  const [consentAccepted, setConsentAccepted] = useState(false)
+  const [consents, setConsents] = useState({ data: false, camera: false, files: false })
 
   useEffect(() => {
     if (step === 2 && ageVerified) startCamera()
@@ -601,7 +626,178 @@ export default function Register() {
         </div>
       </div>
 
-      
+      {/* ── Consent Modal ── */}
+      {!consentAccepted && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 16,
+          background: 'rgba(5, 12, 55, 0.96)',
+          backdropFilter: 'blur(6px)',
+        }}>
+          <div style={{
+            width: '100%', maxWidth: 440,
+            background: 'white', borderRadius: 24,
+            display: 'flex', flexDirection: 'column',
+            maxHeight: '88vh',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
+          }}>
+            {/* Header */}
+            <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 38, height: 38, borderRadius: 11,
+                  background: 'linear-gradient(135deg, #4f46e5, #6d28d9)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18, flexShrink: 0,
+                }}>🔒</div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1e293b' }}>นโยบายความเป็นส่วนตัว</h2>
+                  <p style={{ margin: 0, fontSize: 10.5, color: '#64748b' }}>W.K. Health — กรุณาอ่านก่อนสมัครสมาชิก</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px' }}>
+
+              {/* Section 1 */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>1</div>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>วัตถุประสงค์ของการเก็บข้อมูล</p>
+                </div>
+                <p style={{ margin: '0 0 0 28px', fontSize: 11.5, color: '#475569', lineHeight: 1.65 }}>
+                  ระบบ W.K. Health เก็บข้อมูลเพื่อประเมินและติดตามสุขภาพของผู้ใช้ นำเสนอคำแนะนำสุขภาพที่เหมาะสมเฉพาะบุคคล และวิเคราะห์แนวโน้มสุขภาพเพื่อการวิจัยและพัฒนาระบบ
+                </p>
+              </div>
+
+              {/* Section 2 */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>2</div>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>ข้อมูลที่ระบบเก็บรวบรวม</p>
+                </div>
+                <div style={{ marginLeft: 28, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ background: '#f8fafc', borderRadius: 10, padding: '9px 12px' }}>
+                    <p style={{ margin: '0 0 4px', fontSize: 11.5, fontWeight: 700, color: '#334155' }}>👤 ข้อมูลส่วนตัว</p>
+                    {['ชื่อ-นามสกุล, อายุ, เพศ, บทบาท และระดับชั้น', 'รูปภาพใบหน้า (สำหรับยืนยันตัวตน)', 'รหัส PIN สำหรับเข้าสู่ระบบ'].map((item, i) => (
+                      <p key={i} style={{ margin: 0, fontSize: 11, color: '#64748b', paddingLeft: 10 }}>• {item}</p>
+                    ))}
+                  </div>
+                  <div style={{ background: '#f8fafc', borderRadius: 10, padding: '9px 12px' }}>
+                    <p style={{ margin: '0 0 4px', fontSize: 11.5, fontWeight: 700, color: '#334155' }}>📊 ข้อมูลสุขภาพ</p>
+                    {['น้ำหนัก, ส่วนสูง, ค่า BMI และองค์ประกอบร่างกาย', 'ผลการประเมินสุขภาพและกิจกรรมทางกาย', 'ประวัติการประเมินสุขภาพย้อนหลัง'].map((item, i) => (
+                      <p key={i} style={{ margin: 0, fontSize: 11, color: '#64748b', paddingLeft: 10 }}>• {item}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3 */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>3</div>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>การใช้ข้อมูลและการเปิดเผย</p>
+                </div>
+                <div style={{ marginLeft: 28 }}>
+                  {[
+                    ['3.1', 'ใช้เพื่อแสดงผลสุขภาพและคำแนะนำเฉพาะบุคคลเท่านั้น'],
+                    ['3.2', 'ข้อมูลนิรนามอาจใช้เพื่อการวิจัยและพัฒนาระบบสุขภาพ'],
+                    ['3.3', 'ไม่เปิดเผยข้อมูลส่วนตัวต่อบุคคลหรือองค์กรภายนอก'],
+                  ].map(([num, text]) => (
+                    <p key={num} style={{ margin: '0 0 4px', fontSize: 11.5, color: '#475569', lineHeight: 1.55 }}>
+                      <span style={{ fontWeight: 700, color: '#4f46e5' }}>{num}</span> {text}
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 4 */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>4</div>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>การรักษาความปลอดภัยของข้อมูล</p>
+                </div>
+                <div style={{ marginLeft: 28 }}>
+                  {['การเข้ารหัสข้อมูลระหว่างการรับ-ส่งและการจัดเก็บ', 'การกำหนดสิทธิ์การเข้าถึงตามบทบาทหน้าที่ของผู้ใช้', 'การบันทึกประวัติการเข้าใช้งานระบบ (Audit Log)'].map((item, i) => (
+                    <p key={i} style={{ margin: '0 0 3px', fontSize: 11.5, color: '#475569' }}>• {item}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 5 */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>5</div>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>ข้อปฏิบัติสำหรับผู้ใช้งาน</p>
+                </div>
+                <div style={{ marginLeft: 28 }}>
+                  {['รักษาชื่อผู้ใช้และรหัส PIN เป็นความลับ ห้ามให้ผู้อื่นใช้แทน', 'ห้ามแก้ไข เพิ่มเติม หรือลบข้อมูลของผู้ใช้คนอื่น', 'ห้ามนำข้อมูลในระบบไปใช้เพื่อประโยชน์ส่วนตัว', 'หากพบข้อผิดพลาด กรุณาแจ้งผู้ดูแลระบบทันที'].map((item, i) => (
+                    <p key={i} style={{ margin: '0 0 4px', fontSize: 11.5, color: '#475569', lineHeight: 1.55 }}>• {item}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* PDPA Notice */}
+              <div style={{ background: '#fffbeb', border: '1.5px solid #f59e0b', borderRadius: 12, padding: '10px 13px', marginBottom: 14 }}>
+                <p style={{ margin: 0, fontSize: 11, color: '#92400e', lineHeight: 1.65 }}>
+                  <span style={{ fontWeight: 700 }}>⚠️ หมายเหตุ:</span> ข้อมูลส่วนบุคคลทั้งหมดได้รับความคุ้มครองตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) การสมัครสมาชิกถือว่าท่านยินยอมให้เก็บและใช้ข้อมูลตามวัตถุประสงค์ที่ระบุข้างต้น
+                </p>
+              </div>
+
+              {/* Checkboxes */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {[
+                  { key: 'data',   label: t.consentDataLabel,   icon: '📊' },
+                  { key: 'camera', label: t.consentCameraLabel, icon: '📷' },
+                  { key: 'files',  label: t.consentFilesLabel,  icon: '📁' },
+                ].map(({ key, label, icon }) => (
+                  <label key={key} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '9px 12px', borderRadius: 10,
+                    border: `1.5px solid ${consents[key] ? '#4f46e5' : '#e2e8f0'}`,
+                    background: consents[key] ? '#eef2ff' : '#f8fafc',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={consents[key]}
+                      onChange={e => setConsents(p => ({ ...p, [key]: e.target.checked }))}
+                      style={{ width: 15, height: 15, accentColor: '#4f46e5', flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: 11.5, fontWeight: 600, color: '#334155' }}>{icon} {label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '12px 20px', borderTop: '1px solid #f1f5f9', flexShrink: 0, display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setShowRegister(false)}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: 11,
+                  background: 'transparent', color: '#94a3b8',
+                  fontWeight: 600, fontSize: 12.5,
+                  border: '1.5px solid #e2e8f0', cursor: 'pointer',
+                }}
+              >ปิด</button>
+              <button
+                onClick={() => { if (consents.data && consents.camera && consents.files) setConsentAccepted(true) }}
+                disabled={!(consents.data && consents.camera && consents.files)}
+                style={{
+                  flex: 2, padding: '10px 0', borderRadius: 11,
+                  background: (consents.data && consents.camera && consents.files) ? '#4f46e5' : '#cbd5e1',
+                  color: 'white', fontWeight: 700, fontSize: 13,
+                  border: 'none', cursor: (consents.data && consents.camera && consents.files) ? 'pointer' : 'not-allowed',
+                  transition: 'background 0.2s',
+                }}
+              >{t.consentAcceptBtn}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
