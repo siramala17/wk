@@ -49,6 +49,23 @@ const LANG = {
     consentAcceptBtn: 'ยืนยันและดำเนินการต่อ',
     consentDeclineBtn: 'ปฏิเสธ / กลับหน้าเข้าสู่ระบบ',
     consentNote: '* ต้องยินยอมทุกข้อเพื่อดำเนินการต่อ',
+    consentHeaderSub: 'W.K. Health — กรุณาอ่านก่อนสมัครสมาชิก',
+    consentCloseBtn: 'ปิด',
+    consentDoc1Title: 'วัตถุประสงค์ของการเก็บข้อมูล',
+    consentDoc1Body: 'ระบบ W.K. Health เก็บข้อมูลเพื่อประเมินและติดตามสุขภาพของผู้ใช้ นำเสนอคำแนะนำสุขภาพที่เหมาะสมเฉพาะบุคคล และวิเคราะห์แนวโน้มสุขภาพเพื่อการวิจัยและพัฒนาระบบ',
+    consentDoc2Title: 'ข้อมูลที่ระบบเก็บรวบรวม',
+    consentDoc2PersonalTitle: '👤 ข้อมูลส่วนตัว',
+    consentDoc2PersonalItems: ['ชื่อ-นามสกุล, อายุ, เพศ, บทบาท และระดับชั้น', 'รูปภาพใบหน้า (สำหรับยืนยันตัวตน)', 'รหัส PIN สำหรับเข้าสู่ระบบ'],
+    consentDoc2HealthTitle: '📊 ข้อมูลสุขภาพ',
+    consentDoc2HealthItems: ['น้ำหนัก, ส่วนสูง, ค่า BMI และองค์ประกอบร่างกาย', 'ผลการประเมินสุขภาพและกิจกรรมทางกาย', 'ประวัติการประเมินสุขภาพย้อนหลัง'],
+    consentDoc3Title: 'การใช้ข้อมูลและการเปิดเผย',
+    consentDoc3Items: [['3.1', 'ใช้เพื่อแสดงผลสุขภาพและคำแนะนำเฉพาะบุคคลเท่านั้น'], ['3.2', 'ข้อมูลนิรนามอาจใช้เพื่อการวิจัยและพัฒนาระบบสุขภาพ'], ['3.3', 'ไม่เปิดเผยข้อมูลส่วนตัวต่อบุคคลหรือองค์กรภายนอก']],
+    consentDoc4Title: 'การรักษาความปลอดภัยของข้อมูล',
+    consentDoc4Items: ['การเข้ารหัสข้อมูลระหว่างการรับ-ส่งและการจัดเก็บ', 'การกำหนดสิทธิ์การเข้าถึงตามบทบาทหน้าที่ของผู้ใช้', 'การบันทึกประวัติการเข้าใช้งานระบบ (Audit Log)'],
+    consentDoc5Title: 'ข้อปฏิบัติสำหรับผู้ใช้งาน',
+    consentDoc5Items: ['รักษาชื่อผู้ใช้และรหัส PIN เป็นความลับ ห้ามให้ผู้อื่นใช้แทน', 'ห้ามแก้ไข เพิ่มเติม หรือลบข้อมูลของผู้ใช้คนอื่น', 'ห้ามนำข้อมูลในระบบไปใช้เพื่อประโยชน์ส่วนตัว', 'หากพบข้อผิดพลาด กรุณาแจ้งผู้ดูแลระบบทันที'],
+    consentPdpaLabel: '⚠️ หมายเหตุ:',
+    consentPdpaText: 'ข้อมูลส่วนบุคคลทั้งหมดได้รับความคุ้มครองตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) การสมัครสมาชิกถือว่าท่านยินยอมให้เก็บและใช้ข้อมูลตามวัตถุประสงค์ที่ระบุข้างต้น',
   },
   en: {
     step1Title: 'Personal Info',
@@ -95,6 +112,23 @@ const LANG = {
     consentAcceptBtn: 'Confirm & Continue',
     consentDeclineBtn: 'Decline / Back to Login',
     consentNote: '* All consents are required to proceed',
+    consentHeaderSub: 'W.K. Health — Please read before registering',
+    consentCloseBtn: 'Close',
+    consentDoc1Title: 'Purpose of Data Collection',
+    consentDoc1Body: "W.K. Health collects data to assess and monitor users' health, provide personalized health recommendations, and analyze health trends for research and system development.",
+    consentDoc2Title: 'Data Collected by the System',
+    consentDoc2PersonalTitle: '👤 Personal Information',
+    consentDoc2PersonalItems: ['Full name, age, gender, role, and grade level', 'Face photo (for identity verification)', '4-digit PIN for login'],
+    consentDoc2HealthTitle: '📊 Health Information',
+    consentDoc2HealthItems: ['Weight, height, BMI, and body composition', 'Health assessment and physical activity results', 'Health assessment history'],
+    consentDoc3Title: 'Data Usage and Disclosure',
+    consentDoc3Items: [['3.1', 'Used only to display health results and personalized recommendations'], ['3.2', 'Anonymous data may be used for health research and system development'], ['3.3', 'Personal information is not disclosed to external individuals or organizations']],
+    consentDoc4Title: 'Data Security',
+    consentDoc4Items: ['Encryption of data during transmission and storage', 'Role-based access control for system users', 'System access audit logging'],
+    consentDoc5Title: 'User Guidelines',
+    consentDoc5Items: ['Keep your username and PIN confidential — do not share with others', "Do not modify, add, or delete other users' data", 'Do not use system data for personal benefit', 'Report any errors or issues to the administrator immediately'],
+    consentPdpaLabel: '⚠️ Note:',
+    consentPdpaText: 'All personal data is protected under the Personal Data Protection Act B.E. 2562 (PDPA). By registering, you consent to the collection and use of your data as described above.',
   },
 }
 
@@ -652,8 +686,8 @@ export default function Register() {
                   fontSize: 18, flexShrink: 0,
                 }}>🔒</div>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1e293b' }}>นโยบายความเป็นส่วนตัว</h2>
-                  <p style={{ margin: 0, fontSize: 10.5, color: '#64748b' }}>W.K. Health — กรุณาอ่านก่อนสมัครสมาชิก</p>
+                  <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1e293b' }}>{t.consentTitle}</h2>
+                  <p style={{ margin: 0, fontSize: 10.5, color: '#64748b' }}>{t.consentHeaderSub}</p>
                 </div>
               </div>
             </div>
@@ -665,10 +699,10 @@ export default function Register() {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
                   <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>1</div>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>วัตถุประสงค์ของการเก็บข้อมูล</p>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{t.consentDoc1Title}</p>
                 </div>
                 <p style={{ margin: '0 0 0 28px', fontSize: 11.5, color: '#475569', lineHeight: 1.65 }}>
-                  ระบบ W.K. Health เก็บข้อมูลเพื่อประเมินและติดตามสุขภาพของผู้ใช้ นำเสนอคำแนะนำสุขภาพที่เหมาะสมเฉพาะบุคคล และวิเคราะห์แนวโน้มสุขภาพเพื่อการวิจัยและพัฒนาระบบ
+                  {t.consentDoc1Body}
                 </p>
               </div>
 
@@ -676,18 +710,18 @@ export default function Register() {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
                   <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>2</div>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>ข้อมูลที่ระบบเก็บรวบรวม</p>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{t.consentDoc2Title}</p>
                 </div>
                 <div style={{ marginLeft: 28, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <div style={{ background: '#f8fafc', borderRadius: 10, padding: '9px 12px' }}>
-                    <p style={{ margin: '0 0 4px', fontSize: 11.5, fontWeight: 700, color: '#334155' }}>👤 ข้อมูลส่วนตัว</p>
-                    {['ชื่อ-นามสกุล, อายุ, เพศ, บทบาท และระดับชั้น', 'รูปภาพใบหน้า (สำหรับยืนยันตัวตน)', 'รหัส PIN สำหรับเข้าสู่ระบบ'].map((item, i) => (
+                    <p style={{ margin: '0 0 4px', fontSize: 11.5, fontWeight: 700, color: '#334155' }}>{t.consentDoc2PersonalTitle}</p>
+                    {t.consentDoc2PersonalItems.map((item, i) => (
                       <p key={i} style={{ margin: 0, fontSize: 11, color: '#64748b', paddingLeft: 10 }}>• {item}</p>
                     ))}
                   </div>
                   <div style={{ background: '#f8fafc', borderRadius: 10, padding: '9px 12px' }}>
-                    <p style={{ margin: '0 0 4px', fontSize: 11.5, fontWeight: 700, color: '#334155' }}>📊 ข้อมูลสุขภาพ</p>
-                    {['น้ำหนัก, ส่วนสูง, ค่า BMI และองค์ประกอบร่างกาย', 'ผลการประเมินสุขภาพและกิจกรรมทางกาย', 'ประวัติการประเมินสุขภาพย้อนหลัง'].map((item, i) => (
+                    <p style={{ margin: '0 0 4px', fontSize: 11.5, fontWeight: 700, color: '#334155' }}>{t.consentDoc2HealthTitle}</p>
+                    {t.consentDoc2HealthItems.map((item, i) => (
                       <p key={i} style={{ margin: 0, fontSize: 11, color: '#64748b', paddingLeft: 10 }}>• {item}</p>
                     ))}
                   </div>
@@ -698,14 +732,10 @@ export default function Register() {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
                   <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>3</div>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>การใช้ข้อมูลและการเปิดเผย</p>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{t.consentDoc3Title}</p>
                 </div>
                 <div style={{ marginLeft: 28 }}>
-                  {[
-                    ['3.1', 'ใช้เพื่อแสดงผลสุขภาพและคำแนะนำเฉพาะบุคคลเท่านั้น'],
-                    ['3.2', 'ข้อมูลนิรนามอาจใช้เพื่อการวิจัยและพัฒนาระบบสุขภาพ'],
-                    ['3.3', 'ไม่เปิดเผยข้อมูลส่วนตัวต่อบุคคลหรือองค์กรภายนอก'],
-                  ].map(([num, text]) => (
+                  {t.consentDoc3Items.map(([num, text]) => (
                     <p key={num} style={{ margin: '0 0 4px', fontSize: 11.5, color: '#475569', lineHeight: 1.55 }}>
                       <span style={{ fontWeight: 700, color: '#4f46e5' }}>{num}</span> {text}
                     </p>
@@ -717,10 +747,10 @@ export default function Register() {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
                   <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>4</div>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>การรักษาความปลอดภัยของข้อมูล</p>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{t.consentDoc4Title}</p>
                 </div>
                 <div style={{ marginLeft: 28 }}>
-                  {['การเข้ารหัสข้อมูลระหว่างการรับ-ส่งและการจัดเก็บ', 'การกำหนดสิทธิ์การเข้าถึงตามบทบาทหน้าที่ของผู้ใช้', 'การบันทึกประวัติการเข้าใช้งานระบบ (Audit Log)'].map((item, i) => (
+                  {t.consentDoc4Items.map((item, i) => (
                     <p key={i} style={{ margin: '0 0 3px', fontSize: 11.5, color: '#475569' }}>• {item}</p>
                   ))}
                 </div>
@@ -730,10 +760,10 @@ export default function Register() {
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
                   <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>5</div>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>ข้อปฏิบัติสำหรับผู้ใช้งาน</p>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{t.consentDoc5Title}</p>
                 </div>
                 <div style={{ marginLeft: 28 }}>
-                  {['รักษาชื่อผู้ใช้และรหัส PIN เป็นความลับ ห้ามให้ผู้อื่นใช้แทน', 'ห้ามแก้ไข เพิ่มเติม หรือลบข้อมูลของผู้ใช้คนอื่น', 'ห้ามนำข้อมูลในระบบไปใช้เพื่อประโยชน์ส่วนตัว', 'หากพบข้อผิดพลาด กรุณาแจ้งผู้ดูแลระบบทันที'].map((item, i) => (
+                  {t.consentDoc5Items.map((item, i) => (
                     <p key={i} style={{ margin: '0 0 4px', fontSize: 11.5, color: '#475569', lineHeight: 1.55 }}>• {item}</p>
                   ))}
                 </div>
@@ -742,7 +772,7 @@ export default function Register() {
               {/* PDPA Notice */}
               <div style={{ background: '#fffbeb', border: '1.5px solid #f59e0b', borderRadius: 12, padding: '10px 13px', marginBottom: 14 }}>
                 <p style={{ margin: 0, fontSize: 11, color: '#92400e', lineHeight: 1.65 }}>
-                  <span style={{ fontWeight: 700 }}>⚠️ หมายเหตุ:</span> ข้อมูลส่วนบุคคลทั้งหมดได้รับความคุ้มครองตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) การสมัครสมาชิกถือว่าท่านยินยอมให้เก็บและใช้ข้อมูลตามวัตถุประสงค์ที่ระบุข้างต้น
+                  <span style={{ fontWeight: 700 }}>{t.consentPdpaLabel}</span> {t.consentPdpaText}
                 </p>
               </div>
 
@@ -782,7 +812,7 @@ export default function Register() {
                   fontWeight: 600, fontSize: 12.5,
                   border: '1.5px solid #e2e8f0', cursor: 'pointer',
                 }}
-              >ปิด</button>
+              >{t.consentCloseBtn}</button>
               <button
                 onClick={() => { if (consents.data && consents.camera && consents.files) setConsentAccepted(true) }}
                 disabled={!(consents.data && consents.camera && consents.files)}
