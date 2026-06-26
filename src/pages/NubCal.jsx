@@ -129,6 +129,8 @@ function IFTimer() {
   const [now, setNow]             = useState(Date.now())
   const [showGuide, setShowGuide] = useState(false)
   const prevInFastRef             = useRef(null)
+  const [notifPerm, setNotifPerm] = useState(() => 'Notification' in window ? Notification.permission : 'unsupported')
+  const [toast, setToast]         = useState(null)
 
   const isActive = !!startTime
 
@@ -138,17 +140,45 @@ function IFTimer() {
     return () => clearInterval(id)
   }, [isActive])
 
+  useEffect(() => {
+    if (!toast) return
+    const id = setTimeout(() => setToast(null), 6000)
+    return () => clearTimeout(id)
+  }, [toast])
+
   const elapsed   = isActive ? Math.max(0, Math.floor((now - startTime) / 1000)) : 0
   const fastSecs  = protocol.fastH * 3600
   const cycleSecs = (protocol.fastH + protocol.feedH) * 3600
   const phase     = elapsed % cycleSecs
   const inFast    = phase < fastSecs
 
+  function playDing() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      const times = [0, 0.15, 0.3, 0.8, 0.95, 1.1]
+      times.forEach(delay => {
+        const osc  = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.type = 'sine'
+        osc.frequency.setValueAtTime(880, ctx.currentTime + delay)
+        osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + delay + 0.15)
+        gain.gain.setValueAtTime(0.4, ctx.currentTime + delay)
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.6)
+        osc.start(ctx.currentTime + delay)
+        osc.stop(ctx.currentTime + delay + 0.6)
+      })
+    } catch (_) {}
+  }
+
   // fire notification when fasting period ends
   useEffect(() => {
     if (!isActive) { prevInFastRef.current = null; return }
     if (prevInFastRef.current === null) { prevInFastRef.current = inFast; return }
     if (prevInFastRef.current === true && inFast === false) {
+      setToast(`🎉 ครบ ${protocol.fastH} ชั่วโมงแล้ว! ถึงเวลากินอาหารได้เลย 🍽️`)
+      playDing()
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('🎉 อดอาหารครบแล้ว!', {
           body: `ยินดีด้วย! คุณอดอาหารครบ ${protocol.fastH} ชั่วโมงแล้ว ถึงเวลากินอาหารได้เลย! 🍽️`,
@@ -159,9 +189,17 @@ function IFTimer() {
     prevInFastRef.current = inFast
   }, [inFast, isActive, protocol.fastH])
 
+  async function requestPermission() {
+    if ('Notification' in window) {
+      const perm = await Notification.requestPermission()
+      setNotifPerm(perm)
+    }
+  }
+
   async function start() {
     if ('Notification' in window && Notification.permission === 'default') {
-      await Notification.requestPermission()
+      const perm = await Notification.requestPermission()
+      setNotifPerm(perm)
     }
     const t = Date.now()
     setStartTime(t)
@@ -194,6 +232,13 @@ function IFTimer() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      {toast && (
+        <div className="fixed top-5 left-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl text-sm font-bold text-white"
+          style={{ transform: 'translateX(-50%)', backgroundColor: '#10b981', maxWidth: '90vw' }}>
+          <span>{toast}</span>
+          <button onClick={() => setToast(null)} className="opacity-70 text-base leading-none">✕</button>
+        </div>
+      )}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-50">
         <div className="flex items-center gap-2">
           <span className="text-base">⏱️</span>
@@ -203,6 +248,25 @@ function IFTimer() {
           {showGuide ? 'ซ่อนคำแนะนำ' : '📋 คำแนะนำ IF'}
         </button>
       </div>
+
+      {notifPerm !== 'granted' && notifPerm !== 'unsupported' && (
+        <div className="mx-4 mt-3 rounded-xl px-3 py-2 flex items-center gap-2 text-xs"
+          style={{ backgroundColor: notifPerm === 'denied' ? '#fef2f2' : '#fffbeb' }}>
+          <span>{notifPerm === 'denied' ? '🔕' : '🔔'}</span>
+          <span className="flex-1" style={{ color: notifPerm === 'denied' ? '#dc2626' : '#d97706' }}>
+            {notifPerm === 'denied'
+              ? 'การแจ้งเตือนถูกปิด — ไปเปิดใน Settings ของ browser'
+              : 'เปิดการแจ้งเตือนเพื่อรับแจ้งเมื่ออดอาหารครบ'}
+          </span>
+          {notifPerm !== 'denied' && (
+            <button onClick={requestPermission}
+              className="font-bold text-white px-2.5 py-1 rounded-lg text-xs"
+              style={{ backgroundColor: '#f97316' }}>
+              เปิด
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Protocol selector */}
       <div className="px-4 pt-4 grid grid-cols-4 gap-2">
