@@ -1436,9 +1436,54 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
   )
 }
 
+function playDing() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const times = [0, 0.15, 0.3, 0.8, 0.95, 1.1]
+    times.forEach(delay => {
+      const osc  = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(880, ctx.currentTime + delay)
+      osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + delay + 0.15)
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + delay)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.6)
+      osc.start(ctx.currentTime + delay)
+      osc.stop(ctx.currentTime + delay + 0.6)
+    })
+  } catch (_) {}
+}
+
 function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, onSave, onDelete, onToggle, deletingId, saving, onSendPush, pushSending, pushResult }) {
   const activeCount = announcements.filter(a => a.active).length
   const fcmIsReady = fcmReady
+  const [testResult, setTestResult] = useState(null)
+
+  function testSound() {
+    playDing()
+    setTestResult('sound')
+    setTimeout(() => setTestResult(null), 3000)
+  }
+
+  function testToast() {
+    playDing()
+    setTestResult('toast')
+    setTimeout(() => setTestResult(null), 4000)
+  }
+
+  async function testBrowserNotif() {
+    if (!('Notification' in window)) { setTestResult('unsupported'); return }
+    if (Notification.permission === 'default') await Notification.requestPermission()
+    if (Notification.permission === 'granted') {
+      new Notification('🎉 ทดสอบแจ้งเตือน', { body: 'ระบบแจ้งเตือนทำงานปกติ ✅', icon: '/icons/icon-192.png' })
+      setTestResult('notif')
+    } else {
+      setTestResult('denied')
+    }
+    setTimeout(() => setTestResult(null), 4000)
+  }
 
   // auto-send when scheduled time arrives
   useEffect(() => {
@@ -1458,6 +1503,45 @@ function AnnouncementTab({ announcements, loading, editingAnn, setEditingAnn, on
 
   return (
     <div className="space-y-4">
+
+      {/* ── Notification test card ── */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
+          <span>🔔</span>
+          <span className="font-semibold text-slate-800 text-sm">ทดสอบระบบแจ้งเตือน</span>
+          <span className="ml-auto text-xs text-slate-400">
+            สิทธิ์: {!('Notification' in window) ? 'ไม่รองรับ' : Notification.permission === 'granted' ? '✅ เปิดอยู่' : Notification.permission === 'denied' ? '❌ ถูกปิด' : '⏳ ยังไม่ได้ขอ'}
+          </span>
+        </div>
+        <div className="px-4 py-3 flex flex-wrap gap-2">
+          <button onClick={testSound}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 font-semibold text-xs transition-all active:scale-95">
+            🔊 ทดสอบเสียง
+          </button>
+          <button onClick={testToast}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-50 text-green-700 font-semibold text-xs transition-all active:scale-95">
+            💬 ทดสอบ Toast
+          </button>
+          <button onClick={testBrowserNotif}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 text-amber-700 font-semibold text-xs transition-all active:scale-95">
+            📳 ทดสอบ Notification
+          </button>
+        </div>
+        {testResult && (
+          <div className="mx-4 mb-3 px-3 py-2 rounded-xl text-xs font-semibold"
+            style={{
+              backgroundColor: testResult === 'denied' ? '#fef2f2' : '#f0fdf4',
+              color: testResult === 'denied' ? '#dc2626' : '#16a34a',
+            }}>
+            {testResult === 'sound'       && '🔊 เสียงทำงานปกติ ✅'}
+            {testResult === 'toast'       && '💬 ครบเวลาอดอาหารแล้ว! ถึงเวลากินอาหารได้เลย 🍽️ ✅'}
+            {testResult === 'notif'       && '📳 ส่ง Browser Notification แล้ว ✅'}
+            {testResult === 'denied'      && '❌ การแจ้งเตือนถูกปิด — ไปเปิดใน Settings ของ browser'}
+            {testResult === 'unsupported' && '❌ Browser นี้ไม่รองรับ Notification'}
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-bold text-slate-700">ประกาศทั้งหมด</p>
