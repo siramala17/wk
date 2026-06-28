@@ -1,14 +1,8 @@
-import { JSONBIN_KEY, SUBMISSIONS_URL, SURVEYS_URL, REDEMPTIONS_URL, REWARD_CATALOG_URL } from '../config/jsonbin'
 import {
   collection, doc, getDocs, setDoc, deleteDoc, updateDoc,
   query, where, getDoc, onSnapshot,
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
-
-const HEADERS = {
-  'Content-Type': 'application/json',
-  'X-Master-Key': JSONBIN_KEY,
-}
 
 function resizeImage(dataUrl, size = 64, quality = 0.4) {
   if (!dataUrl) return Promise.resolve(null)
@@ -193,166 +187,114 @@ export async function deleteCloudUser(userId) {
 // ── Activity Submissions ─────────────────────────────────────
 
 export async function fetchSubmissions() {
-  const res = await fetch(`${SUBMISSIONS_URL}/latest`, { headers: HEADERS })
-  if (!res.ok) throw new Error('fetch failed')
-  const data = await res.json()
-  return data.record.submissions || []
+  if (!db) return []
+  const snap = await getDocs(collection(db, 'submissions'))
+  return snap.docs.map(d => ({ ...d.data(), id: d.id }))
 }
 
 export async function addSubmission(submission) {
-  const photo       = await resizeImage(submission.photo,       300, 0.5)
-  const userAvatar  = await resizeImage(submission.userAvatar,  64,  0.5)
-  const existing = await fetchSubmissions()
-  const newEntry = { ...submission, photo, userAvatar, status: 'pending', submittedAt: new Date().toISOString() }
-  const res = await fetch(SUBMISSIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ submissions: [...existing, newEntry] }),
-  })
-  if (!res.ok) throw new Error(`ส่งภาพไม่สำเร็จ (HTTP ${res.status})`)
+  if (!db) throw new Error('Firestore ไม่พร้อมใช้งาน')
+  const photo      = await resizeImage(submission.photo,      300, 0.5)
+  const userAvatar = await resizeImage(submission.userAvatar, 64,  0.5)
+  const id = String(submission.id || Date.now())
+  const newEntry = { ...submission, id, userId: String(submission.userId), photo, userAvatar, status: 'pending', submittedAt: new Date().toISOString() }
+  await setDoc(doc(db, 'submissions', id), newEntry)
   return newEntry
 }
 
 export async function updateSubmissionStatus(id, status, adminNote = '') {
-  const existing = await fetchSubmissions()
-  const updated = existing.map(s => {
-    if (s.id !== id) return s
-    return {
-      ...s, status, adminNote,
-      reviewedAt: new Date().toISOString(),
-      ...(status === 'approved' ? { pointsValue: 5, pointsClaimed: false } : {}),
-    }
+  if (!db) return
+  await updateDoc(doc(db, 'submissions', String(id)), {
+    status,
+    adminNote,
+    reviewedAt: new Date().toISOString(),
+    ...(status === 'approved' ? { pointsValue: 5, pointsClaimed: false } : {}),
   })
-  const res = await fetch(SUBMISSIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ submissions: updated }),
-  })
-  if (!res.ok) throw new Error('update failed')
 }
 
 export async function deleteUserSubmissions(userId) {
-  const existing = await fetchSubmissions()
-  const updated = existing.filter(s => String(s.userId) !== String(userId))
-  const res = await fetch(SUBMISSIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ submissions: updated }),
-  })
-  if (!res.ok) throw new Error('ลบภาพกิจกรรมไม่สำเร็จ')
+  if (!db) return
+  const snap = await getDocs(query(collection(db, 'submissions'), where('userId', '==', String(userId))))
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
 }
 
 // ── Surveys ──────────────────────────────────────────────────
 
 export async function fetchSurveys() {
-  const res = await fetch(`${SURVEYS_URL}/latest`, { headers: HEADERS })
-  if (!res.ok) throw new Error('fetch surveys failed')
-  const data = await res.json()
-  return data.record.surveys || []
+  if (!db) return []
+  const snap = await getDocs(collection(db, 'surveys'))
+  return snap.docs.map(d => ({ ...d.data(), id: d.id }))
 }
 
 export async function submitSurvey(survey) {
-  const existing = await fetchSurveys()
-  const res = await fetch(SURVEYS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ surveys: [...existing, survey] }),
-  })
-  if (!res.ok) throw new Error('submit survey failed')
+  if (!db) throw new Error('Firestore ไม่พร้อมใช้งาน')
+  const id = String(survey.id || Date.now())
+  await setDoc(doc(db, 'surveys', id), { ...survey, id })
 }
 
 export async function deleteSurvey(surveyId) {
-  const existing = await fetchSurveys()
-  const res = await fetch(SURVEYS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ surveys: existing.filter(s => s.id !== surveyId) }),
-  })
-  if (!res.ok) throw new Error('delete survey failed')
+  if (!db) return
+  await deleteDoc(doc(db, 'surveys', String(surveyId)))
 }
 
 // ── Reward Catalog ────────────────────────────────────────────
 
 export async function fetchRewardCatalog() {
-  const res = await fetch(`${REWARD_CATALOG_URL}/latest`, { headers: HEADERS })
-  if (!res.ok) throw new Error('fetch failed')
-  return (await res.json()).record.rewards || []
-}
-
-async function saveRewardCatalog(rewards) {
-  const res = await fetch(REWARD_CATALOG_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ rewards }),
-  })
-  if (!res.ok) throw new Error('save failed')
+  if (!db) return []
+  const snap = await getDocs(collection(db, 'rewardCatalog'))
+  return snap.docs.map(d => ({ ...d.data(), id: d.id }))
 }
 
 export async function addReward(reward) {
-  const existing = await fetchRewardCatalog()
-  await saveRewardCatalog([...existing, reward])
+  if (!db) return
+  await setDoc(doc(db, 'rewardCatalog', String(reward.id)), reward)
 }
 
 export async function updateReward(updated) {
-  const existing = await fetchRewardCatalog()
-  await saveRewardCatalog(existing.map(r => r.id === updated.id ? updated : r))
+  if (!db) return
+  await setDoc(doc(db, 'rewardCatalog', String(updated.id)), updated)
 }
 
 export async function deleteReward(id) {
-  const existing = await fetchRewardCatalog()
-  await saveRewardCatalog(existing.filter(r => r.id !== id))
+  if (!db) return
+  await deleteDoc(doc(db, 'rewardCatalog', String(id)))
 }
 
 // ── Redemptions ───────────────────────────────────────────────
 
 export async function fetchRedemptions() {
-  const res = await fetch(`${REDEMPTIONS_URL}/latest`, { headers: HEADERS })
-  if (!res.ok) throw new Error('fetch failed')
-  return (await res.json()).record.redemptions || []
+  if (!db) return []
+  const snap = await getDocs(collection(db, 'redemptions'))
+  return snap.docs.map(d => ({ ...d.data(), id: d.id }))
 }
 
 export async function submitRedemption(item) {
-  const existing = await fetchRedemptions()
-  const res = await fetch(REDEMPTIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ redemptions: [...existing, item] }),
-  })
-  if (!res.ok) throw new Error('submit failed')
+  if (!db) throw new Error('Firestore ไม่พร้อมใช้งาน')
+  const id = String(item.id || Date.now())
+  await setDoc(doc(db, 'redemptions', id), { ...item, id, userId: String(item.userId) })
 }
 
 export async function updateRedemptionStatus(id, status, adminNote = '') {
-  const existing = await fetchRedemptions()
-  const updated = existing.map(r =>
-    r.id !== id ? r : {
-      ...r, status, adminNote, reviewedAt: new Date().toISOString(),
-      ...(status === 'rejected' ? { refundPending: true, refundClaimed: false } : {}),
-    }
-  )
-  const res = await fetch(REDEMPTIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ redemptions: updated }),
+  if (!db) return
+  await updateDoc(doc(db, 'redemptions', String(id)), {
+    status,
+    adminNote,
+    reviewedAt: new Date().toISOString(),
+    ...(status === 'rejected' ? { refundPending: true, refundClaimed: false } : {}),
   })
-  if (!res.ok) throw new Error('update failed')
 }
 
 export async function claimRedemptionRefunds(userId) {
-  const all = await fetchRedemptions()
-  const unclaimed = all.filter(
-    r => String(r.userId) === String(userId) && r.status === 'rejected' && r.refundPending && !r.refundClaimed
-  )
-  if (unclaimed.length === 0) return 0
-  const total = unclaimed.reduce((s, r) => s + (r.pointsCost || 0), 0)
-  const now = new Date().toISOString()
-  const updated = all.map(r =>
-    unclaimed.some(u => u.id === r.id) ? { ...r, refundClaimed: true, refundClaimedAt: now } : r
-  )
-  await fetch(REDEMPTIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ redemptions: updated }),
+  if (!db) return 0
+  const snap = await getDocs(query(collection(db, 'redemptions'), where('userId', '==', String(userId))))
+  const unclaimed = snap.docs.filter(d => {
+    const r = d.data()
+    return r.status === 'rejected' && r.refundPending && !r.refundClaimed
   })
+  if (unclaimed.length === 0) return 0
+  const total = unclaimed.reduce((s, d) => s + (d.data().pointsCost || 0), 0)
+  const now = new Date().toISOString()
+  await Promise.all(unclaimed.map(d => updateDoc(d.ref, { refundClaimed: true, refundClaimedAt: now })))
   return total
 }
 
@@ -482,23 +424,15 @@ export async function deleteAnnouncement(id) {
 }
 
 export async function claimApprovedPoints(userId) {
-  const all = await fetchSubmissions()
-  const unclaimed = all.filter(
-    s => String(s.userId) === String(userId) && s.status === 'approved' && !s.pointsClaimed && (s.pointsValue || 0) > 0
-  )
-  if (unclaimed.length === 0) return 0
-
-  const total = unclaimed.reduce((sum, s) => sum + (s.pointsValue || 5), 0)
-  const now = new Date().toISOString()
-  const updated = all.map(s =>
-    unclaimed.some(u => u.id === s.id)
-      ? { ...s, pointsClaimed: true, pointsClaimedAt: now }
-      : s
-  )
-  await fetch(SUBMISSIONS_URL, {
-    method: 'PUT',
-    headers: HEADERS,
-    body: JSON.stringify({ submissions: updated }),
+  if (!db) return 0
+  const snap = await getDocs(query(collection(db, 'submissions'), where('userId', '==', String(userId))))
+  const unclaimed = snap.docs.filter(d => {
+    const s = d.data()
+    return s.status === 'approved' && !s.pointsClaimed && (s.pointsValue || 0) > 0
   })
+  if (unclaimed.length === 0) return 0
+  const total = unclaimed.reduce((sum, d) => sum + (d.data().pointsValue || 5), 0)
+  const now = new Date().toISOString()
+  await Promise.all(unclaimed.map(d => updateDoc(d.ref, { pointsClaimed: true, pointsClaimedAt: now })))
   return total
 }
