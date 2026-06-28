@@ -6,6 +6,15 @@ import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
 import BMI from './BMI'
 
+const DOMAIN_REFS = {
+  sleep:     'สมาคมโรคจากการหลับแห่งประเทศไทย (Sleep Society of Thailand) และกรมอนามัย',
+  water:     'สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข',
+  exercise:  'กองกิจกรรมทางกายเพื่อสุขภาพ กรมอนามัย',
+  digital:   'สำนักงานพัฒนาธุรกรรมทางอิเล็กทรอนิกส์ (ETDA) ร่วมกับราชวิทยาลัยกุมารแพทย์แห่งประเทศไทย',
+  stress:    'กรมสุขภาพจิต กระทรวงสาธารณสุข',
+  nutrition: 'สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข',
+}
+
 // Language-neutral domain config (colors, emojis, question IDs)
 const DOMAIN_CONFIG = [
   { key: 'sleep',     emoji: '🌙', color: 'bg-indigo-500',    light: 'bg-indigo-50',    text: 'text-indigo-600',    border: 'border-indigo-200',    ring: '#6366f1',  qIds: [1,2,3,4],    reverses: [false,false,false,true]  },
@@ -349,6 +358,17 @@ export default function Assessment() {
               </div>
             ))}
           </div>
+
+          {/* Reference */}
+          {DOMAIN_REFS[domain.key] && (
+            <div className={`${domain.light} border ${domain.border} rounded-xl px-3 py-2 flex items-start gap-1.5`}>
+              <span className="text-[11px] flex-shrink-0 mt-0.5">📚</span>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                <span className="font-semibold text-slate-600">แหล่งอ้างอิง: </span>
+                {DOMAIN_REFS[domain.key]}
+              </p>
+            </div>
+          )}
 
           {/* Nav buttons */}
           <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 flex gap-3 pb-safe md:static md:bottom-auto md:border-none md:bg-transparent md:mt-6 md:px-0 md:pb-0">
