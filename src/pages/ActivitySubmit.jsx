@@ -85,8 +85,8 @@ export default function ActivitySubmit() {
       setDescription('')
       setPhoto(null)
       setTimeout(() => setSubmitted(false), 3000)
-    } catch {
-      setError('เกิดข้อผิดพลาด กรุณาลองใหม่')
+    } catch (e) {
+      setError(e?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
     } finally {
       setSubmitting(false)
     }

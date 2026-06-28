@@ -200,15 +200,16 @@ export async function fetchSubmissions() {
 }
 
 export async function addSubmission(submission) {
-  const photo = await resizeImage(submission.photo, 300, 0.5)
+  const photo       = await resizeImage(submission.photo,       300, 0.5)
+  const userAvatar  = await resizeImage(submission.userAvatar,  64,  0.5)
   const existing = await fetchSubmissions()
-  const newEntry = { ...submission, photo, status: 'pending', submittedAt: new Date().toISOString() }
+  const newEntry = { ...submission, photo, userAvatar, status: 'pending', submittedAt: new Date().toISOString() }
   const res = await fetch(SUBMISSIONS_URL, {
     method: 'PUT',
     headers: HEADERS,
     body: JSON.stringify({ submissions: [...existing, newEntry] }),
   })
-  if (!res.ok) throw new Error('submit failed')
+  if (!res.ok) throw new Error(`ส่งภาพไม่สำเร็จ (HTTP ${res.status})`)
   return newEntry
 }
 
