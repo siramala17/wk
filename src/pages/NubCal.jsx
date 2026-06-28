@@ -148,9 +148,7 @@ function IFTimer() {
 
   const elapsed   = isActive ? Math.max(0, Math.floor((now - startTime) / 1000)) : 0
   const fastSecs  = protocol.fastH * 3600
-  const cycleSecs = (protocol.fastH + protocol.feedH) * 3600
-  const phase     = elapsed % cycleSecs
-  const inFast    = phase < fastSecs
+  const inFast    = elapsed < fastSecs
 
   function playDing() {
     try {
@@ -172,7 +170,7 @@ function IFTimer() {
     } catch (_) {}
   }
 
-  // fire notification when fasting period ends
+  // fire notification and stop when fasting period ends
   useEffect(() => {
     if (!isActive) { prevInFastRef.current = null; return }
     if (prevInFastRef.current === null) { prevInFastRef.current = inFast; return }
@@ -185,6 +183,7 @@ function IFTimer() {
           icon: '/icons/icon-192.png',
         })
       }
+      stop()
     }
     prevInFastRef.current = inFast
   }, [inFast, isActive, protocol.fastH])
@@ -219,15 +218,15 @@ function IFTimer() {
     stop()
   }
 
-  const remaining  = inFast ? fastSecs - phase : cycleSecs - phase
-  const pct        = isActive ? (inFast ? phase / fastSecs : (phase - fastSecs) / (protocol.feedH * 3600)) : 0
+  const remaining  = Math.max(fastSecs - elapsed, 0)
+  const pct        = isActive ? Math.min(elapsed / fastSecs, 1) : 0
 
   const fmt = s => `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
   const elapsedH = Math.floor(elapsed / 3600)
   const elapsedM = Math.floor((elapsed % 3600) / 60)
   const R = 88, C = 2 * Math.PI * R
 
-  const phaseLabel = !isActive ? 'พร้อมเริ่ม' : inFast ? (elapsedH >= 12 ? 'FAT BURN 🔥' : 'FASTING') : 'FEEDING 🍽️'
+  const phaseLabel = !isActive ? 'พร้อมเริ่ม' : (elapsedH >= 12 ? 'FAT BURN 🔥' : 'FASTING')
   const ringColor  = isActive ? (inFast ? protocol.color : '#10b981') : '#e2e8f0'
 
   return (
