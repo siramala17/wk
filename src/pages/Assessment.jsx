@@ -5,6 +5,7 @@ import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
 import BMI from './BMI'
+import Survey from './Survey'
 
 const DOMAIN_REFS = {
   sleep:     'สมาคมโรคจากการหลับแห่งประเทศไทย (Sleep Society of Thailand) และกรมอนามัย',
@@ -296,6 +297,11 @@ function GuideScreen({ onStart, t, domains }) {
         style={{ background: 'linear-gradient(135deg, #4f46e5, #4338ca)' }}>
         {a.guideStart}
       </button>
+
+      {/* ── แบบประเมินความพึงพอใจ ── */}
+      <div className="border-t border-slate-200 pt-2 -mx-4">
+        <Survey />
+      </div>
     </div>
   )
 }
