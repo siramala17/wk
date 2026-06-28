@@ -466,7 +466,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto px-4 py-6">
 
         {/* Storage mode banner */}
         {!firebaseReady ? <LocalModeBanner /> : null}
@@ -487,24 +487,49 @@ export default function Admin() {
           </div>
         )}
 
-        {/* tab selector */}
-        <div className="grid grid-cols-3 sm:grid-cols-5 bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
-          {[
-            { key: 'users',         label: '👥 ผู้ใช้',    badge: null },
-            { key: 'submissions',   label: '📸 ภาพ',        badge: pendingCount > 0 ? pendingCount : null },
-            { key: 'redemptions',   label: '🎁 รางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
-            { key: 'surveys',       label: '📊 สำรวจ',     badge: null },
-            { key: 'announcements', label: '📢 ประกาศ',    badge: announcements.filter(a => a.active).length || null },
-          ].map(({ key, label, badge }) => (
-            <button key={key} onClick={() => setAdminTab(key)}
-              className={`relative py-2.5 rounded-xl text-xs font-semibold transition-all ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
-              {label}
-              {badge != null && (
-                <span className="ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{badge}</span>
-              )}
-            </button>
-          ))}
-        </div>
+        {/* iPad sidebar + content layout */}
+        <div className="md:flex md:gap-6 md:items-start">
+
+          {/* Sidebar — visible on iPad+ only */}
+          <div className="hidden md:flex flex-col gap-1 bg-white rounded-2xl p-2 shadow-sm w-52 flex-shrink-0 self-start sticky top-4">
+            {[
+              { key: 'users',         label: '👥 ผู้ใช้',    badge: null },
+              { key: 'submissions',   label: '📸 ภาพ',        badge: pendingCount > 0 ? pendingCount : null },
+              { key: 'redemptions',   label: '🎁 รางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
+              { key: 'surveys',       label: '📊 สำรวจ',     badge: null },
+              { key: 'announcements', label: '📢 ประกาศ',    badge: announcements.filter(a => a.active).length || null },
+            ].map(({ key, label, badge }) => (
+              <button key={key} onClick={() => setAdminTab(key)}
+                className={`relative px-3 py-3 rounded-xl text-sm font-semibold transition-all text-left flex items-center justify-between gap-2 ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
+                <span>{label}</span>
+                {badge != null && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">{badge}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Main content area */}
+          <div className="md:flex-1 min-w-0">
+
+            {/* Mobile tab selector — hidden on iPad+ */}
+            <div className="grid grid-cols-3 sm:grid-cols-5 md:hidden bg-white rounded-2xl p-1 mb-5 shadow-sm gap-1">
+              {[
+                { key: 'users',         label: '👥 ผู้ใช้',    badge: null },
+                { key: 'submissions',   label: '📸 ภาพ',        badge: pendingCount > 0 ? pendingCount : null },
+                { key: 'redemptions',   label: '🎁 รางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
+                { key: 'surveys',       label: '📊 สำรวจ',     badge: null },
+                { key: 'announcements', label: '📢 ประกาศ',    badge: announcements.filter(a => a.active).length || null },
+              ].map(({ key, label, badge }) => (
+                <button key={key} onClick={() => setAdminTab(key)}
+                  className={`relative py-2.5 rounded-xl text-xs font-semibold transition-all ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
+                  {label}
+                  {badge != null && (
+                    <span className="ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{badge}</span>
+                  )}
+                </button>
+              ))}
+            </div>
 
 
         {/* ══ TAB: ผู้ใช้งาน ══ */}
@@ -534,7 +559,7 @@ export default function Admin() {
             {!loading && !fetchError && (
               <>
                 {/* summary */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="bg-white rounded-2xl p-5 shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center"><Users size={20} className="text-indigo-600" /></div>
@@ -563,7 +588,7 @@ export default function Admin() {
                 {studentGrades.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-sm p-4 mb-6">
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">🏫 นักเรียนแยกตามชั้น</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {studentGrades.map(grade => {
                         const count = cloudUsers.filter(u => u.role === 'นักเรียน' && u.gradeLevel === grade).length
                         return (
@@ -904,12 +929,14 @@ export default function Admin() {
           />
         )}
 
+          </div>{/* closes md:flex-1 content div */}
+        </div>{/* closes md:flex wrapper */}
       </div>
 
       {/* ── Delete confirmation modal ── */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-3xl w-full max-w-sm md:max-w-md shadow-2xl overflow-hidden">
             {/* modal header */}
             <div className="bg-red-50 border-b border-red-100 px-5 py-4 flex items-center gap-3">
               <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -1002,7 +1029,7 @@ function RewardEditModal({ initial, onSave, onClose, saving }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl">
+      <div className="bg-white rounded-3xl w-full max-w-sm md:max-w-lg shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <h3 className="font-bold text-slate-800">{isNew ? 'เพิ่มของรางวัลใหม่' : 'แก้ไขของรางวัล'}</h3>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"><X size={18} /></button>
@@ -1371,7 +1398,7 @@ function AnnouncementEditModal({ initial, onSave, onClose, saving }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl">
+      <div className="bg-white rounded-3xl w-full max-w-sm md:max-w-lg shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <h3 className="font-bold text-slate-800">{isNew ? 'เพิ่มประกาศใหม่' : 'แก้ไขประกาศ'}</h3>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"><X size={18} /></button>
