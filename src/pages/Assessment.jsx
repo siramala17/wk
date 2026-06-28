@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, ChevronLeft, Check, AlertCircle, ChevronDown } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Check, AlertCircle, ChevronDown, ClipboardList, Star } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
@@ -297,15 +297,12 @@ function GuideScreen({ onStart, t, domains }) {
         {a.guideStart}
       </button>
 
-      {/* ── แบบประเมินความพึงพอใจ ── */}
-      <div className="border-t border-slate-200 pt-2 -mx-4">
-        <Survey />
-      </div>
     </div>
   )
 }
 
 export default function Assessment() {
+  const [activeTab, setActiveTab] = useState('assessment')
   const { saveAssessment, latestAssessment, history } = useHealth()
   const { t, lang } = useLang()
   const navigate = useNavigate()
@@ -375,7 +372,33 @@ export default function Assessment() {
 
   return (
     <>
-      {showGuide ? (
+      {/* Tab switcher */}
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
+          <button
+            onClick={() => setActiveTab('assessment')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'assessment' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <ClipboardList size={15} />
+            {a.tabAssess ?? 'ประเมิน'}
+          </button>
+          <button
+            onClick={() => setActiveTab('survey')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'survey' ? 'bg-white text-yellow-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Star size={15} />
+            ความพึงพอใจ
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'survey' ? (
+        <Survey />
+      ) : showGuide ? (
         <GuideScreen onStart={() => setShowGuide(false)} t={t} domains={DOMAINS} />
       ) : result ? (
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-6">
