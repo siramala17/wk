@@ -120,6 +120,12 @@ export default function SchoolDashboard() {
   const thaiYear = (new Date().getFullYear() + 543).toString()
 
   useEffect(() => {
+    const prev = document.body.style.backgroundColor
+    document.body.style.backgroundColor = '#0a1628'
+    return () => { document.body.style.backgroundColor = prev }
+  }, [])
+
+  useEffect(() => {
     let loadCount = 0
     const done = () => { loadCount++; if (loadCount >= 2) setLoading(false) }
     const unsubUsers = subscribeUsers(u => { setUsers(u); setLastUpdate(new Date()); done() })
