@@ -261,15 +261,15 @@ export default function SchoolDashboard() {
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid rgba(255,255,255,.06)', flexWrap:'wrap', gap:8 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <button
-            className="sd-back-btn"
             onClick={() => navigate('/')}
-            style={{ width:34, height:34, borderRadius:9, background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.12)', color:'#94a3b8', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, transition:'.15s' }}
-            onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.14)'}
-            onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 12px', borderRadius:9, background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.22)', color:'#e2e8f0', cursor:'pointer', flexShrink:0, transition:'.15s', fontFamily:'Sarabun,sans-serif', fontSize:12, fontWeight:700 }}
+            onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.20)'}
+            onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.12)'}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6"/>
             </svg>
+            หน้าแรก
           </button>
           <div style={{ width:34, height:34, background:'linear-gradient(135deg,#f59e0b,#fbbf24)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>🏥</div>
           <div>
