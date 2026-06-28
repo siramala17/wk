@@ -152,6 +152,7 @@ export function HealthProvider({ children }) {
     localStorage.removeItem('hc_history')
     localStorage.removeItem('hc_bmi')
     localStorage.removeItem('hc_tips')
+    localStorage.removeItem('hc_prev')
   }
 
   async function registerUser({ firstName, lastName, age, gender, role, gradeLevel, pin, faceImage }) {
@@ -195,7 +196,10 @@ export function HealthProvider({ children }) {
     const todayStr = new Date().toISOString().split('T')[0]
     const alreadyToday = history.some(h => h.fullDate === todayStr)
 
-    setLatestAssessment(data)
+    setLatestAssessment({ ...data, assessedAt: todayStr })
+    if (prevAssessment) {
+      try { localStorage.setItem('hc_prev', JSON.stringify(prevAssessment)) } catch {}
+    }
     const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
     const entry = {
       date: days[new Date().getDay()],

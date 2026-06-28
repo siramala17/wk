@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, ChevronLeft, Check, AlertCircle, ClipboardList, Scale } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Check, AlertCircle, ClipboardList, Scale, ChevronDown } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
@@ -122,7 +122,61 @@ function BeforeAfterSection({ currentResult, prevAssessment }) {
   )
 }
 
-function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, t, domains, currentResult, prevAssessment }) {
+function HistorySection({ history }) {
+  const [open, setOpen] = useState(false)
+  if (!history || history.length === 0) return null
+  const sorted = [...history].sort((a, b) => b.fullDate.localeCompare(a.fullDate))
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <button onClick={() => setOpen(o => !o)}
+        className="w-full px-4 py-3 flex items-center gap-2 text-left hover:bg-slate-50 transition-colors">
+        <span className="text-base">📅</span>
+        <p className="text-sm font-bold text-slate-700 flex-1">ประวัติการประเมิน ({history.length} ครั้ง)</p>
+        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="divide-y divide-slate-50 border-t border-slate-100">
+          {sorted.map((h, i) => {
+            const color = h.score >= 81 ? '#10B981' : h.score >= 51 ? '#F59E0B' : '#EF4444'
+            const isLatest = i === 0
+            return (
+              <div key={h.fullDate} className={`px-4 py-2.5 flex items-center gap-3 ${isLatest ? 'bg-indigo-50' : ''}`}>
+                <div className="flex-shrink-0 w-14">
+                  <p className="text-[11px] font-semibold text-slate-600">
+                    {new Date(h.fullDate + 'T12:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{h.date}</p>
+                </div>
+                <div className="flex-1 flex gap-1 flex-wrap min-w-0">
+                  {[
+                    { k: 'sleep',     e: '🌙' },
+                    { k: 'water',     e: '💧' },
+                    { k: 'exercise',  e: '🏃' },
+                    { k: 'screen',    e: '📱' },
+                    { k: 'stress',    e: '🧘' },
+                    { k: 'nutrition', e: '🥗' },
+                  ].map(d => (
+                    <span key={d.k} className="text-[10px] text-slate-500 bg-slate-100 px-1 py-0.5 rounded">
+                      {d.e}{h[d.k] ?? '-'}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {isLatest && <span className="text-[10px] bg-indigo-100 text-indigo-600 font-semibold px-1.5 py-0.5 rounded-full">ล่าสุด</span>}
+                  <span className="text-sm font-black" style={{ color }}>{h.score}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, t, domains, currentResult, prevAssessment, history }) {
   const total = calcTotal(answers, domains)
   const level = getLevel(total, t)
   const domainScores = domains.map(d => ({ ...d, score: calcDomainScore(answers, d) }))
@@ -180,6 +234,8 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, t, domains
           ))}
         </div>
       </div>
+
+      <HistorySection history={history} />
 
       <button onClick={onShare}
         className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-semibold rounded-xl py-3 transition-colors">
@@ -246,15 +302,23 @@ function GuideScreen({ onStart, t, domains }) {
 
 export default function Assessment() {
   const [mainTab, setMainTab] = useState('assessment')
-  const [showGuide, setShowGuide] = useState(true)
-  const [step, setStep] = useState(0)
-  const [answers, setAnswers] = useState({})
-  const [result, setResult] = useState(null)
-  const [earnInfo, setEarnInfo] = useState({ pointsEarned: 0, alreadyToday: false })
-  const [prevAssessment, setPrevAssessment] = useState(null)
-  const { saveAssessment } = useHealth()
+  const { saveAssessment, latestAssessment, history } = useHealth()
   const { t, lang } = useLang()
   const navigate = useNavigate()
+
+  const todayStr = new Date().toISOString().split('T')[0]
+  const hasToday = latestAssessment?.assessedAt === todayStr
+
+  const [showGuide, setShowGuide] = useState(() => !hasToday)
+  const [step, setStep] = useState(0)
+  const [answers, setAnswers] = useState({})
+  const [result, setResult] = useState(() => hasToday ? latestAssessment : null)
+  const [earnInfo, setEarnInfo] = useState(() =>
+    hasToday ? { pointsEarned: 0, alreadyToday: true } : { pointsEarned: 0, alreadyToday: false }
+  )
+  const [prevAssessment, setPrevAssessment] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('hc_prev') ?? 'null') } catch { return null }
+  })
 
   const DOMAINS = buildDomains(t)
   const SCALE   = buildScale(t)
@@ -349,6 +413,7 @@ export default function Assessment() {
             domains={DOMAINS}
             currentResult={result}
             prevAssessment={prevAssessment}
+            history={history}
           />
         </div>
       ) : (
