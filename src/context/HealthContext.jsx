@@ -191,6 +191,7 @@ export function HealthProvider({ children }) {
   }
 
   function saveAssessment(data) {
+    const prevAssessment = latestAssessment
     const todayStr = new Date().toISOString().split('T')[0]
     const alreadyToday = history.some(h => h.fullDate === todayStr)
 
@@ -223,7 +224,7 @@ export function HealthProvider({ children }) {
       saveAssessmentToCloud(user.id, user, data).catch(() => {})
     }
 
-    return { pointsEarned, alreadyToday }
+    return { pointsEarned, alreadyToday, prevAssessment }
   }
 
   async function claimActivityPoints() {

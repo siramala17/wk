@@ -63,7 +63,66 @@ function getLevel(total, t) {
   return               { label: a.levelPoor,          emoji: '⚠️', color: 'text-red-600',    bg: 'bg-red-50',    ring: '#EF4444', desc: a.levelPoorDesc }
 }
 
-function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, t, domains }) {
+const COMPARE_DIMS = [
+  { scoreKey: 'sleepScore',     emoji: '🌙', label: 'นอนหลับ' },
+  { scoreKey: 'waterScore',     emoji: '💧', label: 'ดื่มน้ำ' },
+  { scoreKey: 'exerciseScore',  emoji: '🏃', label: 'ออกกำลังกาย' },
+  { scoreKey: 'digitalScore',   emoji: '📱', label: 'ดิจิทัล' },
+  { scoreKey: 'stressScore',    emoji: '🧘', label: 'ความเครียด' },
+  { scoreKey: 'nutritionScore', emoji: '🥗', label: 'โภชนาการ' },
+]
+
+function DeltaBadge({ delta }) {
+  if (delta === 0) return <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400 font-semibold min-w-[2.5rem] text-center inline-block">—</span>
+  return (
+    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold min-w-[2.5rem] text-center inline-block ${delta > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+      {delta > 0 ? '+' : ''}{delta}
+    </span>
+  )
+}
+
+function BeforeAfterSection({ currentResult, prevAssessment }) {
+  if (!prevAssessment) return null
+  const overallDelta = (currentResult.overallScore ?? 0) - (prevAssessment.overallScore ?? 0)
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="px-4 py-3 bg-slate-800 flex items-center justify-between">
+        <p className="text-white font-bold text-sm">🔄 เปรียบเทียบกับครั้งก่อน</p>
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${overallDelta > 0 ? 'bg-green-500 text-white' : overallDelta < 0 ? 'bg-red-500 text-white' : 'bg-slate-600 text-white'}`}>
+          {overallDelta > 0 ? '↑ +' : overallDelta < 0 ? '↓ ' : ''}{overallDelta === 0 ? 'เท่าเดิม' : overallDelta}
+        </span>
+      </div>
+
+      <div className="px-4 py-3 flex items-center gap-2 bg-slate-50 border-b border-slate-100">
+        <span className="text-base">🏅</span>
+        <span className="text-sm font-semibold text-slate-700 flex-1">คะแนนรวม</span>
+        <span className="text-xs text-slate-400 w-7 text-right">{prevAssessment.overallScore ?? 0}</span>
+        <span className="text-slate-300 text-xs mx-1">→</span>
+        <span className="text-sm font-bold text-slate-800 w-7 text-right">{currentResult.overallScore ?? 0}</span>
+        <div className="w-14 text-right"><DeltaBadge delta={overallDelta} /></div>
+      </div>
+
+      {COMPARE_DIMS.map(d => {
+        const prev = prevAssessment[d.scoreKey] ?? 0
+        const curr = currentResult[d.scoreKey] ?? 0
+        const delta = curr - prev
+        return (
+          <div key={d.scoreKey} className="px-4 py-2.5 flex items-center gap-2 border-b border-slate-50 last:border-0">
+            <span className="text-sm">{d.emoji}</span>
+            <span className="text-xs text-slate-600 flex-1">{d.label}</span>
+            <span className="text-xs text-slate-400 w-7 text-right">{prev}</span>
+            <span className="text-slate-200 text-[10px] mx-1">→</span>
+            <span className="text-xs font-semibold text-slate-800 w-7 text-right">{curr}</span>
+            <div className="w-14 text-right"><DeltaBadge delta={delta} /></div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, t, domains, currentResult, prevAssessment }) {
   const total = calcTotal(answers, domains)
   const level = getLevel(total, t)
   const domainScores = domains.map(d => ({ ...d, score: calcDomainScore(answers, d) }))
@@ -101,6 +160,8 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, t, domains
           </div>
         </div>
       )}
+
+      <BeforeAfterSection currentResult={currentResult} prevAssessment={prevAssessment} />
 
       <div>
         <h3 className="font-bold text-slate-700 text-sm mb-2">{a.byDomain}</h3>
@@ -190,6 +251,7 @@ export default function Assessment() {
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
   const [earnInfo, setEarnInfo] = useState({ pointsEarned: 0, alreadyToday: false })
+  const [prevAssessment, setPrevAssessment] = useState(null)
   const { saveAssessment } = useHealth()
   const { t, lang } = useLang()
   const navigate = useNavigate()
@@ -221,6 +283,7 @@ export default function Assessment() {
       const assessment     = { sleepScore, waterScore, exerciseScore, digitalScore, stressScore, nutritionScore, overallScore, answers }
       const info = saveAssessment(assessment)
       setEarnInfo(info)
+      setPrevAssessment(info.prevAssessment ?? null)
       setResult(assessment)
       window.scrollTo(0, 0)
     }
@@ -284,6 +347,8 @@ export default function Assessment() {
             onShare={handleShare}
             t={t}
             domains={DOMAINS}
+            currentResult={result}
+            prevAssessment={prevAssessment}
           />
         </div>
       ) : (
