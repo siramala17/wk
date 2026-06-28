@@ -7,6 +7,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useHealth } from '../context/HealthContext'
 import { saveBodyComposition, fetchBodyCompositions } from '../services/userSync'
+import BMI from './BMI'
 
 const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
 
@@ -258,6 +259,7 @@ export default function BodyComposition() {
   }
 
   const isUpdate = savedDates.has(saveDate)
+  const [activeTab, setActiveTab] = useState('body')
 
   if (historyLoading) {
     return (
@@ -269,8 +271,36 @@ export default function BodyComposition() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-5 animate-fade-in">
-      {/* Header */}
+    <>
+      {/* Tab switcher */}
+      <div className="max-w-lg mx-auto px-4 pt-4 pb-0">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
+          <button
+            onClick={() => setActiveTab('body')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'body' ? 'bg-white text-cyan-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Activity size={15} />
+            วิเคราะห์ร่างกาย
+          </button>
+          <button
+            onClick={() => setActiveTab('bmi')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'bmi' ? 'bg-white text-yellow-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Scale size={15} />
+            คำนวณ BMI
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'bmi' ? (
+        <BMI />
+      ) : (
+        <div className="max-w-lg mx-auto px-4 py-5 animate-fade-in">
+          {/* Header */}
       <div className="rounded-3xl p-5 text-white mb-5 shadow-lg relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #0e7490, #22d3ee)' }}>
         <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10" />
@@ -613,6 +643,8 @@ export default function BodyComposition() {
           </p>
         </div>
       )}
-    </div>
+        </div>
+      )}
+    </>
   )
 }

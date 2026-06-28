@@ -1,10 +1,9 @@
 ﻿import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, ChevronLeft, Check, AlertCircle, ClipboardList, Scale, ChevronDown } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Check, AlertCircle, ChevronDown } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
-import BMI from './BMI'
 import Survey from './Survey'
 
 const DOMAIN_REFS = {
@@ -307,7 +306,6 @@ function GuideScreen({ onStart, t, domains }) {
 }
 
 export default function Assessment() {
-  const [mainTab, setMainTab] = useState('assessment')
   const { saveAssessment, latestAssessment, history } = useHealth()
   const { t, lang } = useLang()
   const navigate = useNavigate()
@@ -377,33 +375,7 @@ export default function Assessment() {
 
   return (
     <>
-      {/* Tab switcher */}
-      <div className="max-w-2xl mx-auto px-4 pt-4">
-        <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
-          <button
-            onClick={() => setMainTab('assessment')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              mainTab === 'assessment' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <ClipboardList size={15} />
-            {a.tabAssess}
-          </button>
-          <button
-            onClick={() => setMainTab('bmi')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              mainTab === 'bmi' ? 'bg-white text-yellow-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Scale size={15} />
-            {a.tabBmi}
-          </button>
-        </div>
-      </div>
-
-      {mainTab === 'bmi' ? (
-        <BMI />
-      ) : showGuide ? (
+      {showGuide ? (
         <GuideScreen onStart={() => setShowGuide(false)} t={t} domains={DOMAINS} />
       ) : result ? (
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-6">
