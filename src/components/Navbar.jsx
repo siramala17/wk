@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Activity, Menu, X, Star, Shield, User, LogOut } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
+import ChatBot from './ChatBot'
 
 export default function Navbar() {
   const { pathname } = useLocation()
@@ -91,6 +92,8 @@ export default function Navbar() {
             <Star size={13} className="fill-yellow-400 text-yellow-400" />
             {user.points}
           </Link>
+
+          <ChatBot />
 
           <Link to="/admin" title="Admin Panel"
             className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
