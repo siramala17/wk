@@ -35,17 +35,42 @@ function getRiskLevel(total) {
 }
 
 function ObesityAssessment({ bmi, weight, height, category }) {
-  const [answers, setAnswers]   = useState(Array(15).fill(0))
-  const [aiResult, setAiResult] = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
-  const [done, setDone]         = useState(false)
+  const { user } = useHealth()
+  const historyKey = `obesity_history_${user?.id || 'guest'}`
+
+  const [answers, setAnswers]         = useState(Array(15).fill(0))
+  const [aiResult, setAiResult]       = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
+  const [done, setDone]               = useState(false)
+  const [saved, setSaved]             = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [history, setHistory]         = useState(() => {
+    try { return JSON.parse(localStorage.getItem(`obesity_history_${user?.id || 'guest'}`) || '[]') }
+    catch { return [] }
+  })
 
   const answered  = answers.filter(v => v > 0).length
   const total     = answers.reduce((s, v) => s + v, 0)
   const allDone   = answered === 15
   const risk      = getRiskLevel(total)
   const pct       = (answered / 15) * 100
+
+  function saveRecord(resultText) {
+    const record = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      bmi, weight, height, category,
+      total,
+      riskLabel: getRiskLevel(total).label,
+      answers: [...answers],
+      aiResult: resultText,
+    }
+    const updated = [record, ...history].slice(0, 20)
+    setHistory(updated)
+    localStorage.setItem(historyKey, JSON.stringify(updated))
+    setSaved(true)
+  }
 
   async function analyze() {
     if (!allDone) return
@@ -55,20 +80,30 @@ function ObesityAssessment({ bmi, weight, height, category }) {
         `ข้อ ${i + 1}: ${q} → ${answers[i]} (${SCORE_LABELS[answers[i] - 1]})`
       ).join('\n')
 
-      const prompt = `ผู้ใช้มีข้อมูล BMI และพฤติกรรมดังนี้:
-- BMI: ${bmi} (${category})
-- น้ำหนัก: ${weight} kg · ส่วนสูง: ${height} cm
-- คะแนนแบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน: ${total}/75 (${risk.label})
+      const prompt = `คุณเป็นผู้เชี่ยวชาญด้านสุขภาพที่อ้างอิงมาตรฐาน WHO (World Health Organization) อย่างเคร่งครัด
 
-แบบประเมิน (1 = ไม่เคย … 5 = เป็นประจำ):
+ข้อมูลผู้ใช้:
+- BMI: ${bmi} (${category}) — เกณฑ์ WHO สำหรับประชากรเอเชีย: ปกติ 18.5–22.9, เกินเล็กน้อย 23–24.9, เกิน ≥25, โรคอ้วน ≥30
+- น้ำหนัก: ${weight} kg · ส่วนสูง: ${height} cm
+- คะแนนแบบประเมินพฤติกรรมเสี่ยง: ${total}/75 (${risk.label})
+
+ผลแบบประเมิน (1 = ไม่เคย … 5 = เป็นประจำ):
 ${qText}
 
-วิเคราะห์:
-1. **สาเหตุหลัก** ที่ทำให้น้ำหนักอยู่ในระดับนี้ โดยอ้างอิงพฤติกรรมที่คะแนนสูงสุด
-2. **3 พฤติกรรมเสี่ยงสูงสุด** ที่ควรแก้ไขเร่งด่วน พร้อมเหตุผล
-3. **คำแนะนำเฉพาะตัว** ที่ปฏิบัติได้จริงในชีวิตประจำวัน
+วิเคราะห์โดยอ้างอิงมาตรฐาน WHO ดังนี้:
 
-ตอบภาษาไทย กระชับชัดเจน ใช้หัวข้อย่อย ไม่เกิน 350 คำ`
+1. **สาเหตุหลักตามเกณฑ์ WHO** — อธิบายว่าพฤติกรรมใด (คะแนนสูง) ส่งผลต่อ BMI ปัจจุบัน อ้างอิงเกณฑ์ WHO ที่เกี่ยวข้อง
+
+2. **3 พฤติกรรมเสี่ยงสูงสุดที่ WHO ระบุว่าเป็นปัจจัยหลัก** — ระบุว่า WHO กำหนดมาตรฐานไว้เท่าใด และผู้ใช้ต่างจากมาตรฐานอย่างไร เช่น:
+   - WHO แนะนำออกกำลังกายระดับปานกลาง ≥150 นาที/สัปดาห์ (หรือหนัก ≥75 นาที/สัปดาห์)
+   - WHO แนะนำผักและผลไม้ ≥400 กรัม (5 ส่วน) ต่อวัน
+   - WHO กำหนดน้ำตาลเพิ่ม <10% ของพลังงานรวมต่อวัน (ควรลดเหลือ <5%)
+   - WHO แนะนำนอนหลับ 7–9 ชั่วโมง/วัน สำหรับผู้ใหญ่
+   - WHO แนะนำลดพฤติกรรมนั่งนิ่ง ไม่เกิน 8 ชั่วโมง/วัน
+
+3. **คำแนะนำเฉพาะตัวตามแนวทาง WHO** — ระบุเป้าหมายที่วัดผลได้และปฏิบัติได้จริง พร้อมอ้างอิง WHO Guideline ที่เกี่ยวข้อง
+
+ตอบภาษาไทย กระชับชัดเจน ใช้หัวข้อย่อย ไม่เกิน 450 คำ`
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -86,8 +121,10 @@ ${qText}
       })
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d?.error?.message || `API Error ${res.status}`) }
       const data = await res.json()
-      setAiResult(data.content[0].text.trim())
+      const resultText = data.content[0].text.trim()
+      setAiResult(resultText)
       setDone(true)
+      saveRecord(resultText)
     } catch (err) {
       setError(err.message || 'เกิดข้อผิดพลาด')
     } finally {
@@ -197,21 +234,85 @@ ${qText}
       {/* AI Result */}
       {done && aiResult && (
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-purple-100">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
-              🤖
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
+                🤖
+              </div>
+              <div>
+                <p className="font-bold text-slate-700 text-sm">ผลการวิเคราะห์โดย AI</p>
+                <p className="text-[10px] text-slate-400">อ้างอิงมาตรฐาน WHO</p>
+              </div>
             </div>
-            <div>
-              <p className="font-bold text-slate-700 text-sm">ผลการวิเคราะห์โดย AI</p>
-              <p className="text-[10px] text-slate-400">อ้างอิงจากพฤติกรรมและค่า BMI ของคุณ</p>
-            </div>
+            {saved && (
+              <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1">
+                ✓ บันทึกแล้ว
+              </span>
+            )}
           </div>
           <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{aiResult}</div>
-          <button onClick={() => { setDone(false); setAiResult('') }}
+          <button onClick={() => { setDone(false); setAiResult(''); setSaved(false) }}
             className="mt-4 text-xs text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-1">
             <RefreshCw size={12} /> วิเคราะห์ใหม่
           </button>
+        </div>
+      )}
+
+      {/* History */}
+      {history.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <button
+            onClick={() => setShowHistory(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-3"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm">📋</span>
+              <p className="text-sm font-bold text-slate-600">ประวัติการประเมิน</p>
+              <span className="text-[10px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">{history.length}</span>
+            </div>
+            {showHistory ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+          </button>
+          {showHistory && (
+            <div className="px-4 pb-4 space-y-3">
+              {history.map(rec => {
+                const r = getRiskLevel(rec.total)
+                const d = new Date(rec.date)
+                const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })
+                const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                return (
+                  <HistoryCard key={rec.id} rec={rec} r={r} dateStr={dateStr} timeStr={timeStr} />
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function HistoryCard({ rec, r, dateStr, timeStr }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className={`rounded-xl border ${r.border} overflow-hidden`}>
+      <button onClick={() => setOpen(v => !v)}
+        className={`w-full flex items-center justify-between px-3 py-2.5 ${r.bg}`}>
+        <div className="flex items-center gap-2 text-left">
+          <div>
+            <p className="text-xs font-bold text-slate-700">{dateStr} · {timeStr}</p>
+            <p className="text-[10px] text-slate-500">BMI {rec.bmi} · {rec.category} · คะแนน {rec.total}/75</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/70 ${r.color}`}>{r.label}</span>
+          {open ? <ChevronUp size={13} className="text-slate-400" /> : <ChevronDown size={13} className="text-slate-400" />}
+        </div>
+      </button>
+      {open && rec.aiResult && (
+        <div className="px-3 pb-3 pt-2 bg-white border-t border-slate-100">
+          <p className="text-[10px] font-bold text-slate-400 mb-1.5">ผลวิเคราะห์ AI (อ้างอิง WHO)</p>
+          <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{rec.aiResult}</p>
         </div>
       )}
     </div>
