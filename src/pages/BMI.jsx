@@ -7,6 +7,82 @@ import ScoreRing from '../components/ScoreRing'
 
 const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
 
+function renderInline(text) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/)
+  return parts.map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i} className="font-semibold text-slate-800">{part.slice(2, -2)}</strong>
+      : part
+  )
+}
+
+const SECTION_STYLES = {
+  '1': { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-700', dot: '#f97316' },
+  '2': { bg: 'bg-red-50',    border: 'border-red-300',    text: 'text-red-700',    dot: '#ef4444' },
+  '3': { bg: 'bg-emerald-50',border: 'border-emerald-300',text: 'text-emerald-700',dot: '#10b981' },
+}
+
+function renderMarkdown(text) {
+  const lines = text.split('\n')
+  const elements = []
+  let key = 0
+  let sectionNum = 0
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const trimmed = line.trim()
+
+    if (!trimmed) { elements.push(<div key={key++} className="h-1.5" />); continue }
+
+    // ### heading or **1. heading**
+    const isH3 = trimmed.startsWith('### ') || trimmed.startsWith('## ')
+    const isBoldNum = /^\*\*\d+\./.test(trimmed)
+    if (isH3 || isBoldNum) {
+      sectionNum++
+      const content = trimmed.replace(/^#+\s*/, '').replace(/^\*\*(.*)\*\*$/, '$1')
+      const s = SECTION_STYLES[String(sectionNum)] || { bg: 'bg-purple-50', border: 'border-purple-300', text: 'text-purple-700' }
+      elements.push(
+        <div key={key++} className={`${s.bg} border-l-4 ${s.border} pl-3 pr-2 py-2 rounded-r-xl mt-4 mb-1`}>
+          <p className={`font-bold text-sm ${s.text}`}>{renderInline(content)}</p>
+        </div>
+      )
+      continue
+    }
+
+    // - bullet
+    if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+      const content = trimmed.slice(2)
+      // detect **label:** prefix
+      const labelMatch = content.match(/^\*\*([^*]+):\*\*\s*(.*)/)
+      if (labelMatch) {
+        elements.push(
+          <div key={key++} className="flex items-start gap-2 py-0.5 pl-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0 mt-1.5" />
+            <p className="text-xs text-slate-600 leading-relaxed">
+              <span className="font-semibold text-slate-700">{labelMatch[1]}:</span>{' '}
+              {renderInline(labelMatch[2])}
+            </p>
+          </div>
+        )
+      } else {
+        elements.push(
+          <div key={key++} className="flex items-start gap-2 py-0.5 pl-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0 mt-1.5" />
+            <p className="text-xs text-slate-600 leading-relaxed">{renderInline(content)}</p>
+          </div>
+        )
+      }
+      continue
+    }
+
+    // plain paragraph
+    elements.push(
+      <p key={key++} className="text-xs text-slate-600 leading-relaxed">{renderInline(trimmed)}</p>
+    )
+  }
+  return elements
+}
+
 const OBESITY_QUESTIONS = [
   'รับประทานอาหารทอดหรืออาหารที่มีไขมันสูง',
   'รับประทานอาหารจานด่วนหรืออาหารสำเร็จรูป',
@@ -233,29 +309,40 @@ ${qText}
 
       {/* AI Result */}
       {done && aiResult && (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-purple-100">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
-                🤖
-              </div>
+        <div className="rounded-2xl overflow-hidden shadow-sm border border-purple-100">
+          {/* Card header */}
+          <div className="px-5 py-4 flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-lg">🤖</div>
               <div>
-                <p className="font-bold text-slate-700 text-sm">ผลการวิเคราะห์โดย AI</p>
-                <p className="text-[10px] text-slate-400">อ้างอิงมาตรฐาน WHO</p>
+                <p className="font-bold text-white text-sm">ผลการวิเคราะห์โดย AI</p>
+                <p className="text-purple-200 text-[10px]">อ้างอิงมาตรฐาน WHO • {new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
               </div>
             </div>
             {saved && (
-              <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1">
+              <span className="text-[10px] font-bold text-white bg-white/20 px-2.5 py-1 rounded-full flex items-center gap-1">
                 ✓ บันทึกแล้ว
               </span>
             )}
           </div>
-          <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{aiResult}</div>
-          <button onClick={() => { setDone(false); setAiResult(''); setSaved(false) }}
-            className="mt-4 text-xs text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-1">
-            <RefreshCw size={12} /> วิเคราะห์ใหม่
-          </button>
+          {/* WHO badge */}
+          <div className="bg-purple-50 border-b border-purple-100 px-5 py-2 flex items-center gap-2">
+            <span className="text-[10px] font-bold text-purple-600 bg-white border border-purple-200 px-2 py-0.5 rounded-full">WHO Guideline</span>
+            <span className="text-[10px] text-purple-400">การวิเคราะห์เฉพาะบุคคลตามพฤติกรรมจริง</span>
+          </div>
+          {/* Content */}
+          <div className="bg-white px-5 py-4 space-y-0.5">
+            {renderMarkdown(aiResult)}
+          </div>
+          {/* Footer */}
+          <div className="bg-slate-50 border-t border-slate-100 px-5 py-3 flex items-center justify-between">
+            <p className="text-[10px] text-slate-400">* ไม่ใช่คำวินิจฉัยทางการแพทย์</p>
+            <button onClick={() => { setDone(false); setAiResult(''); setSaved(false) }}
+              className="text-xs text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-1">
+              <RefreshCw size={11} /> วิเคราะห์ใหม่
+            </button>
+          </div>
         </div>
       )}
 
@@ -311,8 +398,8 @@ function HistoryCard({ rec, r, dateStr, timeStr }) {
       </button>
       {open && rec.aiResult && (
         <div className="px-3 pb-3 pt-2 bg-white border-t border-slate-100">
-          <p className="text-[10px] font-bold text-slate-400 mb-1.5">ผลวิเคราะห์ AI (อ้างอิง WHO)</p>
-          <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{rec.aiResult}</p>
+          <p className="text-[10px] font-bold text-slate-400 mb-2">ผลวิเคราะห์ AI (อ้างอิง WHO)</p>
+          <div className="space-y-0.5">{renderMarkdown(rec.aiResult)}</div>
         </div>
       )}
     </div>
