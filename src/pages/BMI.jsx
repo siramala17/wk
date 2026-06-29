@@ -5,6 +5,219 @@ import { useLang } from '../context/LangContext'
 import { calcBmiScore, getBmiCategory } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
 
+const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
+
+const OBESITY_QUESTIONS = [
+  'รับประทานอาหารทอดหรืออาหารที่มีไขมันสูง',
+  'รับประทานอาหารจานด่วนหรืออาหารสำเร็จรูป',
+  'ดื่มเครื่องดื่มที่มีน้ำตาล เช่น น้ำอัดลม ชานม กาแฟปรุงสำเร็จ',
+  'รับประทานขนมหวาน เบเกอรี่ หรือของว่างบ่อยครั้ง',
+  'รับประทานอาหารมื้อดึกก่อนนอน',
+  'รับประทานอาหารในปริมาณมากเกินความต้องการของร่างกาย',
+  'รับประทานผักและผลไม้น้อยกว่า 5 ส่วนต่อวัน',
+  'ออกกำลังกายน้อยกว่า 150 นาทีต่อสัปดาห์',
+  'ใช้เวลานั่งทำงาน ดูโทรศัพท์ หรือดูโทรทัศน์ติดต่อกันนานเกิน 2 ชั่วโมง',
+  'นอนหลับพักผ่อนน้อยกว่า 7 ชั่วโมงต่อวัน',
+  'รับประทานอาหารเมื่อมีความเครียดหรืออารมณ์ไม่ดี',
+  'ดื่มเครื่องดื่มแอลกอฮอล์เป็นประจำ',
+  'ไม่ควบคุมน้ำหนักหรือไม่ติดตามน้ำหนักตัวของตนเอง',
+  'ใช้รถยนต์หรือรถจักรยานยนต์แทนการเดินในระยะทางใกล้',
+  'มีกิจกรรมทางกายระดับปานกลางถึงหนักน้อยกว่า 3 วันต่อสัปดาห์',
+]
+
+const SCORE_LABELS = ['ไม่เคย', 'นานๆ ครั้ง', 'บางครั้ง', 'บ่อยครั้ง', 'เป็นประจำ']
+
+function getRiskLevel(total) {
+  if (total <= 30) return { label: 'ความเสี่ยงต่ำ',     color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200', dot: '#10b981' }
+  if (total <= 45) return { label: 'ความเสี่ยงปานกลาง', color: 'text-yellow-700',  bg: 'bg-yellow-50',   border: 'border-yellow-200',  dot: '#f59e0b' }
+  if (total <= 60) return { label: 'ความเสี่ยงสูง',      color: 'text-orange-700',  bg: 'bg-orange-50',   border: 'border-orange-200',  dot: '#f97316' }
+  return                   { label: 'ความเสี่ยงสูงมาก',  color: 'text-red-700',     bg: 'bg-red-50',      border: 'border-red-200',     dot: '#ef4444' }
+}
+
+function ObesityAssessment({ bmi, weight, height, category }) {
+  const [answers, setAnswers]   = useState(Array(15).fill(0))
+  const [aiResult, setAiResult] = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState('')
+  const [done, setDone]         = useState(false)
+
+  const answered  = answers.filter(v => v > 0).length
+  const total     = answers.reduce((s, v) => s + v, 0)
+  const allDone   = answered === 15
+  const risk      = getRiskLevel(total)
+  const pct       = (answered / 15) * 100
+
+  async function analyze() {
+    if (!allDone) return
+    setLoading(true); setError('')
+    try {
+      const qText = OBESITY_QUESTIONS.map((q, i) =>
+        `ข้อ ${i + 1}: ${q} → ${answers[i]} (${SCORE_LABELS[answers[i] - 1]})`
+      ).join('\n')
+
+      const prompt = `ผู้ใช้มีข้อมูล BMI และพฤติกรรมดังนี้:
+- BMI: ${bmi} (${category})
+- น้ำหนัก: ${weight} kg · ส่วนสูง: ${height} cm
+- คะแนนแบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน: ${total}/75 (${risk.label})
+
+แบบประเมิน (1 = ไม่เคย … 5 = เป็นประจำ):
+${qText}
+
+วิเคราะห์:
+1. **สาเหตุหลัก** ที่ทำให้น้ำหนักอยู่ในระดับนี้ โดยอ้างอิงพฤติกรรมที่คะแนนสูงสุด
+2. **3 พฤติกรรมเสี่ยงสูงสุด** ที่ควรแก้ไขเร่งด่วน พร้อมเหตุผล
+3. **คำแนะนำเฉพาะตัว** ที่ปฏิบัติได้จริงในชีวิตประจำวัน
+
+ตอบภาษาไทย กระชับชัดเจน ใช้หัวข้อย่อย ไม่เกิน 350 คำ`
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      })
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d?.error?.message || `API Error ${res.status}`) }
+      const data = await res.json()
+      setAiResult(data.content[0].text.trim())
+      setDone(true)
+    } catch (err) {
+      setError(err.message || 'เกิดข้อผิดพลาด')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="rounded-3xl p-5 text-white relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
+        <div className="absolute -top-5 -right-5 w-24 h-24 rounded-full bg-white/10" />
+        <div className="relative">
+          <h2 className="font-black text-base">แบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน</h2>
+          <p className="text-purple-200 text-xs mt-0.5">ตอบ 15 ข้อ เพื่อให้ AI วิเคราะห์สาเหตุเฉพาะตัว</p>
+          <div className="mt-3 space-y-1.5">
+            <div className="flex justify-between text-xs text-purple-200">
+              <span>ตอบแล้ว {answered}/15 ข้อ</span>
+              {answered > 0 && <span className="font-bold text-white">คะแนนสะสม {total}/75</span>}
+            </div>
+            <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Score legend */}
+      <div className="flex gap-1 overflow-x-auto pb-1">
+        {SCORE_LABELS.map((l, i) => (
+          <div key={i} className="flex-1 min-w-0 text-center bg-slate-50 rounded-xl py-1.5 px-1">
+            <p className="text-xs font-black text-slate-700">{i + 1}</p>
+            <p className="text-[9px] text-slate-400 leading-tight mt-0.5">{l}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Questions */}
+      <div className="space-y-3">
+        {OBESITY_QUESTIONS.map((q, i) => {
+          const picked = answers[i]
+          return (
+            <div key={i} className={`bg-white rounded-2xl p-4 shadow-sm border transition-colors ${
+              picked > 0 ? 'border-purple-200' : 'border-slate-100'
+            }`}>
+              <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
+                <span className="text-purple-500 font-black mr-1.5">{i + 1}.</span>{q}
+              </p>
+              <div className="flex gap-1.5">
+                {[1, 2, 3, 4, 5].map(v => (
+                  <button key={v}
+                    onClick={() => setAnswers(prev => prev.map((a, idx) => idx === i ? v : a))}
+                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                      picked === v
+                        ? 'bg-purple-600 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-500 hover:bg-purple-100 hover:text-purple-600'
+                    }`}>
+                    {v}
+                  </button>
+                ))}
+              </div>
+              {picked > 0 && (
+                <p className="text-[10px] text-purple-500 font-semibold mt-1.5 text-right">{SCORE_LABELS[picked - 1]}</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Risk summary */}
+      {allDone && (
+        <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-4 flex items-center justify-between`}>
+          <div>
+            <p className="text-xs text-slate-500">คะแนนรวมพฤติกรรมเสี่ยง</p>
+            <p className={`text-3xl font-black mt-0.5 ${risk.color}`}>
+              {total} <span className="text-base font-normal text-slate-400">/ 75</span>
+            </p>
+          </div>
+          <div className="text-right">
+            <span className={`inline-block px-4 py-2 rounded-2xl font-bold text-sm ${risk.color} bg-white/70 border ${risk.border}`}>
+              {risk.label}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-600">{error}</div>
+      )}
+
+      {/* Analyze button */}
+      {!done && (
+        <button onClick={analyze} disabled={!allDone || loading}
+          className="w-full py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)', boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}>
+          {loading
+            ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> AI กำลังวิเคราะห์...</>
+            : <>🔍 วิเคราะห์สาเหตุด้วย AI</>}
+        </button>
+      )}
+
+      {!allDone && answered < 15 && (
+        <p className="text-center text-xs text-slate-400">ตอบให้ครบ {15 - answered} ข้อที่เหลือเพื่อวิเคราะห์</p>
+      )}
+
+      {/* AI Result */}
+      {done && aiResult && (
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-purple-100">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
+              style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
+              🤖
+            </div>
+            <div>
+              <p className="font-bold text-slate-700 text-sm">ผลการวิเคราะห์โดย AI</p>
+              <p className="text-[10px] text-slate-400">อ้างอิงจากพฤติกรรมและค่า BMI ของคุณ</p>
+            </div>
+          </div>
+          <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{aiResult}</div>
+          <button onClick={() => { setDone(false); setAiResult('') }}
+            className="mt-4 text-xs text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-1">
+            <RefreshCw size={12} /> วิเคราะห์ใหม่
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function getBmiAdvice(lang) {
   if (lang === 'en') {
     return {
@@ -297,6 +510,13 @@ export default function BMI() {
           <IdealWeightCard height={result.height} t={t} />
 
           <BmiRecommendations bmi={result.bmi} lang={lang} />
+
+          <ObesityAssessment
+            bmi={result.bmi}
+            weight={result.weight}
+            height={result.height}
+            category={result.category}
+          />
 
           {/* BMI Reference Table */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-indigo-50">
