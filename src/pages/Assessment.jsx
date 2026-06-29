@@ -8,7 +8,6 @@ import Survey from './Survey'
 
 const DOMAIN_REFS = {
   sleep:     'สมาคมโรคจากการหลับแห่งประเทศไทย (Sleep Society of Thailand) และกรมอนามัย',
-  water:     'สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข',
   exercise:  'กองกิจกรรมทางกายเพื่อสุขภาพ กรมอนามัย',
   digital:   'สำนักงานพัฒนาธุรกรรมทางอิเล็กทรอนิกส์ (ETDA) ร่วมกับราชวิทยาลัยกุมารแพทย์แห่งประเทศไทย',
   stress:    'กรมสุขภาพจิต กระทรวงสาธารณสุข',
@@ -18,11 +17,10 @@ const DOMAIN_REFS = {
 // Language-neutral domain config (colors, emojis, question IDs)
 const DOMAIN_CONFIG = [
   { key: 'sleep',     emoji: '🌙', color: 'bg-indigo-500',  light: 'bg-indigo-50',  text: 'text-indigo-600',  border: 'border-indigo-200',  ring: '#6366f1', qIds: [1,2,3,4],     reverses: [false,false,false,true]  },
-  { key: 'water',     emoji: '💧', color: 'bg-cyan-500',    light: 'bg-cyan-50',    text: 'text-cyan-600',    border: 'border-cyan-200',    ring: '#06B6D4', qIds: [5,6,7,8],     reverses: [false,false,true,true]   },
-  { key: 'nutrition', emoji: '🥗', color: 'bg-orange-500',  light: 'bg-orange-50',  text: 'text-orange-600',  border: 'border-orange-200',  ring: '#F97316', qIds: [9,10,11,12],  reverses: [false,false,false,false]  },
-  { key: 'exercise',  emoji: '🏃', color: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', ring: '#10B981', qIds: [13,14,15,16], reverses: [false,false,false,true]  },
-  { key: 'digital',   emoji: '📱', color: 'bg-purple-500',  light: 'bg-purple-50',  text: 'text-purple-600',  border: 'border-purple-200',  ring: '#8B5CF6', qIds: [17,18,19,20], reverses: [true,false,false,true]   },
-  { key: 'stress',    emoji: '🧘', color: 'bg-yellow-500',  light: 'bg-yellow-50',  text: 'text-yellow-600',  border: 'border-yellow-200',  ring: '#F59E0B', qIds: [21,22,23,24], reverses: [true,true,false,true]    },
+  { key: 'nutrition', emoji: '🥗', color: 'bg-orange-500',  light: 'bg-orange-50',  text: 'text-orange-600',  border: 'border-orange-200',  ring: '#F97316', qIds: [5,6,7,8],     reverses: [false,false,false,false]  },
+  { key: 'exercise',  emoji: '🏃', color: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', ring: '#10B981', qIds: [9,10,11,12],  reverses: [false,false,false,true]  },
+  { key: 'digital',   emoji: '📱', color: 'bg-purple-500',  light: 'bg-purple-50',  text: 'text-purple-600',  border: 'border-purple-200',  ring: '#8B5CF6', qIds: [13,14,15,16], reverses: [true,false,false,true]   },
+  { key: 'stress',    emoji: '🧘', color: 'bg-yellow-500',  light: 'bg-yellow-50',  text: 'text-yellow-600',  border: 'border-yellow-200',  ring: '#F59E0B', qIds: [17,18,19,20], reverses: [true,true,false,true]    },
 ]
 
 function buildDomains(t) {
@@ -65,7 +63,6 @@ function getLevel(total, t) {
 
 const COMPARE_DIMS = [
   { scoreKey: 'sleepScore',     emoji: '🌙', label: 'นอนหลับ' },
-  { scoreKey: 'waterScore',     emoji: '💧', label: 'ดื่มน้ำ' },
   { scoreKey: 'nutritionScore', emoji: '🥗', label: 'โภชนาการ' },
   { scoreKey: 'exerciseScore',  emoji: '🏃', label: 'ออกกำลังกาย' },
   { scoreKey: 'digitalScore',   emoji: '📱', label: 'ดิจิทัล' },
@@ -340,13 +337,12 @@ export default function Assessment() {
     } else {
       const domainByKey    = Object.fromEntries(DOMAINS.map(d => [d.key, d]))
       const sleepScore     = calcDomainScore(answers, domainByKey.sleep)
-      const waterScore     = calcDomainScore(answers, domainByKey.water)
       const exerciseScore  = calcDomainScore(answers, domainByKey.exercise)
       const digitalScore   = calcDomainScore(answers, domainByKey.digital)
       const stressScore    = calcDomainScore(answers, domainByKey.stress)
       const nutritionScore = calcDomainScore(answers, domainByKey.nutrition)
       const overallScore   = calcTotal(answers, DOMAINS)
-      const assessment     = { sleepScore, waterScore, exerciseScore, digitalScore, stressScore, nutritionScore, overallScore, answers }
+      const assessment     = { sleepScore, exerciseScore, digitalScore, stressScore, nutritionScore, overallScore, answers }
       const info = saveAssessment(assessment)
       setEarnInfo(info)
       setPrevAssessment(info.prevAssessment ?? null)

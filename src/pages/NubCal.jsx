@@ -368,9 +368,6 @@ export default function NubCal() {
   const tr = t.trainer
   const MEALS = tr.meals
   const { calorieLog = {}, addCalorieEntry, deleteCalorieEntry, user = {}, bmiData } = ctx
-  const waterLog = ctx.waterLog || {}
-  const addGlass = ctx.addGlass || (() => {})
-  const removeGlass = ctx.removeGlass || (() => {})
 
   const [viewDate, setViewDate] = useState(TODAY())
   const [showCamera, setShowCamera] = useState(false)
@@ -425,8 +422,6 @@ export default function NubCal() {
   const totalPro  = entries.reduce((s, e) => s + (e.protein  || 0), 0)
   const totalCarb = entries.reduce((s, e) => s + (e.carbs    || 0), 0)
   const totalFat  = entries.reduce((s, e) => s + (e.fat      || 0), 0)
-  const glasses   = waterLog?.[viewDate] || 0
-
   const filteredFoods = useMemo(() => {
     let list = FOOD_DB
     if (activeCat) list = list.filter(f => f.cat === activeCat)
@@ -776,31 +771,6 @@ export default function NubCal() {
                 )
               })}
 
-              {/* Water */}
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3.5">
-                  <span className="font-semibold text-gray-900 text-sm">{tr.waterTitle}</span>
-                  <span className="text-sm text-gray-500 font-medium">{glasses * GLASS_ML > 0 ? `${glasses * GLASS_ML} มล.` : '—'}</span>
-                </div>
-                <div className="px-4 pb-3">
-                  <div className="flex gap-2 flex-wrap">
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <button key={i}
-                        onClick={() => i < glasses ? removeGlass(viewDate) : addGlass(viewDate)}
-                        className="w-10 h-12 flex items-center justify-center rounded-xl hover:bg-teal-50 transition-colors">
-                        <span className={`text-2xl transition-opacity ${i < glasses ? 'opacity-100' : 'opacity-20'}`}>🥤</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {isToday && (
-                  <button onClick={() => addGlass(viewDate)}
-                    className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
-                    <Plus size={15} />
-                    {tr.waterLogBtn}
-                  </button>
-                )}
-              </div>
             </div>
 
           </div>

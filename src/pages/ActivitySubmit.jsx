@@ -6,7 +6,6 @@ import { addSubmission, fetchSubmissions } from '../services/userSync'
 const CATEGORIES = [
   { value: 'exercise', label: 'ออกกำลังกาย', emoji: '🏃' },
   { value: 'food', label: 'อาหารสุขภาพ', emoji: '🥗' },
-  { value: 'water', label: 'ดื่มน้ำเพียงพอ', emoji: '💧' },
   { value: 'sleep', label: 'นอนหลับพักผ่อน', emoji: '🌙' },
   { value: 'stress', label: 'จัดการความเครียด', emoji: '🧘' },
   { value: 'other', label: 'กิจกรรมอื่น ๆ', emoji: '⭐' },

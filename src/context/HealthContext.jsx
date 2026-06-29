@@ -46,11 +46,6 @@ export function HealthProvider({ children }) {
     catch { return {} }
   })
 
-  const [waterLog, setWaterLog] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('hc_water')) ?? {} }
-    catch { return {} }
-  })
-
   // ป้องกัน sync ระหว่างกำลัง hydrate จาก cloud
   const [isHydrating, setIsHydrating] = useState(true)
 
@@ -95,7 +90,6 @@ export function HealthProvider({ children }) {
   useEffect(() => { if (bmiData) localStorage.setItem('hc_bmi', JSON.stringify(bmiData)) }, [bmiData])
   useEffect(() => { localStorage.setItem('hc_tips', JSON.stringify(completedTips)) }, [completedTips])
   useEffect(() => { localStorage.setItem('hc_calories', JSON.stringify(calorieLog)) }, [calorieLog])
-  useEffect(() => { localStorage.setItem('hc_water', JSON.stringify(waterLog)) }, [waterLog])
 
   // sync points/streak ไป Firestore — รอให้ hydrate จาก cloud เสร็จก่อน
   useEffect(() => {
@@ -205,7 +199,6 @@ export function HealthProvider({ children }) {
       date: days[new Date().getDay()],
       fullDate: todayStr,
       sleep:     data.sleepScore     ?? 0,
-      water:     data.waterScore     ?? 0,
       stress:    data.stressScore    ?? 0,
       screen:    data.digitalScore   ?? 0,
       exercise:  data.exerciseScore  ?? 0,
@@ -315,14 +308,6 @@ export function HealthProvider({ children }) {
     setCalorieLog(prev => ({ ...prev, [date]: (prev[date] || []).filter(e => e.id !== id) }))
   }
 
-  function addGlass(date) {
-    setWaterLog(prev => ({ ...prev, [date]: (prev[date] || 0) + 1 }))
-  }
-
-  function removeGlass(date) {
-    setWaterLog(prev => ({ ...prev, [date]: Math.max((prev[date] || 0) - 1, 0) }))
-  }
-
   return (
     <HealthContext.Provider value={{
       isLoggedIn, login, loginByName, logout,
@@ -335,7 +320,6 @@ export function HealthProvider({ children }) {
       completedTips, toggleTip,
       registerUser,
       calorieLog, addCalorieEntry, deleteCalorieEntry,
-      waterLog, addGlass, removeGlass,
       redeemReward, claimRefunds,
       updateProfileImage,
       deleteUser,

@@ -18,7 +18,6 @@ const GENDER_STYLE = {
 const CATEGORIES = {
   exercise: { label: 'ออกกำลังกาย',     emoji: '🏃' },
   food:     { label: 'อาหารสุขภาพ',      emoji: '🥗' },
-  water:    { label: 'ดื่มน้ำเพียงพอ',   emoji: '💧' },
   sleep:    { label: 'นอนหลับพักผ่อน',   emoji: '🌙' },
   stress:   { label: 'จัดการความเครียด', emoji: '🧘' },
   other:    { label: 'กิจกรรมอื่น ๆ',    emoji: '⭐' },

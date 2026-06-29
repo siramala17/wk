@@ -312,7 +312,6 @@ export async function saveAssessmentToCloud(userId, userData, assessmentData) {
     gender: userData.gender || '',
     overallScore:   assessmentData.overallScore   ?? 0,
     sleepScore:     assessmentData.sleepScore     ?? 0,
-    waterScore:     assessmentData.waterScore     ?? 0,
     exerciseScore:  assessmentData.exerciseScore  ?? 0,
     digitalScore:   assessmentData.digitalScore   ?? 0,
     stressScore:    assessmentData.stressScore    ?? 0,

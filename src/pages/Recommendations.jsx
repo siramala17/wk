@@ -11,7 +11,6 @@ function AiInsightBanner({ assessment }) {
     assessment.digitalScore   < 65 && 'เวลาหน้าจอ',
     assessment.stressScore    < 65 && 'ความเครียด',
     assessment.exerciseScore  < 65 && 'การออกกำลังกาย',
-    assessment.waterScore     < 65 && 'การดื่มน้ำ',
     assessment.nutritionScore < 65 && 'โภชนาการ',
   ].filter(Boolean)
 

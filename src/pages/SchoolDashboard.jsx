@@ -8,10 +8,10 @@ import {
 } from 'recharts'
 import { subscribeUsers, subscribeAssessments } from '../services/userSync'
 
-const DOMAINS  = ['นอนหลับ','ดื่มน้ำ','ออกกำลังกาย','สื่อดิจิทัล','ความเครียด','โภชนาการ']
-const D_KEYS   = ['sleepScore','waterScore','exerciseScore','digitalScore','stressScore','nutritionScore']
-const D_EMOJIS = ['🌙','💧','🏃','📱','🧘','🥗']
-const D_COLORS = ['#6366f1','#06b6d4','#10b981','#8b5cf6','#f59e0b','#f97316']
+const DOMAINS  = ['นอนหลับ','ออกกำลังกาย','สื่อดิจิทัล','ความเครียด','โภชนาการ']
+const D_KEYS   = ['sleepScore','exerciseScore','digitalScore','stressScore','nutritionScore']
+const D_EMOJIS = ['🌙','🏃','📱','🧘','🥗']
+const D_COLORS = ['#6366f1','#10b981','#8b5cf6','#f59e0b','#f97316']
 const GRADES   = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
 const GRADE_KEYS = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:14 }

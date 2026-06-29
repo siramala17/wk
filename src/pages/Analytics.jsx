@@ -14,7 +14,6 @@ function AiInsightBanner({ assessment, t }) {
     assessment.digitalScore   < 65 && a.weakAreas.screen,
     assessment.stressScore    < 65 && a.weakAreas.stress,
     assessment.exerciseScore  < 65 && a.weakAreas.exercise,
-    assessment.waterScore     < 65 && a.weakAreas.water,
     assessment.nutritionScore < 65 && a.weakAreas.nutrition,
   ].filter(Boolean)
 

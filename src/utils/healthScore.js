@@ -35,16 +35,6 @@ export function calcExerciseScore(days, minutes) {
   return 0
 }
 
-export function calcWaterScore(glasses) {
-  if (glasses >= 8) return 100
-  if (glasses >= 7) return 88
-  if (glasses >= 6) return 75
-  if (glasses >= 5) return 60
-  if (glasses >= 4) return 45
-  if (glasses >= 2) return 28
-  return 10
-}
-
 export function calcBmiScore(bmi) {
   if (bmi >= 18.5 && bmi < 23) return 100
   if (bmi >= 23 && bmi < 25) return 85
@@ -56,13 +46,12 @@ export function calcBmiScore(bmi) {
 }
 
 export function calcOverallScore(scores) {
-  const w = { sleep: 0.25, screen: 0.15, stress: 0.25, exercise: 0.20, water: 0.15 }
+  const w = { sleep: 0.30, screen: 0.15, stress: 0.30, exercise: 0.25 }
   return Math.round(
     scores.sleep * w.sleep +
     scores.screen * w.screen +
     scores.stress * w.stress +
-    scores.exercise * w.exercise +
-    scores.water * w.water
+    scores.exercise * w.exercise
   )
 }
 
@@ -161,24 +150,6 @@ export function generateRecommendations(a) {
     })
   }
 
-  if (a.waterScore < 65) {
-    recs.push({
-      id: 'water',
-      category: 'การดื่มน้ำ',
-      icon: '💧',
-      priority: a.waterGlasses < 4 ? 'สูง' : 'กลาง',
-      priorityColor: a.waterGlasses < 4 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700',
-      score: a.waterScore,
-      aiInsight: `ดื่มน้ำเพียง ${a.waterGlasses} แก้ว/วัน ร่างกายต้องการ 8 แก้ว (2 ลิตร) เพื่อทำงานได้ดี`,
-      tips: [
-        { id: 'w1', text: 'ดื่มน้ำ 1 แก้วทันทีหลังตื่นนอนทุกเช้า' },
-        { id: 'w2', text: 'พกขวดน้ำติดตัวตลอดวัน' },
-        { id: 'w3', text: 'ตั้งนาฬิกาเตือนดื่มน้ำทุก 2 ชั่วโมง' },
-        { id: 'w4', text: 'กินผลไม้ที่มีน้ำมาก เช่น แตงโม แตงกวา ส้ม' },
-      ],
-    })
-  }
-
   if (a.nutritionScore < 65) {
     recs.push({
       id: 'nutrition',
@@ -214,8 +185,6 @@ export function getBadges(user, assessment, bmi) {
   else badges.push({ id: 'b3', name: 'นักสร้างนิสัย', emoji: '💪', desc: 'ทำแบบประเมิน 7 วันติดต่อ', earned: false })
   if (bmi) badges.push({ id: 'b4', name: 'รู้จักตัวเอง', emoji: '📏', desc: 'วัดค่า BMI แล้ว', earned: true })
   else badges.push({ id: 'b4', name: 'รู้จักตัวเอง', emoji: '📏', desc: 'วัดค่า BMI เพื่อรับ', earned: false })
-  if (assessment && assessment.waterGlasses >= 8) badges.push({ id: 'b5', name: 'นักดื่มน้ำ', emoji: '💧', desc: 'ดื่มน้ำครบ 8 แก้ว', earned: true })
-  else badges.push({ id: 'b5', name: 'นักดื่มน้ำ', emoji: '💧', desc: 'ดื่มน้ำครบ 8 แก้ว', earned: false })
   if (assessment && assessment.exerciseDays >= 5) badges.push({ id: 'b6', name: 'นักกีฬา', emoji: '🏅', desc: 'ออกกำลังกาย 5 วัน/สัปดาห์', earned: true })
   else badges.push({ id: 'b6', name: 'นักกีฬา', emoji: '🏅', desc: 'ออกกำลังกาย 5 วัน/สัปดาห์', earned: false })
   if (assessment && assessment.sleepHours >= 7 && assessment.sleepHours <= 9) badges.push({ id: 'b7', name: 'นักนอนดี', emoji: '😴', desc: 'นอนหลับ 7-9 ชั่วโมง', earned: true })

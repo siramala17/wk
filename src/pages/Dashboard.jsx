@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Moon, Smartphone, Brain, Dumbbell, Droplets, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
+import { Moon, Smartphone, Brain, Dumbbell, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import { getHealthLevel } from '../utils/healthScore'
@@ -16,7 +16,6 @@ function getStatConfig(t) {
     { key: 'screen',   icon: Smartphone, label: t.stats.screen,   unit: t.units.hrs,       max: 12, color: '#8b5cf6', bg: '#f5f3ff', getVal: a => a.screenHours },
     { key: 'stress',   icon: Brain,      label: t.stats.stress,   unit: t.units.outOf10,   max: 10, color: '#f59e0b', bg: '#fffbeb', getVal: a => a.stressLevel },
     { key: 'exercise', icon: Dumbbell,   label: t.stats.exercise, unit: t.units.daysPerWk, max: 7,  color: '#10b981', bg: '#ecfdf5', getVal: a => a.exerciseDays },
-    { key: 'water',    icon: Droplets,   label: t.stats.water,    unit: t.units.glasses,   max: 8,  color: '#06b6d4', bg: '#ecfeff', getVal: a => a.waterGlasses },
   ]
 }
 
