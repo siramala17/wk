@@ -45,10 +45,10 @@ export const translations = {
 
     quick: {
       assessment: 'ประเมิน\nสุขภาพ',
-      bmi:        'คำนวณ\nBMI',
+      bodyComp:   'สัดส่วน\nร่างกาย',
       calories:   'บันทึก\nแคลอรี่',
       graph:      'กราฟ\nสุขภาพ',
-      ai:         'แนะนำ\nAI',
+      rewards:    'แต้ม\nรางวัล',
       knowledge:  'ใบ\nความรู้',
     },
 
@@ -491,10 +491,10 @@ export const translations = {
 
     quick: {
       assessment: 'Health\nAssessment',
-      bmi:        'BMI\nCalculator',
+      bodyComp:   'Body\nComposition',
       calories:   'Calorie\nTracker',
       graph:      'Health\nGraph',
-      ai:         'AI\nAdvice',
+      rewards:    'Points\n& Rewards',
       knowledge:  'Knowledge\nBase',
     },
 

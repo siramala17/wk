@@ -21,12 +21,12 @@ function getStatConfig(t) {
 
 function getQuickLinks(t) {
   return [
-    { to: '/assessment',      label: t.quick.assessment, emoji: '📋', grad: ['#3730a3','#6366f1'], shadow: 'rgba(99,102,241,0.40)' },
-    { to: '/assessment',      label: t.quick.bmi,        emoji: '⚖️', grad: ['#b45309','#f59e0b'], shadow: 'rgba(245,158,11,0.40)' },
-    { to: '/nubcal',          label: t.quick.calories,   emoji: '🔥', grad: ['#c2410c','#fb923c'], shadow: 'rgba(249,115,22,0.40)'  },
-    { to: '/analytics',       label: t.quick.graph,      emoji: '📊', grad: ['#0e7490','#22d3ee'], shadow: 'rgba(6,182,212,0.40)'   },
-    { to: '/recommendations', label: t.quick.ai,         emoji: '🤖', grad: ['#065f46','#34d399'], shadow: 'rgba(16,185,129,0.40)'  },
-    { to: '/knowledge',       label: t.quick.knowledge,  emoji: '📚', grad: ['#4338ca','#a78bfa'], shadow: 'rgba(139,92,246,0.40)'  },
+    { to: '/assessment',        label: t.quick.assessment, emoji: '📋', grad: ['#3730a3','#6366f1'], shadow: 'rgba(99,102,241,0.40)' },
+    { to: '/body-composition',  label: t.quick.bodyComp,   emoji: '🏋️', grad: ['#b45309','#f59e0b'], shadow: 'rgba(245,158,11,0.40)' },
+    { to: '/nubcal',            label: t.quick.calories,   emoji: '🔥', grad: ['#c2410c','#fb923c'], shadow: 'rgba(249,115,22,0.40)'  },
+    { to: '/analytics',         label: t.quick.graph,      emoji: '📊', grad: ['#0e7490','#22d3ee'], shadow: 'rgba(6,182,212,0.40)'   },
+    { to: '/rewards',           label: t.quick.rewards,    emoji: '⭐', grad: ['#065f46','#34d399'], shadow: 'rgba(16,185,129,0.40)'  },
+    { to: '/knowledge',         label: t.quick.knowledge,  emoji: '📚', grad: ['#4338ca','#a78bfa'], shadow: 'rgba(139,92,246,0.40)'  },
   ]
 }
 
