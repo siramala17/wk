@@ -13,7 +13,7 @@ export const translations = {
       assessBmi:       'ประเมิน',
       graphAi:         'คำแนะนำ AI',
       pointsActivity:  'Challenge',
-      knowledge:       'ใบความรู้',
+      knowledge:       'คลังความรู้',
       trainer:         'Personal Trainer',
       bodyCompositionFull: 'Body Composition',
       survey:          'แบบประเมินความพึงพอใจ',
@@ -49,7 +49,7 @@ export const translations = {
       calories:   'บันทึก\nแคลอรี่',
       graph:      'กราฟ\nสุขภาพ',
       rewards:    'Challenge',
-      knowledge:  'ใบ\nความรู้',
+      knowledge:  'คลัง\nความรู้',
     },
 
     stats: {
@@ -459,7 +459,7 @@ export const translations = {
       assessBmi:       'Assessment',
       graphAi:         'AI Tips',
       pointsActivity:  'Challenge',
-      knowledge:       'Knowledge',
+      knowledge:       'Health Knowledge',
       trainer:         'Personal Trainer',
       bodyCompositionFull: 'Body Composition',
       survey:          'Satisfaction Survey',
@@ -495,7 +495,7 @@ export const translations = {
       calories:   'Calorie\nTracker',
       graph:      'Health\nGraph',
       rewards:    'Challenge',
-      knowledge:  'Knowledge\nBase',
+      knowledge:  'Health\nKnowledge',
     },
 
     stats: {
