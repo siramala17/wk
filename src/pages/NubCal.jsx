@@ -7,7 +7,7 @@ import { FOOD_DB, FOOD_CATS as CATS } from '../data/foodDb'
 const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
 
 const TODAY = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' })
-const BLANK = { foodName: '', calories: '', protein: '', carbs: '', fat: '', fiber: '' }
+const BLANK = { foodName: '', foodNameEn: '', weight: '', calories: '', protein: '', carbs: '', fat: '', fiber: '', ingredients: [], healthAdvice: '' }
 const GLASS_ML = 250
 
 const ACTIVITY_LEVELS = [
@@ -377,6 +377,7 @@ export default function NubCal() {
   const [imageType, setImageType] = useState('image/jpeg')
   const [editResult, setEditResult] = useState(null)
   const [analyzed, setAnalyzed] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
   const [error, setError] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [activityLevel, setActivityLevel] = useState(() => localStorage.getItem('nubcal_activity') || 'light')
@@ -481,7 +482,7 @@ export default function NubCal() {
           max_tokens: 512,
           messages: [{ role: 'user', content: [
             { type: 'image', source: { type: 'base64', media_type: type, data: base64 } },
-            { type: 'text', text: `วิเคราะห์อาหารในภาพนี้และประมาณค่าโภชนาการต่อ 1 ที่เสิร์ฟ ตอบเป็น JSON เท่านั้น ห้ามมีข้อความอื่น:\n{"foodName":"ชื่ออาหาร (ภาษาไทย)","calories":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"description":"คำอธิบายสั้น ๆ"}\nถ้าไม่พบอาหารในภาพให้ตอบ: {"error":"ไม่พบอาหารในภาพ"}\ncalories=kcal, ตัวเลขอื่นเป็นกรัม ห้ามใส่หน่วยในตัวเลข` },
+            { type: 'text', text: `วิเคราะห์อาหารในภาพนี้และประมาณค่าโภชนาการต่อ 1 ที่เสิร์ฟ ตอบเป็น JSON เท่านั้น ห้ามมีข้อความอื่น:\n{"foodName":"ชื่ออาหาร (ภาษาไทย)","foodNameEn":"English food name","weight":0,"calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":["ส่วนประกอบ1","ส่วนประกอบ2"],"healthAdvice":"คำแนะนำสั้น ๆ เกี่ยวกับสุขภาพ 2 ประโยค"}\nถ้าไม่พบอาหารในภาพให้ตอบ: {"error":"ไม่พบอาหารในภาพ"}\nweight=กรัม, calories=kcal, โภชนาการอื่นเป็นกรัม ห้ามใส่หน่วยในตัวเลข` },
           ]}],
         }),
       })
@@ -492,7 +493,7 @@ export default function NubCal() {
       if (!m) throw new Error('ไม่สามารถอ่านผลได้')
       const parsed = JSON.parse(m[0])
       if (parsed.error) throw new Error(parsed.error)
-      setEditResult({ ...parsed }); setAnalyzed(true)
+      setEditResult({ ...parsed, ingredients: parsed.ingredients || [] }); setAnalyzed(true)
     } catch (err) {
       setError(err.message || 'เกิดข้อผิดพลาด')
     } finally {
@@ -519,7 +520,7 @@ export default function NubCal() {
           max_tokens: 512,
           messages: [{ role: 'user', content: [
             { type: 'image', source: { type: 'base64', media_type: imageType, data: imageBase64 } },
-            { type: 'text', text: `วิเคราะห์อาหารในภาพนี้และประมาณค่าโภชนาการต่อ 1 ที่เสิร์ฟ ตอบเป็น JSON เท่านั้น ห้ามมีข้อความอื่น:\n{"foodName":"ชื่ออาหาร (ภาษาไทย)","calories":0,"protein":0,"carbs":0,"fat":0,"fiber":0,"description":"คำอธิบายสั้น ๆ"}\nถ้าไม่พบอาหารในภาพให้ตอบ: {"error":"ไม่พบอาหารในภาพ"}\ncalories=kcal, ตัวเลขอื่นเป็นกรัม ห้ามใส่หน่วยในตัวเลข` },
+            { type: 'text', text: `วิเคราะห์อาหารในภาพนี้และประมาณค่าโภชนาการต่อ 1 ที่เสิร์ฟ ตอบเป็น JSON เท่านั้น ห้ามมีข้อความอื่น:\n{"foodName":"ชื่ออาหาร (ภาษาไทย)","foodNameEn":"English food name","weight":0,"calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":["ส่วนประกอบ1","ส่วนประกอบ2"],"healthAdvice":"คำแนะนำสั้น ๆ เกี่ยวกับสุขภาพ 2 ประโยค"}\nถ้าไม่พบอาหารในภาพให้ตอบ: {"error":"ไม่พบอาหารในภาพ"}\nweight=กรัม, calories=kcal, โภชนาการอื่นเป็นกรัม ห้ามใส่หน่วยในตัวเลข` },
           ]}],
         }),
       })
@@ -530,7 +531,7 @@ export default function NubCal() {
       if (!m) throw new Error('ไม่สามารถอ่านผลได้')
       const parsed = JSON.parse(m[0])
       if (parsed.error) throw new Error(parsed.error)
-      setEditResult({ ...parsed }); setAnalyzed(true)
+      setEditResult({ ...parsed, ingredients: parsed.ingredients || [] }); setAnalyzed(true)
     } catch (err) {
       setError(err.message || 'เกิดข้อผิดพลาด')
     } finally {
@@ -543,12 +544,14 @@ export default function NubCal() {
     addCalorieEntry(viewDate, {
       id: Date.now(), image: imagePreview, meal: activeMeal,
       foodName: editResult.foodName || 'ไม่ทราบชื่ออาหาร',
+      weight:   Number(editResult.weight)   || 0,
       calories: Number(editResult.calories) || 0,
       protein:  Number(editResult.protein)  || 0,
       carbs:    Number(editResult.carbs)    || 0,
       fat:      Number(editResult.fat)      || 0,
       fiber:    Number(editResult.fiber)    || 0,
-      description: editResult.description || '',
+      ingredients: editResult.ingredients || [],
+      healthAdvice: editResult.healthAdvice || '',
       timestamp: new Date().toISOString(),
     })
     closeModal()
@@ -556,7 +559,7 @@ export default function NubCal() {
 
   function closeModal() {
     setShowCamera(false); setImagePreview(null); setImageBase64(null)
-    setEditResult(null); setAnalyzed(false); setError('')
+    setEditResult(null); setAnalyzed(false); setShowEditForm(false); setError('')
   }
 
   function addFromDB(food) {
@@ -908,11 +911,18 @@ export default function NubCal() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-semibold text-gray-800">{tr.analyzeFood}</h3>
-              <button onClick={closeModal} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X size={18} /></button>
+              <h3 className="font-semibold text-gray-800">
+                {showEditForm ? 'แก้ไขข้อมูลอาหาร' : tr.analyzeFood}
+              </h3>
+              <button onClick={showEditForm ? () => setShowEditForm(false) : closeModal}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400">
+                <X size={18} />
+              </button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-4">
-              {imagePreview && <img src={imagePreview} alt="อาหาร" className="w-full h-48 object-cover rounded-2xl" />}
+              {imagePreview && !showEditForm && (
+                <img src={imagePreview} alt="อาหาร" className="w-full h-48 object-cover rounded-2xl" />
+              )}
               {error && <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-600">{error}</div>}
               {analyzing && (
                 <div className="flex items-center justify-center gap-2 py-4">
@@ -926,28 +936,119 @@ export default function NubCal() {
                   {tr.analyzeBtn}
                 </button>
               )}
-              {editResult && (
+
+              {/* Info Card View */}
+              {editResult && !showEditForm && (
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-700 text-sm">{tr.analysisResult}</h4>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{tr.foodNameInput}</label>
-                    <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
-                      value={editResult.foodName || ''} onChange={e => setEditResult(p => ({ ...p, foodName: e.target.value }))} />
+                    <h4 className="font-bold text-gray-900 text-base leading-tight">{editResult.foodName}</h4>
+                    {editResult.foodNameEn && <p className="text-gray-400 text-sm mt-0.5">{editResult.foodNameEn}</p>}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[[tr.calLabel, 'calories'], [tr.proteinG, 'protein'], [tr.carbG, 'carbs'], [tr.fatG, 'fat']].map(([label, key]) => (
-                      <div key={key}>
-                        <label className="text-xs text-gray-500 mb-1 block">{label}</label>
-                        <input type="number" min="0"
-                          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
-                          value={editResult[key] ?? ''} onChange={e => setEditResult(p => ({ ...p, [key]: e.target.value }))} />
+                  <div className="space-y-2.5 bg-gray-50 rounded-2xl px-4 py-3">
+                    {[
+                      { label: 'น้ำหนัก',       value: editResult.weight,   unit: 'กรัม' },
+                      { label: 'แคลอรี่',       value: editResult.calories, unit: 'กิโลแคลอรี่' },
+                      { label: 'โปรตีน',        value: editResult.protein,  unit: 'กรัม' },
+                      { label: 'ไขมัน',         value: editResult.fat,      unit: 'กรัม' },
+                      { label: 'คาร์โบไฮเดรต', value: editResult.carbs,    unit: 'กรัม' },
+                    ].map(row => (
+                      <div key={row.label} className="flex items-center justify-between">
+                        <span className="text-teal-600 text-sm font-medium">{row.label}</span>
+                        <span className="text-sm">
+                          <span className="font-semibold text-gray-800">{row.value ?? '—'}</span>
+                          {' '}<span className="text-gray-400 text-xs">{row.unit}</span>
+                        </span>
                       </div>
                     ))}
                   </div>
-                  {editResult.description && <p className="text-xs text-gray-500 bg-gray-50 rounded-xl p-3">{editResult.description}</p>}
-                  <button onClick={saveEntry} className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-xl py-3 font-semibold transition-colors">
-                    {tr.saveRecord}
-                  </button>
+                  {Array.isArray(editResult.ingredients) && editResult.ingredients.length > 0 && (
+                    <div>
+                      <p className="text-teal-600 text-sm font-semibold mb-1.5">ส่วนประกอบ</p>
+                      <p className="text-gray-700 text-sm leading-relaxed">{editResult.ingredients.join(', ')}</p>
+                    </div>
+                  )}
+                  {editResult.healthAdvice && (
+                    <div>
+                      <p className="text-teal-600 text-sm font-semibold mb-1.5">คำแนะนำเพื่อสุขภาพ</p>
+                      <p className="text-gray-600 text-sm leading-relaxed">{editResult.healthAdvice}</p>
+                    </div>
+                  )}
+                  <div className="bg-gray-50 rounded-xl p-3">
+                    <p className="text-gray-400 text-xs leading-relaxed">🤖 ข้อมูลนี้เป็นการประมาณการด้วย AI อาจมีความคลาดเคลื่อนได้ กดแก้ไขเพื่อปรับข้อมูลเองได้เลย ✏️</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => setShowEditForm(true)}
+                      className="flex-1 py-3 border-2 border-teal-500 text-teal-600 rounded-2xl font-semibold text-sm hover:bg-teal-50 transition-colors">
+                      ✏️ แก้ไข
+                    </button>
+                    <button onClick={saveEntry}
+                      className="flex-[2] py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl font-semibold text-sm transition-colors">
+                      บันทึกข้อมูล
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Edit Form View */}
+              {editResult && showEditForm && (
+                <div className="space-y-3 pb-2">
+                  {editResult.foodNameEn && (
+                    <p className="font-bold text-gray-700 text-sm">{editResult.foodNameEn}</p>
+                  )}
+                  {[
+                    { label: 'ชื่ออาหาร',                key: 'foodName', type: 'text' },
+                    { label: 'น้ำหนักอาหาร (กรัม)',      key: 'weight',   type: 'number' },
+                    { label: 'คาร์โบไฮเดรต (กรัม)',      key: 'carbs',    type: 'number' },
+                    { label: 'โปรตีน (กรัม)',             key: 'protein',  type: 'number' },
+                    { label: 'ไขมัน (กรัม)',              key: 'fat',      type: 'number' },
+                    { label: 'แคลอรี่ (กิโลแคลอรี่)',    key: 'calories', type: 'number' },
+                  ].map(({ label, key, type }) => (
+                    <div key={key}>
+                      <label className="text-xs text-gray-500 mb-1 block">{label}</label>
+                      <input type={type} min={type === 'number' ? '0' : undefined}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
+                        value={editResult[key] ?? ''} onChange={e => setEditResult(p => ({ ...p, [key]: e.target.value }))} />
+                    </div>
+                  ))}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-2">ส่วนประกอบ</p>
+                    <div className="space-y-2">
+                      {(editResult.ingredients || []).map((ing, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <input
+                            className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400"
+                            value={ing}
+                            onChange={e => setEditResult(p => ({
+                              ...p,
+                              ingredients: p.ingredients.map((v, idx) => idx === i ? e.target.value : v),
+                            }))}
+                          />
+                          <button onClick={() => setEditResult(p => ({
+                            ...p,
+                            ingredients: p.ingredients.filter((_, idx) => idx !== i),
+                          }))} className="text-gray-400 hover:text-red-400 transition-colors p-1 flex-shrink-0">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      <button onClick={() => setEditResult(p => ({
+                        ...p,
+                        ingredients: [...(p.ingredients || []), ''],
+                      }))} className="flex items-center gap-1.5 text-teal-600 text-sm font-medium hover:text-teal-700 transition-colors mt-1 py-1">
+                        <Plus size={16} /> เพิ่มส่วนประกอบ
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <button onClick={() => { setEditResult(null); setAnalyzed(false); setShowEditForm(false) }}
+                      className="px-5 py-3 text-gray-500 font-semibold text-sm hover:text-gray-700 transition-colors">
+                      ล้าง
+                    </button>
+                    <button onClick={() => { saveEntry(); setShowEditForm(false) }}
+                      className="px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl font-semibold text-sm transition-colors">
+                      บันทึกข้อมูล
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
