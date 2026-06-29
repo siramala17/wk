@@ -83,31 +83,83 @@ function renderMarkdown(text) {
   return elements
 }
 
-const OBESITY_QUESTIONS = [
-  'รับประทานอาหารทอดหรืออาหารที่มีไขมันสูง',
-  'รับประทานอาหารจานด่วนหรืออาหารสำเร็จรูป',
-  'ดื่มเครื่องดื่มที่มีน้ำตาล เช่น น้ำอัดลม ชานม กาแฟปรุงสำเร็จ',
-  'รับประทานขนมหวาน เบเกอรี่ หรือของว่างบ่อยครั้ง',
-  'รับประทานอาหารมื้อดึกก่อนนอน',
-  'รับประทานอาหารในปริมาณมากเกินความต้องการของร่างกาย',
-  'รับประทานผักและผลไม้น้อยกว่า 5 ส่วนต่อวัน',
-  'ออกกำลังกายน้อยกว่า 150 นาทีต่อสัปดาห์',
-  'ใช้เวลานั่งทำงาน ดูโทรศัพท์ หรือดูโทรทัศน์ติดต่อกันนานเกิน 2 ชั่วโมง',
-  'นอนหลับพักผ่อนน้อยกว่า 7 ชั่วโมงต่อวัน',
-  'รับประทานอาหารเมื่อมีความเครียดหรืออารมณ์ไม่ดี',
-  'ดื่มเครื่องดื่มแอลกอฮอล์เป็นประจำ',
-  'ไม่ควบคุมน้ำหนักหรือไม่ติดตามน้ำหนักตัวของตนเอง',
-  'ใช้รถยนต์หรือรถจักรยานยนต์แทนการเดินในระยะทางใกล้',
-  'มีกิจกรรมทางกายระดับปานกลางถึงหนักน้อยกว่า 3 วันต่อสัปดาห์',
+// 5-dimension WHO Adolescent Health Assessment (12–18 yr)
+// Reference: กระทรวงสาธารณสุข — กรมอนามัย กรมสุขภาพจิต กรมควบคุมโรค
+const DIMENSIONS = [
+  {
+    id: 'nutrition', emoji: '🥗', label: 'ด้านโภชนาการ',
+    desc: 'พฤติกรรมการกินตาม WHO Nutrition Guidelines',
+    color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', head: 'bg-emerald-600',
+    ref: 'กองโภชนาการ กรมอนามัย กระทรวงสาธารณสุข',
+    questions: [
+      'คุณข้ามมื้ออาหาร โดยเฉพาะมื้อเช้า',
+      'คุณดื่มน้ำอัดลม เครื่องดื่มชูกำลัง หรือน้ำหวานบรรจุขวดแทนน้ำเปล่า',
+      'คุณกินผักและผลไม้รวมน้อยกว่า 5 ส่วนต่อวัน (WHO แนะนำ ≥400 ก./วัน)',
+    ],
+  },
+  {
+    id: 'activity', emoji: '🏃', label: 'ด้านกิจกรรมทางกาย',
+    desc: 'WHO แนะนำ ≥60 นาที/วันสำหรับวัยรุ่น',
+    color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200', head: 'bg-blue-600',
+    ref: 'กรมอนามัย กระทรวงสาธารณสุข · แนวทางส่งเสริมกิจกรรมทางกายวัยรุ่น',
+    questions: [
+      'คุณออกกำลังกายน้อยกว่า 60 นาทีต่อวัน (วิ่ง ว่ายน้ำ ปั่นจักรยาน เล่นกีฬา)',
+      'คุณใช้เวลาหน้าจอรวม (โทรศัพท์/ทีวี/เกม) มากกว่า 4 ชั่วโมงต่อวัน',
+      'คุณนั่งหรือนอนเฉยโดยไม่เคลื่อนไหวร่างกายนานกว่า 2 ชั่วโมงต่อเนื่อง',
+    ],
+  },
+  {
+    id: 'mental', emoji: '🧠', label: 'ด้านสุขภาพจิต',
+    desc: 'อารมณ์ ความเครียด และสุขภาวะทางจิต',
+    color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200', head: 'bg-purple-600',
+    ref: 'กรมสุขภาพจิต กระทรวงสาธารณสุข · คู่มือสุขภาพจิตวัยรุ่น',
+    questions: [
+      'คุณรู้สึกเครียด วิตกกังวล หรือหนักใจจนส่งผลต่อการเรียนหรือชีวิตประจำวัน',
+      'คุณมีอารมณ์หดหู่ ซึมเศร้า หรือรู้สึกไม่มีคุณค่าในตนเอง',
+      'คุณรู้สึกโดดเดี่ยวหรือขาดคนที่ไว้ใจได้ในชีวิต',
+    ],
+  },
+  {
+    id: 'sleep', emoji: '💤', label: 'ด้านการนอนหลับ',
+    desc: 'กรมสุขภาพจิต แนะนำวัยรุ่น 8–10 ชม./คืน',
+    color: 'text-indigo-700', bg: 'bg-indigo-50', border: 'border-indigo-200', head: 'bg-indigo-600',
+    ref: 'กรมสุขภาพจิต กระทรวงสาธารณสุข · แนวทางการนอนหลับในวัยรุ่น',
+    questions: [
+      'คุณนอนหลับน้อยกว่า 8 ชั่วโมงต่อคืนในวันเรียน',
+      'คุณใช้โทรศัพท์หรือหน้าจอจนดึกหลัง 5 ทุ่ม ทำให้เข้านอนช้า',
+      'คุณตื่นนอนรู้สึกเหนื่อยล้า ไม่สดชื่น หรืองัวเงียตลอดวัน',
+    ],
+  },
+  {
+    id: 'risk', emoji: '🛡️', label: 'ด้านพฤติกรรมเสี่ยง',
+    desc: 'สิ่งแวดล้อม สังคม และพฤติกรรมที่เสี่ยงต่อสุขภาพ',
+    color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', head: 'bg-red-600',
+    ref: 'กรมควบคุมโรค กระทรวงสาธารณสุข · แผนป้องกันพฤติกรรมเสี่ยงวัยรุ่น',
+    questions: [
+      'คุณอยู่ในสภาพแวดล้อมที่มีการสูบบุหรี่ ดื่มแอลกอฮอล์ หรือใช้สารเสพติด',
+      'คุณรู้สึกถูกกดดัน บูลลี่ หรือมีความขัดแย้งรุนแรงกับเพื่อนหรือคนรอบข้าง',
+      'คุณเปรียบเทียบรูปลักษณ์หรือชีวิตตัวเองกับผู้อื่นในโซเชียลมีเดียจนรู้สึกแย่กับตัวเอง',
+    ],
+  },
 ]
 
+// Flatten questions for array index compatibility
+const HEALTH_QUESTIONS = DIMENSIONS.flatMap(d => d.questions)
 const SCORE_LABELS = ['ไม่เคย', 'นานๆ ครั้ง', 'บางครั้ง', 'บ่อยครั้ง', 'เป็นประจำ']
 
+function getDimScore(dimIdx, answers) {
+  return answers.slice(dimIdx * 3, dimIdx * 3 + 3).reduce((s, v) => s + v, 0)
+}
+function getDimLevel(score) {
+  if (score <= 6)  return { label: 'ดี',           color: 'text-emerald-600', bg: 'bg-emerald-100' }
+  if (score <= 10) return { label: 'ควรปรับปรุง',  color: 'text-yellow-600',  bg: 'bg-yellow-100' }
+  return                   { label: 'ต้องดูแล',    color: 'text-red-600',     bg: 'bg-red-100' }
+}
 function getRiskLevel(total) {
-  if (total <= 30) return { label: 'ความเสี่ยงต่ำ',     color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200', dot: '#10b981' }
-  if (total <= 45) return { label: 'ความเสี่ยงปานกลาง', color: 'text-yellow-700',  bg: 'bg-yellow-50',   border: 'border-yellow-200',  dot: '#f59e0b' }
-  if (total <= 60) return { label: 'ความเสี่ยงสูง',      color: 'text-orange-700',  bg: 'bg-orange-50',   border: 'border-orange-200',  dot: '#f97316' }
-  return                   { label: 'ความเสี่ยงสูงมาก',  color: 'text-red-700',     bg: 'bg-red-50',      border: 'border-red-200',     dot: '#ef4444' }
+  if (total <= 30) return { label: 'สุขภาพดี',            color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200', dot: '#10b981' }
+  if (total <= 45) return { label: 'ควรปรับปรุง',          color: 'text-yellow-700',  bg: 'bg-yellow-50',   border: 'border-yellow-200',  dot: '#f59e0b' }
+  if (total <= 60) return { label: 'ต้องดูแลพฤติกรรม',    color: 'text-orange-700',  bg: 'bg-orange-50',   border: 'border-orange-200',  dot: '#f97316' }
+  return                   { label: 'ต้องการความช่วยเหลือ', color: 'text-red-700',    bg: 'bg-red-50',      border: 'border-red-200',     dot: '#ef4444' }
 }
 
 function ObesityAssessment({ bmi, weight, height, category }) {
@@ -131,6 +183,7 @@ function ObesityAssessment({ bmi, weight, height, category }) {
   const allDone   = answered === 15
   const risk      = getRiskLevel(total)
   const pct       = (answered / 15) * 100
+  const dimScores = DIMENSIONS.map((_, di) => getDimScore(di, answers))
 
   function saveRecord(resultText) {
     const record = {
@@ -152,34 +205,43 @@ function ObesityAssessment({ bmi, weight, height, category }) {
     if (!allDone) return
     setLoading(true); setError('')
     try {
-      const qText = OBESITY_QUESTIONS.map((q, i) =>
-        `ข้อ ${i + 1}: ${q} → ${answers[i]} (${SCORE_LABELS[answers[i] - 1]})`
-      ).join('\n')
+      const dimText = DIMENSIONS.map((dim, di) => {
+        const sc = dimScores[di]
+        const lv = getDimLevel(sc)
+        const qRows = dim.questions.map((q, qi) => {
+          const ai = di * 3 + qi
+          return `  • ${q} → ${answers[ai]}/5 (${SCORE_LABELS[answers[ai] - 1]})`
+        }).join('\n')
+        return `${dim.emoji} ${dim.label} — คะแนน ${sc}/15 (${lv.label})\n${qRows}`
+      }).join('\n\n')
 
-      const prompt = `คุณเป็นผู้เชี่ยวชาญด้านสุขภาพที่อ้างอิงมาตรฐาน WHO (World Health Organization) อย่างเคร่งครัด
+      const prompt = `คุณเป็นผู้เชี่ยวชาญด้านสุขภาพวัยรุ่น อ้างอิงแนวทางของ กระทรวงสาธารณสุข ประเทศไทย (กรมอนามัย กรมสุขภาพจิต กรมควบคุมโรค) สำหรับวัยรุ่นอายุ 12–18 ปี อย่างเคร่งครัด
 
 ข้อมูลผู้ใช้:
-- BMI: ${bmi} (${category}) — เกณฑ์ WHO สำหรับประชากรเอเชีย: ปกติ 18.5–22.9, เกินเล็กน้อย 23–24.9, เกิน ≥25, โรคอ้วน ≥30
+- BMI: ${bmi} (${category}) — เกณฑ์กรมอนามัย (อ้างอิง WHO Asia-Pacific): ปกติ 18.5–22.9, เริ่มเกิน 23–24.9, อ้วน ≥25
 - น้ำหนัก: ${weight} kg · ส่วนสูง: ${height} cm
-- คะแนนแบบประเมินพฤติกรรมเสี่ยง: ${total}/75 (${risk.label})
+- คะแนนรวม: ${total}/75 (${risk.label})
 
-ผลแบบประเมิน (1 = ไม่เคย … 5 = เป็นประจำ):
-${qText}
+ผลแบบประเมินสุขภาพ 5 ด้าน (1 = ไม่เคย … 5 = เป็นประจำ):
+${dimText}
 
-วิเคราะห์โดยอ้างอิงมาตรฐาน WHO ดังนี้:
+วิเคราะห์โดยอ้างอิงแนวทางกระทรวงสาธารณสุขสำหรับวัยรุ่น 12–18 ปี ดังนี้:
 
-1. **สาเหตุหลักตามเกณฑ์ WHO** — อธิบายว่าพฤติกรรมใด (คะแนนสูง) ส่งผลต่อ BMI ปัจจุบัน อ้างอิงเกณฑ์ WHO ที่เกี่ยวข้อง
+### 1. ภาพรวมสุขภาพ 5 ด้าน
+วิเคราะห์แต่ละด้านที่มีคะแนนสูง เทียบกับเกณฑ์กระทรวงสาธารณสุข ได้แก่:
+- โภชนาการ: กองโภชนาการ กรมอนามัย แนะนำผักและผลไม้ ≥5 ส่วน/วัน ลดน้ำตาล-โซเดียม
+- กิจกรรมทางกาย: กรมอนามัย แนะนำวัยรุ่น ≥60 นาที/วัน ลดหน้าจอ ≤2 ชม./วัน
+- สุขภาพจิต: กรมสุขภาพจิต ระบุวัยรุ่นเป็นช่วงเสี่ยงโรคซึมเศร้า ความเครียด
+- การนอนหลับ: กรมสุขภาพจิต แนะนำวัยรุ่น 8–10 ชม./คืน
+- พฤติกรรมเสี่ยง: กรมควบคุมโรค ระบุปัจจัยเสี่ยง NCDs และสุขภาวะสังคมวัยรุ่น
 
-2. **3 พฤติกรรมเสี่ยงสูงสุดที่ WHO ระบุว่าเป็นปัจจัยหลัก** — ระบุว่า WHO กำหนดมาตรฐานไว้เท่าใด และผู้ใช้ต่างจากมาตรฐานอย่างไร เช่น:
-   - WHO แนะนำออกกำลังกายระดับปานกลาง ≥150 นาที/สัปดาห์ (หรือหนัก ≥75 นาที/สัปดาห์)
-   - WHO แนะนำผักและผลไม้ ≥400 กรัม (5 ส่วน) ต่อวัน
-   - WHO กำหนดน้ำตาลเพิ่ม <10% ของพลังงานรวมต่อวัน (ควรลดเหลือ <5%)
-   - WHO แนะนำนอนหลับ 7–9 ชั่วโมง/วัน สำหรับผู้ใหญ่
-   - WHO แนะนำลดพฤติกรรมนั่งนิ่ง ไม่เกิน 8 ชั่วโมง/วัน
+### 2. จุดเสี่ยงสำคัญที่ต้องแก้ไข
+ระบุ 2–3 ข้อที่คะแนนสูงสุดและส่งผลต่อสุขภาพมากที่สุด พร้อมอ้างอิงหน่วยงานกระทรวงสาธารณสุข
 
-3. **คำแนะนำเฉพาะตัวตามแนวทาง WHO** — ระบุเป้าหมายที่วัดผลได้และปฏิบัติได้จริง พร้อมอ้างอิง WHO Guideline ที่เกี่ยวข้อง
+### 3. แผนปรับพฤติกรรมเฉพาะตัว (ปฏิบัติได้จริง)
+แนะนำ 3–4 ขั้นตอนที่วัดผลได้ ตามแนวทางกระทรวงสาธารณสุขสำหรับวัยรุ่น 12–18 ปี
 
-ตอบภาษาไทย กระชับชัดเจน ใช้หัวข้อย่อย ไม่เกิน 450 คำ`
+ตอบภาษาไทย กระชับ ใช้หัวข้อย่อย ไม่เกิน 480 คำ`
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -215,8 +277,15 @@ ${qText}
         style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
         <div className="absolute -top-5 -right-5 w-24 h-24 rounded-full bg-white/10" />
         <div className="relative">
-          <h2 className="font-black text-base">แบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน</h2>
-          <p className="text-purple-200 text-xs mt-0.5">ตอบ 15 ข้อ เพื่อให้ AI วิเคราะห์สาเหตุเฉพาะตัว</p>
+          <h2 className="font-black text-base">แบบประเมินสุขภาพ 5 ด้าน</h2>
+          <p className="text-purple-200 text-xs mt-0.5">ตามหลัก WHO สำหรับวัยรุ่น 12–18 ปี · 15 ข้อ 5 ด้าน</p>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {DIMENSIONS.map(d => (
+              <span key={d.id} className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold">
+                {d.emoji} {d.label.replace('ด้าน', '').trim()}
+              </span>
+            ))}
+          </div>
           <div className="mt-3 space-y-1.5">
             <div className="flex justify-between text-xs text-purple-200">
               <span>ตอบแล้ว {answered}/15 ข้อ</span>
@@ -239,33 +308,60 @@ ${qText}
         ))}
       </div>
 
-      {/* Questions */}
-      <div className="space-y-3">
-        {OBESITY_QUESTIONS.map((q, i) => {
-          const picked = answers[i]
+      {/* Questions — grouped by dimension */}
+      <div className="space-y-4">
+        {DIMENSIONS.map((dim, di) => {
+          const dimAnswered = answers.slice(di * 3, di * 3 + 3).filter(v => v > 0).length
+          const sc = dimScores[di]
+          const lv = getDimLevel(sc)
           return (
-            <div key={i} className={`bg-white rounded-2xl p-4 shadow-sm border transition-colors ${
-              picked > 0 ? 'border-purple-200' : 'border-slate-100'
-            }`}>
-              <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
-                <span className="text-purple-500 font-black mr-1.5">{i + 1}.</span>{q}
-              </p>
-              <div className="flex gap-1.5">
-                {[1, 2, 3, 4, 5].map(v => (
-                  <button key={v}
-                    onClick={() => setAnswers(prev => prev.map((a, idx) => idx === i ? v : a))}
-                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-                      picked === v
-                        ? 'bg-purple-600 text-white shadow-md'
-                        : 'bg-slate-100 text-slate-500 hover:bg-purple-100 hover:text-purple-600'
-                    }`}>
-                    {v}
-                  </button>
-                ))}
+            <div key={dim.id} className={`rounded-2xl border ${dim.border} overflow-hidden`}>
+              {/* Dimension header */}
+              <div className={`${dim.head} px-4 py-2.5 flex items-center justify-between`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{dim.emoji}</span>
+                  <div>
+                    <p className="font-black text-white text-sm">{dim.label}</p>
+                    <p className="text-white/70 text-[10px]">{dim.ref}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white/80 text-[10px]">{dimAnswered}/3 ข้อ</p>
+                  {dimAnswered === 3 && (
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${lv.bg} ${lv.color}`}>{sc}/15 · {lv.label}</span>
+                  )}
+                </div>
               </div>
-              {picked > 0 && (
-                <p className="text-[10px] text-purple-500 font-semibold mt-1.5 text-right">{SCORE_LABELS[picked - 1]}</p>
-              )}
+              {/* Questions */}
+              <div className={`${dim.bg} divide-y divide-white/60`}>
+                {dim.questions.map((q, qi) => {
+                  const i = di * 3 + qi
+                  const picked = answers[i]
+                  return (
+                    <div key={qi} className="px-4 py-3.5 bg-white/80">
+                      <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
+                        <span className={`${dim.color} font-black mr-1.5`}>{i + 1}.</span>{q}
+                      </p>
+                      <div className="flex gap-1.5">
+                        {[1, 2, 3, 4, 5].map(v => (
+                          <button key={v}
+                            onClick={() => setAnswers(prev => prev.map((a, idx) => idx === i ? v : a))}
+                            className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                              picked === v
+                                ? `${dim.head} text-white shadow-md`
+                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                            }`}>
+                            {v}
+                          </button>
+                        ))}
+                      </div>
+                      {picked > 0 && (
+                        <p className={`text-[10px] ${dim.color} font-semibold mt-1.5 text-right`}>{SCORE_LABELS[picked - 1]}</p>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )
         })}
@@ -273,17 +369,35 @@ ${qText}
 
       {/* Risk summary */}
       {allDone && (
-        <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-4 flex items-center justify-between`}>
-          <div>
-            <p className="text-xs text-slate-500">คะแนนรวมพฤติกรรมเสี่ยง</p>
-            <p className={`text-3xl font-black mt-0.5 ${risk.color}`}>
-              {total} <span className="text-base font-normal text-slate-400">/ 75</span>
-            </p>
-          </div>
-          <div className="text-right">
+        <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-4 space-y-3`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-slate-500">คะแนนรวมสุขภาพ 5 ด้าน</p>
+              <p className={`text-3xl font-black mt-0.5 ${risk.color}`}>
+                {total} <span className="text-base font-normal text-slate-400">/ 75</span>
+              </p>
+            </div>
             <span className={`inline-block px-4 py-2 rounded-2xl font-bold text-sm ${risk.color} bg-white/70 border ${risk.border}`}>
               {risk.label}
             </span>
+          </div>
+          {/* Per-dimension mini bars */}
+          <div className="space-y-1.5">
+            {DIMENSIONS.map((dim, di) => {
+              const sc = dimScores[di]
+              const lv = getDimLevel(sc)
+              const pct = (sc / 15) * 100
+              return (
+                <div key={dim.id} className="flex items-center gap-2">
+                  <span className="text-sm w-5 text-center">{dim.emoji}</span>
+                  <div className="flex-1 h-2 bg-white/60 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, background: pct <= 40 ? '#10b981' : pct <= 67 ? '#f59e0b' : '#ef4444' }} />
+                  </div>
+                  <span className={`text-[10px] font-bold w-16 text-right ${lv.color}`}>{sc}/15 {lv.label}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -303,7 +417,7 @@ ${qText}
         </button>
       )}
 
-      {!allDone && answered < 15 && (
+      {!allDone && answered > 0 && (
         <p className="text-center text-xs text-slate-400">ตอบให้ครบ {15 - answered} ข้อที่เหลือเพื่อวิเคราะห์</p>
       )}
 
@@ -328,8 +442,8 @@ ${qText}
           </div>
           {/* WHO badge */}
           <div className="bg-purple-50 border-b border-purple-100 px-5 py-2 flex items-center gap-2">
-            <span className="text-[10px] font-bold text-purple-600 bg-white border border-purple-200 px-2 py-0.5 rounded-full">WHO Guideline</span>
-            <span className="text-[10px] text-purple-400">การวิเคราะห์เฉพาะบุคคลตามพฤติกรรมจริง</span>
+            <span className="text-[10px] font-bold text-purple-600 bg-white border border-purple-200 px-2 py-0.5 rounded-full">WHO Adolescent Health</span>
+            <span className="text-[10px] text-purple-400">12–18 ปี · กระทรวงสาธารณสุข · วิเคราะห์เฉพาะบุคคล</span>
           </div>
           {/* Content */}
           <div className="bg-white px-5 py-4 space-y-0.5">
