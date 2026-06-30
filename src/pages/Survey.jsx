@@ -1,27 +1,8 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 import { Star, ChevronRight, ChevronLeft, Check, Send, RotateCcw } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
+import { useLang } from '../context/LangContext'
 import { submitSurvey } from '../services/userSync'
-
-const FEATURES = [
-  { value: 'assessment', label: 'ประเมินสุขภาพ',  emoji: '📋' },
-  { value: 'bmi',        label: 'คำนวณ BMI',       emoji: '⚖️' },
-  { value: 'nubcal',     label: 'บันทึกแคลอรี่',   emoji: '🔥' },
-  { value: 'analytics',  label: 'กราฟสุขภาพ',      emoji: '📊' },
-  { value: 'ai',         label: 'คำแนะนำ AI',       emoji: '🤖' },
-  { value: 'rewards',    label: 'แต้มสะสม',         emoji: '🏆' },
-  { value: 'knowledge',  label: 'ใบความรู้',         emoji: '📚' },
-  { value: 'activity',   label: 'ส่งภาพกิจกรรม',   emoji: '📸' },
-]
-
-const RATINGS = [
-  { key: 'overall',     label: 'ความพึงพอใจโดยรวม',      emoji: '⭐' },
-  { key: 'easeOfUse',   label: 'ความง่ายในการใช้งาน',     emoji: '🖱️' },
-  { key: 'design',      label: 'ความสวยงามของดีไซน์',     emoji: '🎨' },
-  { key: 'usefulness',  label: 'ประโยชน์ต่อสุขภาพของคุณ', emoji: '💪' },
-]
-
-const SCORE_LABELS = ['', 'ควรปรับปรุง', 'พอใช้', 'ดี', 'ดีมาก', 'ดีเยี่ยม']
 
 function StarRating({ value, onChange }) {
   const [hover, setHover] = useState(0)
@@ -55,16 +36,15 @@ const TOTAL_STEPS = 3
 
 export default function Survey() {
   const { user } = useHealth()
+  const { t } = useLang()
+  const sv = t.survey
 
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  // step 1 — ratings
   const [ratings, setRatings] = useState({ overall: 0, easeOfUse: 0, design: 0, usefulness: 0 })
-
-  // step 2 — features + text
   const [favorites, setFavorites] = useState([])
   const [suggestion, setSuggestion] = useState('')
   const [comment, setComment]       = useState('')
@@ -78,8 +58,8 @@ export default function Survey() {
   }
 
   function validateStep1() {
-    const missing = RATINGS.find(r => !ratings[r.key])
-    if (missing) { setError(`กรุณาให้คะแนน "${missing.label}"`); return false }
+    const missing = sv.ratings.find(r => !ratings[r.key])
+    if (missing) { setError(sv.rateError.replace('{label}', missing.label)); return false }
     setError('')
     return true
   }
@@ -109,7 +89,7 @@ export default function Survey() {
       setSubmitted(true)
       setStep(3)
     } catch {
-      setError('เกิดข้อผิดพลาด กรุณาลองใหม่')
+      setError(sv.submitError)
     } finally {
       setSubmitting(false)
     }
@@ -139,17 +119,16 @@ export default function Survey() {
             📝
           </div>
           <div>
-            <h1 className="font-extrabold text-xl leading-tight">แบบประเมินความพึงพอใจ</h1>
-            <p className="text-indigo-200 text-sm mt-0.5">ช่วยพัฒนาแอปให้ดียิ่งขึ้น ใช้เวลาเพียง 1 นาที</p>
+            <h1 className="font-extrabold text-xl leading-tight">{sv.title}</h1>
+            <p className="text-indigo-200 text-sm mt-0.5">{sv.subtitle}</p>
           </div>
         </div>
 
-        {/* progress bar */}
         {step < 3 && (
           <div className="mt-5">
             <div className="flex justify-between text-xs text-indigo-200 mb-1.5">
-              <span>ขั้นตอน {step} / {TOTAL_STEPS - 1}</span>
-              <span>{step === 1 ? 'ให้คะแนน' : 'ความคิดเห็น'}</span>
+              <span>{sv.stepOf.replace('{step}', step).replace('{total}', TOTAL_STEPS - 1)}</span>
+              <span>{sv.stepLabels[step - 1]}</span>
             </div>
             <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
               <div
@@ -164,16 +143,16 @@ export default function Survey() {
       {/* ── Step 1: Star ratings ── */}
       {step === 1 && (
         <div className="bg-white rounded-3xl shadow-sm p-6 space-y-6">
-          <h2 className="font-bold text-slate-800 text-lg">ให้คะแนนในแต่ละด้าน</h2>
+          <h2 className="font-bold text-slate-800 text-lg">{sv.rateTitle}</h2>
 
-          {RATINGS.map(({ key, label, emoji }) => (
+          {sv.ratings.map(({ key, label, emoji }) => (
             <div key={key}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xl">{emoji}</span>
                 <div>
                   <p className="font-semibold text-slate-700 text-sm">{label}</p>
                   {ratings[key] > 0 && (
-                    <p className="text-xs text-yellow-600 font-medium">{SCORE_LABELS[ratings[key]]}</p>
+                    <p className="text-xs text-yellow-600 font-medium">{sv.scoreLabels[ratings[key]]}</p>
                   )}
                 </div>
               </div>
@@ -189,7 +168,7 @@ export default function Survey() {
             onClick={handleNext}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
           >
-            ถัดไป <ChevronRight size={18} />
+            {sv.nextBtn} <ChevronRight size={18} />
           </button>
         </div>
       )}
@@ -197,15 +176,14 @@ export default function Survey() {
       {/* ── Step 2: Features + text ── */}
       {step === 2 && (
         <div className="bg-white rounded-3xl shadow-sm p-6 space-y-5">
-          <h2 className="font-bold text-slate-800 text-lg">ความคิดเห็นของคุณ</h2>
+          <h2 className="font-bold text-slate-800 text-lg">{sv.opinionTitle}</h2>
 
-          {/* favorite features */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-3">
-              ฟีเจอร์ที่คุณชอบ (เลือกได้หลายอย่าง)
+              {sv.featuresLabel}
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {FEATURES.map(f => {
+              {sv.features.map(f => {
                 const active = favorites.includes(f.value)
                 return (
                   <button
@@ -227,29 +205,27 @@ export default function Survey() {
             </div>
           </div>
 
-          {/* suggestion */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              อยากให้เพิ่มหรือปรับปรุงอะไร?
+              {sv.suggestionLabel}
             </label>
             <textarea
               value={suggestion}
               onChange={e => setSuggestion(e.target.value)}
-              placeholder="เช่น อยากให้เพิ่มการแจ้งเตือน, ต้องการธีมสีอื่น..."
+              placeholder={sv.suggestionHint}
               rows={3}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
             />
           </div>
 
-          {/* comment */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              ความคิดเห็นเพิ่มเติม
+              {sv.commentLabel}
             </label>
             <textarea
               value={comment}
               onChange={e => setComment(e.target.value)}
-              placeholder="บอกเราตรงๆ ว่าคิดเห็นอย่างไร..."
+              placeholder={sv.commentHint}
               rows={3}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
             />
@@ -264,7 +240,7 @@ export default function Survey() {
               onClick={() => setStep(1)}
               className="flex items-center gap-1.5 px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors"
             >
-              <ChevronLeft size={16} /> ย้อนกลับ
+              <ChevronLeft size={16} /> {sv.backBtn}
             </button>
             <button
               onClick={handleSubmit}
@@ -272,8 +248,8 @@ export default function Survey() {
               className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
             >
               {submitting
-                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> กำลังส่ง...</>
-                : <><Send size={16} /> ส่งแบบประเมิน</>
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {sv.sendingBtn}</>
+                : <><Send size={16} /> {sv.submitBtn}</>
               }
             </button>
           </div>
@@ -288,15 +264,13 @@ export default function Survey() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-800">ขอบคุณมากครับ!</h2>
-            <p className="text-slate-500 text-sm mt-2 leading-relaxed">
-              ความคิดเห็นของคุณมีคุณค่าอย่างมากสำหรับการพัฒนาแอปให้ดียิ่งขึ้น
-            </p>
+            <h2 className="text-2xl font-extrabold text-slate-800">{sv.thankTitle}</h2>
+            <p className="text-slate-500 text-sm mt-2 leading-relaxed">{sv.thankDesc}</p>
           </div>
 
           {avgScore && (
             <div className="bg-yellow-50 rounded-2xl p-4 inline-block mx-auto">
-              <p className="text-slate-500 text-xs mb-1">คะแนนเฉลี่ยที่คุณให้</p>
+              <p className="text-slate-500 text-xs mb-1">{sv.avgLabel}</p>
               <div className="flex items-center gap-1 justify-center">
                 <Star size={22} className="text-yellow-400 fill-yellow-400" />
                 <span className="text-2xl font-extrabold text-slate-800">{avgScore}</span>
@@ -309,7 +283,7 @@ export default function Survey() {
             onClick={reset}
             className="flex items-center gap-2 mx-auto text-sm text-slate-400 hover:text-indigo-500 transition-colors"
           >
-            <RotateCcw size={14} /> ทำแบบประเมินอีกครั้ง
+            <RotateCcw size={14} /> {sv.redoBtn}
           </button>
         </div>
       )}
