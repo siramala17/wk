@@ -83,103 +83,44 @@ function renderMarkdown(text) {
   return elements
 }
 
-// แบบประเมินพฤติกรรมสุขภาพ ตามหลัก 3อ.2ส. กระทรวงสาธารณสุข
-// 3อ = อาหาร ออกกำลังกาย อารมณ์ | อ้างอิง: กรมอนามัย กรมสุขภาพจิต กรมควบคุมโรค
-// isRisk=false = พฤติกรรมดี (ทำบ่อย = คะแนนสุขภาพสูง)
-// isRisk=true  = พฤติกรรมเสี่ยง (ทำบ่อย = คะแนนสุขภาพต่ำ)
-const DIMENSIONS = [
-  {
-    id: 'food', emoji: '🍱', label: 'พฤติกรรมการบริโภคอาหาร',
-    desc: 'พฤติกรรมการกินและโภชนาการประจำวัน',
-    color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', head: 'bg-emerald-600',
-    ref: 'กองโภชนาการ กรมอนามัย กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
-    questions: [
-      { text: 'กินอาหารที่ปรุงสุกและสะอาด',                                                                                                              isRisk: false },
-      { text: 'กินอาหารครบ 5 หมู่อย่างหลากหลาย โดยใน 1 มื้อ มีข้าว-แป้ง เนื้อสัตว์ ไขมัน ผักและผลไม้',                                                isRisk: false },
-      { text: 'กินผักและผลไม้รวมกันอย่างน้อยวันละ 5 กำมือ (400 กรัม)',                                                                                   isRisk: false },
-      { text: 'กินอาหารหวาน เช่น ขนมเค้ก ช็อกโกแลต ไอศกรีม หรือดื่มเครื่องดื่มหวาน (ผสมน้ำตาล น้ำเชื่อม นมหวาน)',                                    isRisk: true  },
-      { text: 'กินอาหารมัน เช่น ข้าวขาหมู ข้าวมันไก่ แกงกะทิ',                                                                                          isRisk: true  },
-      { text: 'กินอาหารเค็มหรือปรุงรสเค็ม เช่น ไก่รสจัด ขนมกรุบกรอบ',                                                                                  isRisk: true  },
-      { text: 'กินอาหารแปรรูป อาหารปิ้งย่าง ของทอด เช่น ไก่ทอด หมูทอด อาหารใส่สี',                                                                      isRisk: true  },
-      { text: 'ดื่มน้ำสะอาด วันละ 6-8 แก้ว',                                                                                                            isRisk: false },
-    ],
-  },
-  {
-    id: 'exercise', emoji: '🏃', label: 'พฤติกรรมการออกกำลังกาย',
-    desc: 'ความสม่ำเสมอในการเคลื่อนไหวร่างกาย',
-    color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200', head: 'bg-blue-600',
-    ref: 'กรมอนามัย กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
-    questions: [
-      { text: 'ลุกขยับร่างกายทุก 2 ชั่วโมง ระหว่างเรียนหรือระหว่างวัน',                                                                                   isRisk: false },
-      { text: 'วิ่งเล่นหรือออกกำลังกายจนหัวใจเต้นเร็วขึ้นหรือเหนื่อยจนพูดได้ไม่กี่คำ สะสมวันละ ≥ 1 ชั่วโมง',                                          isRisk: false },
-      { text: 'ฝึกความแข็งแรงของกล้ามเนื้อ เช่น ดันพื้น ดึงข้อ แกว่งแขน ลูกน้ำ',                                                                         isRisk: false },
-    ],
-  },
-  {
-    id: 'emotion', emoji: '🧘', label: 'พฤติกรรมการจัดการอารมณ์',
-    desc: 'การดูแลสุขภาพจิตและจัดการความเครียด',
-    color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200', head: 'bg-purple-600',
-    ref: 'กรมสุขภาพจิต กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
-    questions: [
-      { text: 'สังเกตอารมณ์หรือความรู้สึกของตนเองในแต่ละวัน',                                                                                             isRisk: false },
-      { text: 'ใช้วิธีผ่อนคลายเมื่อรู้สึกเครียดหรือไม่สบายใจ เช่น เล่นกีฬา ฟังเพลง ดูภาพยนตร์',                                                        isRisk: false },
-      { text: 'ทำกิจกรรมพัฒนาตนเองหรือมีส่วนร่วม เช่น คุยกับเพื่อน ทำงานอดิเรก ทำงานจิตอาสา ร้องเพลง',                                                 isRisk: false },
-      { text: 'สามารถจัดเวลาให้เพียงพอในเรื่องการเรียน ชีวิตส่วนตัว และครอบครัว',                                                                         isRisk: false },
-      { text: 'นอนหลับ วันละ 9-10 ชั่วโมง',                                                                                                              isRisk: false },
-    ],
-  },
+// ── แบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน ────────────────────────────────────
+// สกอร์ = ผลรวม 15-75 (สูง = เสี่ยงมาก)
+// ระดับ: 15-30 ต่ำ | 31-45 ปานกลาง | 46-60 สูง | 61-75 สูงมาก
+const OBESITY_QUESTIONS = [
+  'รับประทานอาหารทอดหรืออาหารที่มีไขมันสูง',
+  'รับประทานอาหารจานด่วนหรืออาหารสำเร็จรูป',
+  'ดื่มเครื่องดื่มที่มีน้ำตาล เช่น น้ำอัดลม ชานม กาแฟปรุงสำเร็จ',
+  'รับประทานขนมหวาน เบเกอรี่ หรือของว่างบ่อยครั้ง',
+  'รับประทานอาหารมื้อดึกก่อนนอน',
+  'รับประทานอาหารในปริมาณมากเกินความต้องการของร่างกาย',
+  'รับประทานผักและผลไม้น้อยกว่า 5 ส่วนต่อวัน',
+  'ออกกำลังกายน้อยกว่า 150 นาทีต่อสัปดาห์',
+  'ใช้เวลานั่งทำงาน ดูโทรศัพท์ หรือดูโทรทัศน์ติดต่อกันนานเกิน 2 ชั่วโมง',
+  'นอนหลับพักผ่อนน้อยกว่า 7 ชั่วโมงต่อวัน',
+  'รับประทานอาหารเมื่อมีความเครียดหรืออารมณ์ไม่ดี',
+  'ดื่มเครื่องดื่มแอลกอฮอล์เป็นประจำ',
+  'ไม่ควบคุมน้ำหนักหรือไม่ติดตามน้ำหนักตัวของตนเอง',
+  'ใช้รถยนต์หรือรถจักรยานยนต์แทนการเดินในระยะทางใกล้',
+  'มีกิจกรรมทางกายระดับปานกลางถึงหนักน้อยกว่า 3 วันต่อสัปดาห์',
 ]
 
-// ระดับความถี่ (1=ไม่ปฏิบัติ … 5=ทุกวัน)
-const SCORE_LABELS = ['ไม่ปฏิบัติ', '1-2 วัน', '3-4 วัน', '5-6 วัน', 'ทุกวัน']
-const TOTAL_Q = DIMENSIONS.reduce((s, d) => s + d.questions.length, 0)  // 16
+const OB_SCALE_LABELS = ['ไม่เคยปฏิบัติ', 'นานๆ ครั้ง', 'บางครั้ง', 'บ่อยครั้ง', 'เป็นประจำ']
+const OB_TOTAL  = 15
+const OB_MIN    = 15
+const OB_MAX    = 75
 
-// คำนวณ index เริ่มต้นของแต่ละหมวด
-function getDimStart(dimIdx) {
-  let start = 0
-  for (let i = 0; i < dimIdx; i++) start += DIMENSIONS[i].questions.length
-  return start
-}
-
-// คะแนนสุขภาพของหมวด: สูง = ดีกว่า (max = จำนวนข้อ × 5)
-function getDimHealthScore(dimIdx, answers) {
-  const start = getDimStart(dimIdx)
-  return DIMENSIONS[dimIdx].questions.reduce((s, q, qi) => {
-    const v = answers[start + qi]
-    if (!v) return s
-    return s + (q.isRisk ? (6 - v) : v)
-  }, 0)
-}
-function getDimMaxScore(dimIdx) { return DIMENSIONS[dimIdx].questions.length * 5 }
-
-// คะแนนสุขภาพรวม (max = TOTAL_Q * 5 = 80)
-function getTotalHealthScore(answers) {
-  return DIMENSIONS.reduce((s, _, di) => s + getDimHealthScore(di, answers), 0)
-}
-const MAX_HEALTH = TOTAL_Q * 5  // 80
-
-function getDimLevel(score, maxScore) {
-  const pct = score / maxScore
-  if (pct >= 0.8) return { label: 'ดีมาก',         color: 'text-emerald-600', bg: 'bg-emerald-100' }
-  if (pct >= 0.6) return { label: 'ดี',             color: 'text-teal-600',    bg: 'bg-teal-100' }
-  if (pct >= 0.4) return { label: 'ควรปรับปรุง',   color: 'text-yellow-600',  bg: 'bg-yellow-100' }
-  return                   { label: 'ต้องดูแล',     color: 'text-red-600',     bg: 'bg-red-100' }
-}
-function getRiskLevel(healthScore) {
-  // healthScore out of MAX_HEALTH (80) — higher = better health
-  const pct = healthScore / MAX_HEALTH
-  if (pct >= 0.8) return { label: 'สุขภาพดีมาก',        color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200', dot: '#10b981' }
-  if (pct >= 0.6) return { label: 'สุขภาพดี',            color: 'text-teal-700',    bg: 'bg-teal-50',     border: 'border-teal-200',    dot: '#0d9488' }
-  if (pct >= 0.4) return { label: 'ควรปรับปรุง',          color: 'text-yellow-700',  bg: 'bg-yellow-50',   border: 'border-yellow-200',  dot: '#f59e0b' }
-  if (pct >= 0.2) return { label: 'ต้องดูแลพฤติกรรม',    color: 'text-orange-700',  bg: 'bg-orange-50',   border: 'border-orange-200',  dot: '#f97316' }
-  return                   { label: 'ต้องการความช่วยเหลือ', color: 'text-red-700',   bg: 'bg-red-50',      border: 'border-red-200',     dot: '#ef4444' }
+function getObesityRiskLevel(total) {
+  if (total <= 30) return { label: 'ความเสี่ยงต่ำ',      color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-300', dot: '#10b981', bar: '#10b981' }
+  if (total <= 45) return { label: 'ความเสี่ยงปานกลาง',  color: 'text-yellow-700',  bg: 'bg-yellow-50',   border: 'border-yellow-300',  dot: '#f59e0b', bar: '#f59e0b' }
+  if (total <= 60) return { label: 'ความเสี่ยงสูง',       color: 'text-orange-700',  bg: 'bg-orange-50',   border: 'border-orange-300',  dot: '#f97316', bar: '#f97316' }
+  return               { label: 'ความเสี่ยงสูงมาก',   color: 'text-red-700',     bg: 'bg-red-50',      border: 'border-red-300',     dot: '#ef4444', bar: '#ef4444' }
 }
 
 function ObesityAssessment({ bmi, weight, height, category }) {
   const { user } = useHealth()
-  const historyKey = `obesity_history_${user?.id || 'guest'}`
+  const historyKey = `obese_risk_${user?.id || 'guest'}`
 
-  const [answers, setAnswers]         = useState(Array(TOTAL_Q).fill(0))
+  const [answers, setAnswers]         = useState(Array(OB_TOTAL).fill(0))
   const [aiResult, setAiResult]       = useState('')
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState('')
@@ -187,24 +128,23 @@ function ObesityAssessment({ bmi, weight, height, category }) {
   const [saved, setSaved]             = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [history, setHistory]         = useState(() => {
-    try { return JSON.parse(localStorage.getItem(`obesity_history_${user?.id || 'guest'}`) || '[]') }
+    try { return JSON.parse(localStorage.getItem(`obese_risk_${user?.id || 'guest'}`) || '[]') }
     catch { return [] }
   })
 
-  const answered    = answers.filter(v => v > 0).length
-  const allDone     = answered === TOTAL_Q
-  const healthScore = getTotalHealthScore(answers)
-  const risk        = getRiskLevel(healthScore)
-  const pct         = (answered / TOTAL_Q) * 100
-  const dimScores   = DIMENSIONS.map((_, di) => getDimHealthScore(di, answers))
+  const answered = answers.filter(v => v > 0).length
+  const allDone  = answered === OB_TOTAL
+  const total    = answers.reduce((s, v) => s + (v || 0), 0)
+  const risk     = allDone ? getObesityRiskLevel(total) : null
+  const pct      = (answered / OB_TOTAL) * 100
+  const barPct   = allDone ? ((total - OB_MIN) / (OB_MAX - OB_MIN)) * 100 : 0
 
   function saveRecord(resultText) {
     const record = {
       id: Date.now(),
       date: new Date().toISOString(),
       bmi, weight, height, category,
-      total: healthScore,
-      riskLabel: getRiskLevel(healthScore).label,
+      total, riskLabel: getObesityRiskLevel(total).label,
       answers: [...answers],
       aiResult: resultText,
     }
@@ -218,44 +158,33 @@ function ObesityAssessment({ bmi, weight, height, category }) {
     if (!allDone) return
     setLoading(true); setError('')
     try {
-      const dimText = DIMENSIONS.map((dim, di) => {
-        const sc = dimScores[di]
-        const lv = getDimLevel(sc, getDimMaxScore(di))
-        const start = getDimStart(di)
-        const qRows = dim.questions.map((q, qi) => {
-          const v = answers[start + qi]
-          const freq = SCORE_LABELS[v - 1] || '-'
-          const type = q.isRisk ? '⚠️พฤติกรรมเสี่ยง' : '✅พฤติกรรมดี'
-          return `  • [${type}] ${q.text} → ${freq}`
-        }).join('\n')
-        const maxSc = getDimMaxScore(di)
-        return `${dim.emoji} ${dim.label} — คะแนนสุขภาพ ${sc}/${maxSc} (${lv.label})\n${qRows}`
-      }).join('\n\n')
+      const qRows = OBESITY_QUESTIONS.map((q, i) => {
+        const v = answers[i]
+        return `  ${i + 1}. ${q} → ${OB_SCALE_LABELS[v - 1] || '-'} (${v}/5)`
+      }).join('\n')
 
-      const prompt = `คุณเป็นนักโภชนาการและผู้เชี่ยวชาญสุขภาพวัยรุ่น อ้างอิงแนวทางกระทรวงสาธารณสุขไทย (หลัก 3อ.2ส.)
+      const prompt = `คุณเป็นผู้เชี่ยวชาญด้านโภชนาการและสุขภาพวัยรุ่น อ้างอิงแนวทางกรมอนามัย กระทรวงสาธารณสุข
 
 ข้อมูลผู้ใช้:
 - BMI: ${bmi} (${category}) — เกณฑ์กรมอนามัย: ปกติ 18.5–22.9, เริ่มเกิน 23–24.9, อ้วน ≥25
 - น้ำหนัก: ${weight} kg · ส่วนสูง: ${height} cm
-- คะแนนสุขภาพรวม: ${healthScore}/${MAX_HEALTH} (${risk.label})
+- คะแนนความเสี่ยงต่อภาวะอ้วน: ${total}/${OB_MAX} — ${getObesityRiskLevel(total).label}
 
-ผลแบบประเมินพฤติกรรมสุขภาพ 3อ. (ความถี่/สัปดาห์ที่ผ่านมา):
-${dimText}
+แบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน 15 ข้อ (1=ไม่เคย … 5=เป็นประจำ):
+${qRows}
 
-หมายเหตุ: ✅พฤติกรรมดี = ยิ่งทำบ่อยยิ่งดี | ⚠️พฤติกรรมเสี่ยง = ยิ่งทำบ่อยยิ่งเสี่ยง
+หมายเหตุ: ทุกข้อเป็นพฤติกรรมเสี่ยง — ยิ่งคะแนนสูงยิ่งเสี่ยงต่อภาวะอ้วน
 
-วิเคราะห์โดยอ้างอิงหลัก 3อ.2ส. กระทรวงสาธารณสุข:
+วิเคราะห์ตามแนวทางกรมอนามัย:
 
-### 1. ภาพรวมพฤติกรรมสุขภาพ 3 ด้าน
-- อาหาร: กองโภชนาการ กรมอนามัย — ผักผลไม้ ≥5 กำมือ/วัน น้ำ 6–8 แก้ว/วัน ลดหวาน-มัน-เค็ม
-- ออกกำลังกาย: กรมอนามัย — เคลื่อนไหว ≥1 ชม./วัน ลุกขยับทุก 2 ชม.
-- อารมณ์: กรมสุขภาพจิต — นอนหลับ 9–10 ชม./วัน จัดการความเครียดได้อย่างเหมาะสม
+### 1. ภาพรวมความเสี่ยงต่อภาวะอ้วน
+วิเคราะห์ว่า BMI และพฤติกรรมปัจจุบันมีความสอดคล้องกันอย่างไร
 
-### 2. พฤติกรรมที่ต้องปรับปรุงเร่งด่วน
-ระบุ 2–3 พฤติกรรมที่เป็นปัญหามากที่สุด พร้อมผลกระทบต่อ BMI และสุขภาพ
+### 2. พฤติกรรมเสี่ยงสูงสุดที่ต้องแก้ไขด่วน
+ระบุ 3 พฤติกรรมที่มีคะแนนสูงสุด พร้อมอธิบายผลกระทบต่อน้ำหนักและสุขภาพ
 
 ### 3. แผนปรับพฤติกรรมรายสัปดาห์ (ทำได้จริง)
-แนะนำ 3–4 เป้าหมายที่วัดผลได้ ตามแนวทางกระทรวงสาธารณสุข
+แนะนำ 3–4 เป้าหมายที่วัดผลได้ ช่วยลดความเสี่ยงภาวะอ้วน
 
 ตอบภาษาไทย กระชับ ชัดเจน ใช้หัวข้อย่อย ไม่เกิน 480 คำ`
 
@@ -290,15 +219,15 @@ ${dimText}
     <div className="space-y-4">
       {/* Header */}
       <div className="rounded-3xl p-5 text-white relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
+        style={{ background: 'linear-gradient(135deg, #ea580c, #dc2626)' }}>
         <div className="absolute -top-5 -right-5 w-24 h-24 rounded-full bg-white/10" />
         <div className="relative">
-          <h2 className="font-black text-base">แบบประเมินพฤติกรรมสุขภาพ 3อ.</h2>
-          <p className="text-purple-200 text-xs mt-0.5">หลัก 3อ.2ส. กระทรวงสาธารณสุข · {DIMENSIONS.length} หมวด รวม {TOTAL_Q} ข้อ</p>
+          <h2 className="font-black text-base">แบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน</h2>
+          <p className="text-red-100 text-xs mt-0.5">อ้างอิงกรมอนามัย กระทรวงสาธารณสุข · {OB_TOTAL} ข้อ</p>
           <div className="mt-3 space-y-1.5">
-            <div className="flex justify-between text-xs text-purple-200">
-              <span>ตอบแล้ว {answered}/{TOTAL_Q} ข้อ</span>
-              {answered > 0 && <span className="font-bold text-white">คะแนนสุขภาพ {healthScore}/{MAX_HEALTH}</span>}
+            <div className="flex justify-between text-xs text-red-100">
+              <span>ตอบแล้ว {answered}/{OB_TOTAL} ข้อ</span>
+              {allDone && <span className="font-bold text-white">คะแนนรวม {total}/{OB_MAX}</span>}
             </div>
             <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
               <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
@@ -307,9 +236,9 @@ ${dimText}
         </div>
       </div>
 
-      {/* Score legend */}
+      {/* Scale legend */}
       <div className="flex gap-1 overflow-x-auto pb-1">
-        {SCORE_LABELS.map((l, i) => (
+        {OB_SCALE_LABELS.map((l, i) => (
           <div key={i} className="flex-shrink-0 text-center bg-slate-50 rounded-xl py-1.5 px-2.5">
             <p className="text-xs font-black text-slate-700">{i + 1}</p>
             <p className="text-[9px] text-slate-400 leading-tight mt-0.5 whitespace-nowrap">{l}</p>
@@ -317,136 +246,66 @@ ${dimText}
         ))}
       </div>
 
-      {/* Overview — dimension TOC card (matching screenshot) */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
-          <p className="text-sm font-black text-slate-700">
-            📋 หัวข้อที่ประเมิน ({DIMENSIONS.length} ด้าน รวม {TOTAL_Q} ข้อ)
-          </p>
-        </div>
-        <div className="divide-y divide-slate-100">
-          {DIMENSIONS.map((dim, di) => {
-            const start = getDimStart(di)
-            const dimLen = dim.questions.length
-            const dimAnswered = answers.slice(start, start + dimLen).filter(v => v > 0).length
-            const sc = dimScores[di]
-            const lv = getDimLevel(sc, getDimMaxScore(di))
-            return (
-              <div key={dim.id} className="flex items-center gap-3 px-4 py-2.5">
-                <span className="text-xl flex-shrink-0">{dim.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-slate-700 leading-tight">{dim.label}</p>
-                  <p className="text-[10px] text-slate-400 truncate">{dim.desc}</p>
-                </div>
-                <div className="flex-shrink-0 flex items-center gap-1.5">
-                  {dimAnswered === dimLen
-                    ? <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${lv.bg} ${lv.color}`}>{lv.label}</span>
-                    : <span className="text-[10px] text-slate-400">{dimAnswered}/{dimLen} ข้อ</span>
-                  }
-                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">{dimLen} ข้อ</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Questions — grouped by dimension */}
-      <div className="space-y-4">
-        {DIMENSIONS.map((dim, di) => {
-          const start = getDimStart(di)
-          const dimLen = dim.questions.length
-          const dimAnswered = answers.slice(start, start + dimLen).filter(v => v > 0).length
-          const sc = dimScores[di]
-          const maxSc = getDimMaxScore(di)
-          const lv = getDimLevel(sc, maxSc)
+      {/* Questions */}
+      <div className="space-y-3">
+        {OBESITY_QUESTIONS.map((q, i) => {
+          const picked = answers[i]
           return (
-            <div key={dim.id} className={`rounded-2xl border ${dim.border} overflow-hidden`}>
-              {/* Dimension header */}
-              <div className={`${dim.head} px-4 py-2.5 flex items-center justify-between`}>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{dim.emoji}</span>
-                  <div>
-                    <p className="font-black text-white text-sm">{dim.label}</p>
-                    <p className="text-white/70 text-[10px]">{dim.ref}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-white/80 text-[10px]">{dimAnswered}/{dimLen} ข้อ</p>
-                  {dimAnswered === dimLen && (
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${lv.bg} ${lv.color}`}>{sc}/{maxSc} · {lv.label}</span>
-                  )}
-                </div>
+            <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+              <div className="flex gap-2 mb-3">
+                <span className="w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {i + 1}
+                </span>
+                <p className="text-sm text-slate-700 leading-relaxed flex-1">{q}</p>
               </div>
-              {/* Questions */}
-              <div className={`${dim.bg} divide-y divide-white/60`}>
-                {dim.questions.map((q, qi) => {
-                  const i = start + qi
-                  const picked = answers[i]
-                  return (
-                    <div key={qi} className="px-4 py-3.5 bg-white/80">
-                      <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
-                        <span className={`${dim.color} font-black mr-1.5`}>{i + 1}.</span>
-                        {q.isRisk && <span className="text-[10px] text-red-400 font-semibold mr-1">[เสี่ยง]</span>}
-                        {q.text}
-                      </p>
-                      <div className="flex gap-1.5">
-                        {[1, 2, 3, 4, 5].map(v => (
-                          <button key={v}
-                            onClick={() => setAnswers(prev => prev.map((a, idx) => idx === i ? v : a))}
-                            className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-                              picked === v
-                                ? `${dim.head} text-white shadow-md`
-                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                            }`}>
-                            {v}
-                          </button>
-                        ))}
-                      </div>
-                      {picked > 0 && (
-                        <p className={`text-[10px] ${dim.color} font-semibold mt-1.5 text-right`}>{SCORE_LABELS[picked - 1]}</p>
-                      )}
-                    </div>
-                  )
-                })}
+              <div className="flex gap-1.5">
+                {[1, 2, 3, 4, 5].map(v => (
+                  <button key={v}
+                    onClick={() => setAnswers(prev => prev.map((a, idx) => idx === i ? v : a))}
+                    className={`flex-1 h-10 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                      picked === v
+                        ? 'bg-red-500 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    }`}>
+                    {v}
+                  </button>
+                ))}
               </div>
+              {picked > 0 && (
+                <p className="text-[10px] text-red-500 font-semibold mt-1.5 text-right">
+                  {OB_SCALE_LABELS[picked - 1]}
+                </p>
+              )}
             </div>
           )
         })}
       </div>
 
       {/* Risk summary */}
-      {allDone && (
+      {allDone && risk && (
         <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-4 space-y-3`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-500">คะแนนรวมสุขภาพ 3 หมวด (3อ.)</p>
+              <p className="text-xs text-slate-500">คะแนนความเสี่ยงต่อภาวะอ้วน</p>
               <p className={`text-3xl font-black mt-0.5 ${risk.color}`}>
-                {healthScore} <span className="text-base font-normal text-slate-400">/ {MAX_HEALTH}</span>
+                {total} <span className="text-base font-normal text-slate-400">/ {OB_MAX}</span>
               </p>
             </div>
             <span className={`inline-block px-4 py-2 rounded-2xl font-bold text-sm ${risk.color} bg-white/70 border ${risk.border}`}>
               {risk.label}
             </span>
           </div>
-          {/* Per-dimension mini bars */}
-          <div className="space-y-1.5">
-            {DIMENSIONS.map((dim, di) => {
-              const sc = dimScores[di]
-              const maxSc = getDimMaxScore(di)
-              const lv = getDimLevel(sc, maxSc)
-              const barPct = (sc / maxSc) * 100
-              return (
-                <div key={dim.id} className="flex items-center gap-2">
-                  <span className="text-sm w-5 text-center">{dim.emoji}</span>
-                  <div className="flex-1 h-2 bg-white/60 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${barPct}%`, background: barPct >= 80 ? '#10b981' : barPct >= 60 ? '#0d9488' : barPct >= 40 ? '#f59e0b' : '#ef4444' }} />
-                  </div>
-                  <span className={`text-[10px] font-bold w-24 text-right ${lv.color}`}>{sc}/{maxSc} {lv.label}</span>
-                </div>
-              )
-            })}
+          <div className="space-y-1">
+            <div className="flex justify-between text-[10px] text-slate-400">
+              <span>ต่ำ {OB_MIN}</span>
+              <span>ปานกลาง</span>
+              <span>สูง</span>
+              <span>สูงมาก {OB_MAX}</span>
+            </div>
+            <div className="h-3 bg-gradient-to-r from-emerald-300 via-yellow-300 to-red-400 rounded-full overflow-hidden relative">
+              <div className="absolute top-0 bottom-0 w-1 bg-slate-800 rounded-full transition-all duration-500"
+                style={{ left: `calc(${barPct}% - 2px)` }} />
+            </div>
           </div>
         </div>
       )}
@@ -459,28 +318,27 @@ ${dimText}
       {!done && (
         <button onClick={analyze} disabled={!allDone || loading}
           className="w-full py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)', boxShadow: '0 4px 16px rgba(99,102,241,0.4)' }}>
+          style={{ background: 'linear-gradient(135deg, #ea580c, #dc2626)', boxShadow: '0 4px 16px rgba(220,38,38,0.35)' }}>
           {loading
             ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> AI กำลังวิเคราะห์...</>
-            : <>🔍 วิเคราะห์สาเหตุด้วย AI</>}
+            : <>🔍 วิเคราะห์ความเสี่ยงด้วย AI</>}
         </button>
       )}
 
       {!allDone && answered > 0 && (
-        <p className="text-center text-xs text-slate-400">ตอบให้ครบ {TOTAL_Q - answered} ข้อที่เหลือเพื่อวิเคราะห์</p>
+        <p className="text-center text-xs text-slate-400">ตอบให้ครบอีก {OB_TOTAL - answered} ข้อเพื่อวิเคราะห์</p>
       )}
 
       {/* AI Result */}
       {done && aiResult && (
-        <div className="rounded-2xl overflow-hidden shadow-sm border border-purple-100">
-          {/* Card header */}
+        <div className="rounded-2xl overflow-hidden shadow-sm border border-orange-100">
           <div className="px-5 py-4 flex items-center justify-between"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
+            style={{ background: 'linear-gradient(135deg, #ea580c, #dc2626)' }}>
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-lg">🤖</div>
               <div>
                 <p className="font-bold text-white text-sm">ผลการวิเคราะห์โดย AI</p>
-                <p className="text-purple-200 text-[10px]">อ้างอิงมาตรฐาน WHO • {new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                <p className="text-red-100 text-[10px]">อ้างอิงกรมอนามัย · {new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
               </div>
             </div>
             {saved && (
@@ -489,20 +347,17 @@ ${dimText}
               </span>
             )}
           </div>
-          {/* WHO badge */}
-          <div className="bg-purple-50 border-b border-purple-100 px-5 py-2 flex items-center gap-2">
-            <span className="text-[10px] font-bold text-purple-600 bg-white border border-purple-200 px-2 py-0.5 rounded-full">หลัก 3อ.2ส.</span>
-            <span className="text-[10px] text-purple-400">กระทรวงสาธารณสุข · {DIMENSIONS.length} หมวด {TOTAL_Q} ข้อ · วิเคราะห์เฉพาะบุคคล</span>
+          <div className="bg-orange-50 border-b border-orange-100 px-5 py-2 flex items-center gap-2">
+            <span className="text-[10px] font-bold text-orange-600 bg-white border border-orange-200 px-2 py-0.5 rounded-full">ประเมินความเสี่ยงอ้วน</span>
+            <span className="text-[10px] text-orange-400">กรมอนามัย กระทรวงสาธารณสุข · {OB_TOTAL} ข้อ · วิเคราะห์เฉพาะบุคคล</span>
           </div>
-          {/* Content */}
           <div className="bg-white px-5 py-4 space-y-0.5">
             {renderMarkdown(aiResult)}
           </div>
-          {/* Footer */}
           <div className="bg-slate-50 border-t border-slate-100 px-5 py-3 flex items-center justify-between">
             <p className="text-[10px] text-slate-400">* ไม่ใช่คำวินิจฉัยทางการแพทย์</p>
             <button onClick={() => { setDone(false); setAiResult(''); setSaved(false) }}
-              className="text-xs text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-1">
+              className="text-xs text-orange-600 font-semibold hover:text-orange-700 flex items-center gap-1">
               <RefreshCw size={11} /> วิเคราะห์ใหม่
             </button>
           </div>
@@ -514,19 +369,18 @@ ${dimText}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <button
             onClick={() => setShowHistory(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3"
-          >
+            className="w-full flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="text-sm">📋</span>
               <p className="text-sm font-bold text-slate-600">ประวัติการประเมิน</p>
-              <span className="text-[10px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">{history.length}</span>
+              <span className="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">{history.length}</span>
             </div>
             {showHistory ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
           </button>
           {showHistory && (
             <div className="px-4 pb-4 space-y-3">
               {history.map(rec => {
-                const r = getRiskLevel(rec.total)
+                const r = getObesityRiskLevel(rec.total)
                 const d = new Date(rec.date)
                 const dateStr = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })
                 const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
@@ -551,7 +405,7 @@ function HistoryCard({ rec, r, dateStr, timeStr }) {
         <div className="flex items-center gap-2 text-left">
           <div>
             <p className="text-xs font-bold text-slate-700">{dateStr} · {timeStr}</p>
-            <p className="text-[10px] text-slate-500">BMI {rec.bmi} · {rec.category} · คะแนน {rec.total}/{MAX_HEALTH}</p>
+            <p className="text-[10px] text-slate-500">BMI {rec.bmi} · {rec.category} · คะแนน {rec.total}/{OB_MAX}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -561,7 +415,7 @@ function HistoryCard({ rec, r, dateStr, timeStr }) {
       </button>
       {open && rec.aiResult && (
         <div className="px-3 pb-3 pt-2 bg-white border-t border-slate-100">
-          <p className="text-[10px] font-bold text-slate-400 mb-2">ผลวิเคราะห์ AI (อ้างอิงหลัก 3อ.2ส. กระทรวงสาธารณสุข)</p>
+          <p className="text-[10px] font-bold text-slate-400 mb-2">ผลวิเคราะห์ AI (กรมอนามัย กระทรวงสาธารณสุข)</p>
           <div className="space-y-0.5">{renderMarkdown(rec.aiResult)}</div>
         </div>
       )}
