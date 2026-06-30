@@ -109,258 +109,6 @@ function SummaryRing({ consumed, goal, remaining2Label }) {
   )
 }
 
-// ── Intermittent Fasting ─────────────────────────────────────
-const IF_PROTOCOLS = [
-  { hours: 12, label: '12:12', fastH: 12, feedH: 12, name: 'Circadian Rhythm', desc: 'เหมาะสำหรับผู้เริ่มต้น',   color: '#10b981', benefit: 'ปรับนาฬิกาชีวิต ลดน้ำตาลในเลือด' },
-  { hours: 16, label: '16:8',  fastH: 16, feedH: 8,  name: '16:8 Fast',        desc: 'ยอดนิยมที่สุด',           color: '#f97316', benefit: 'เผาผลาญไขมัน ลดน้ำหนักได้ดี' },
-  { hours: 18, label: '18:6',  fastH: 18, feedH: 6,  name: '18:6 Fast',        desc: 'ระดับกลาง',               color: '#ef4444', benefit: 'เพิ่มประสิทธิภาพการเผาผลาญ' },
-  { hours: 20, label: '20:4',  fastH: 20, feedH: 4,  name: 'Warrior Diet',     desc: 'ระดับสูง',                color: '#7c3aed', benefit: 'Autophagy สูง ล้างเซลล์เก่า' },
-]
-
-function IFTimer() {
-  const [protocol, setProtocol] = useState(() => {
-    const saved = Number(localStorage.getItem('if_protocol'))
-    return IF_PROTOCOLS.find(p => p.hours === saved) || IF_PROTOCOLS[1]
-  })
-  const [startTime, setStartTime] = useState(() => {
-    const s = localStorage.getItem('if_start')
-    return s && localStorage.getItem('if_active') === 'true' ? Number(s) : null
-  })
-  const [now, setNow]             = useState(Date.now())
-  const [showGuide, setShowGuide] = useState(false)
-  const prevInFastRef             = useRef(null)
-  const [notifPerm, setNotifPerm] = useState(() => 'Notification' in window ? Notification.permission : 'unsupported')
-  const [toast, setToast]         = useState(null)
-
-  const isActive = !!startTime
-
-  useEffect(() => {
-    if (!isActive) return
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
-  }, [isActive])
-
-  useEffect(() => {
-    if (!toast) return
-    const id = setTimeout(() => setToast(null), 6000)
-    return () => clearTimeout(id)
-  }, [toast])
-
-  const elapsed   = isActive ? Math.max(0, Math.floor((now - startTime) / 1000)) : 0
-  const fastSecs  = protocol.fastH * 3600
-  const inFast    = elapsed < fastSecs
-
-  function playDing() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)()
-      const times = [0, 0.15, 0.3, 0.8, 0.95, 1.1]
-      times.forEach(delay => {
-        const osc  = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.type = 'sine'
-        osc.frequency.setValueAtTime(880, ctx.currentTime + delay)
-        osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + delay + 0.15)
-        gain.gain.setValueAtTime(0.4, ctx.currentTime + delay)
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.6)
-        osc.start(ctx.currentTime + delay)
-        osc.stop(ctx.currentTime + delay + 0.6)
-      })
-    } catch (_) {}
-  }
-
-  // fire notification and stop when fasting period ends
-  useEffect(() => {
-    if (!isActive) { prevInFastRef.current = null; return }
-    if (prevInFastRef.current === null) { prevInFastRef.current = inFast; return }
-    if (prevInFastRef.current === true && inFast === false) {
-      setToast(`🎉 ครบ ${protocol.fastH} ชั่วโมงแล้ว! ถึงเวลากินอาหารได้เลย 🍽️`)
-      playDing()
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('🎉 อดอาหารครบแล้ว!', {
-          body: `ยินดีด้วย! คุณอดอาหารครบ ${protocol.fastH} ชั่วโมงแล้ว ถึงเวลากินอาหารได้เลย! 🍽️`,
-          icon: '/icons/icon-192.png',
-        })
-      }
-      stop()
-    }
-    prevInFastRef.current = inFast
-  }, [inFast, isActive, protocol.fastH])
-
-  async function requestPermission() {
-    if ('Notification' in window) {
-      const perm = await Notification.requestPermission()
-      setNotifPerm(perm)
-    }
-  }
-
-  async function start() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      const perm = await Notification.requestPermission()
-      setNotifPerm(perm)
-    }
-    const t = Date.now()
-    setStartTime(t)
-    setNow(t)
-    localStorage.setItem('if_start',    String(t))
-    localStorage.setItem('if_active',   'true')
-    localStorage.setItem('if_protocol', String(protocol.hours))
-  }
-  function stop() {
-    setStartTime(null)
-    localStorage.removeItem('if_start')
-    localStorage.setItem('if_active', 'false')
-  }
-  function changeProtocol(p) {
-    setProtocol(p)
-    localStorage.setItem('if_protocol', String(p.hours))
-    stop()
-  }
-
-  const remaining  = Math.max(fastSecs - elapsed, 0)
-  const pct        = isActive ? Math.min(elapsed / fastSecs, 1) : 0
-
-  const fmt = s => `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
-  const elapsedH = Math.floor(elapsed / 3600)
-  const elapsedM = Math.floor((elapsed % 3600) / 60)
-  const R = 88, C = 2 * Math.PI * R
-
-  const phaseLabel = !isActive ? 'พร้อมเริ่ม' : (elapsedH >= 12 ? 'FAT BURN 🔥' : 'FASTING')
-  const ringColor  = isActive ? (inFast ? protocol.color : '#10b981') : '#e2e8f0'
-
-  return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      {toast && (
-        <div className="fixed top-5 left-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl text-sm font-bold text-white"
-          style={{ transform: 'translateX(-50%)', backgroundColor: '#10b981', maxWidth: '90vw' }}>
-          <span>{toast}</span>
-          <button onClick={() => setToast(null)} className="opacity-70 text-base leading-none">✕</button>
-        </div>
-      )}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-50">
-        <div className="flex items-center gap-2">
-          <span className="text-base">⏱️</span>
-          <span className="font-semibold text-gray-900 text-sm">Intermittent Fasting</span>
-        </div>
-        <button onClick={() => setShowGuide(p => !p)} className="text-xs text-indigo-500 font-semibold">
-          {showGuide ? 'ซ่อนคำแนะนำ' : '📋 คำแนะนำ IF'}
-        </button>
-      </div>
-
-      {notifPerm !== 'granted' && notifPerm !== 'unsupported' && (
-        <div className="mx-4 mt-3 rounded-xl px-3 py-2 flex items-center gap-2 text-xs"
-          style={{ backgroundColor: notifPerm === 'denied' ? '#fef2f2' : '#fffbeb' }}>
-          <span>{notifPerm === 'denied' ? '🔕' : '🔔'}</span>
-          <span className="flex-1" style={{ color: notifPerm === 'denied' ? '#dc2626' : '#d97706' }}>
-            {notifPerm === 'denied'
-              ? 'การแจ้งเตือนถูกปิด — ไปเปิดใน Settings ของ browser'
-              : 'เปิดการแจ้งเตือนเพื่อรับแจ้งเมื่ออดอาหารครบ'}
-          </span>
-          {notifPerm !== 'denied' && (
-            <button onClick={requestPermission}
-              className="font-bold text-white px-2.5 py-1 rounded-lg text-xs"
-              style={{ backgroundColor: '#f97316' }}>
-              เปิด
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Protocol selector */}
-      <div className="px-4 pt-4 grid grid-cols-4 gap-2">
-        {IF_PROTOCOLS.map(p => (
-          <button key={p.hours} onClick={() => changeProtocol(p)}
-            className="py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95"
-            style={protocol.hours === p.hours
-              ? { backgroundColor: p.color, color: '#fff', boxShadow: `0 4px 12px ${p.color}55` }
-              : { backgroundColor: '#f1f5f9', color: '#94a3b8' }}>
-            {p.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Ring timer */}
-      <div className="flex flex-col items-center py-5 px-4">
-        <div className="relative" style={{ width: 200, height: 200 }}>
-          <svg width="200" height="200" viewBox="0 0 200 200" className="absolute inset-0 -rotate-90">
-            <circle cx="100" cy="100" r={R} fill="none" stroke="#f1f5f9" strokeWidth="14" />
-            <circle cx="100" cy="100" r={R} fill="none" stroke={ringColor} strokeWidth="14"
-              strokeLinecap="round"
-              strokeDasharray={`${pct * C} ${C}`} />
-            <circle cx="100" cy="100" r="70" fill="none" stroke="#f8fafc" strokeWidth="8" />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl leading-none mb-1">🔥</span>
-            <span className="text-xl font-black text-gray-900 font-mono tracking-tight leading-none">
-              {isActive ? fmt(remaining) : `${String(protocol.fastH).padStart(2,'0')}:00:00`}
-            </span>
-            <span className="text-[10px] font-bold tracking-widest mt-1 uppercase"
-              style={{ color: ringColor === '#e2e8f0' ? '#94a3b8' : ringColor }}>
-              {phaseLabel}
-            </span>
-          </div>
-        </div>
-
-        {isActive && (
-          <div className="flex gap-6 mt-1 text-center">
-            <div>
-              <p className="text-[10px] text-gray-400">เริ่มอด</p>
-              <p className="text-xs font-bold text-gray-700">
-                {new Date(startTime).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] text-gray-400">ผ่านมา</p>
-              <p className="text-xs font-bold" style={{ color: protocol.color }}>{elapsedH}ชม. {elapsedM}น.</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-gray-400">เป้าหมาย</p>
-              <p className="text-xs font-bold text-gray-700">{protocol.fastH} ชม.</p>
-            </div>
-          </div>
-        )}
-
-        <button onClick={isActive ? stop : start}
-          className="mt-4 px-10 py-3 rounded-2xl font-bold text-white text-sm transition-all active:scale-95 shadow-lg"
-          style={{ backgroundColor: isActive ? '#ef4444' : protocol.color, boxShadow: `0 6px 20px ${isActive ? '#ef444455' : protocol.color + '55'}` }}>
-          {isActive ? '⏹ หยุดอดอาหาร' : '▶ เริ่มอดอาหาร'}
-        </button>
-      </div>
-
-      {/* Guide */}
-      {showGuide && (
-        <div className="px-4 pb-4 border-t border-gray-50 pt-3 space-y-2">
-          <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">ตารางคำแนะนำ IF</p>
-          {IF_PROTOCOLS.map(p => (
-            <div key={p.hours} className="rounded-2xl p-3 flex gap-3 items-center"
-              style={{ backgroundColor: p.color + '14' }}>
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-xs text-center leading-tight"
-                style={{ backgroundColor: p.color }}>
-                {p.label.split(':').map((v,i) => <div key={i}>{v}</div>)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-800 text-xs">{p.name}
-                  <span className="font-normal text-gray-400 ml-1">— {p.desc}</span>
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">อด {p.fastH} ชม. / กิน {p.feedH} ชม.</p>
-                <p className="text-xs font-medium mt-0.5" style={{ color: p.color }}>{p.benefit}</p>
-              </div>
-            </div>
-          ))}
-          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3 mt-1">
-            <p className="text-xs font-bold text-amber-700 mb-1.5">⚠️ ข้อควรระวัง</p>
-            <ul className="text-xs text-amber-600 space-y-0.5 list-disc list-inside leading-relaxed">
-              <li>ดื่มน้ำเปล่าหรือชา/กาแฟดำได้ตลอดช่วงอดอาหาร</li>
-              <li>ไม่เหมาะกับผู้ตั้งครรภ์ เด็ก และผู้มีโรคประจำตัว</li>
-              <li>หากเวียนหัวหรืออ่อนเพลีย ให้หยุดและรับประทานอาหารทันที</li>
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default function NubCal() {
   const ctx = useHealth()
@@ -407,7 +155,6 @@ export default function NubCal() {
   React.useEffect(() => { localStorage.setItem('nubcal_activity', activityLevel) }, [activityLevel])
   React.useEffect(() => { localStorage.setItem('nubcal_goal_mode', goalMode) }, [goalMode])
 
-  const [pageTab, setPageTab]     = useState('diary')
   const [activeMeal, setActiveMeal] = useState('breakfast')
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -652,138 +399,113 @@ export default function NubCal() {
           })}
         </div>
 
-        {/* Tab bar */}
-        <div className="flex mt-3 bg-slate-100 rounded-2xl p-1 gap-1">
-          {[
-            { key: 'diary', label: '🍽️ Food Diary' },
-            { key: 'if',    label: '⏱️ IF' },
-          ].map(tab => (
-            <button key={tab.key} onClick={() => setPageTab(tab.key)}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                pageTab === tab.key
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="px-4 py-4">
 
-        {pageTab === 'diary' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start max-w-5xl mx-auto">
 
-            {/* ── LEFT: Summary ── */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm lg:sticky lg:top-20">
-              <p className="text-sm font-semibold text-gray-500 mb-3">{tr.dailySummary}</p>
+          {/* ── LEFT: Summary ── */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm lg:sticky lg:top-20">
+            <p className="text-sm font-semibold text-gray-500 mb-3">{tr.dailySummary}</p>
 
-              <div className="flex items-center gap-4">
-                <SummaryRing consumed={totalCal} goal={goal} remaining2Label={tr.remaining2} />
-                <div className="flex-1 space-y-2">
-                  <div className="bg-teal-500 rounded-xl px-3 py-2.5">
-                    <p className="text-teal-100 text-xs">{tr.consumed}</p>
-                    <p className="text-white font-black text-lg leading-none mt-0.5">
-                      {totalCal.toLocaleString()} <span className="text-teal-200 text-xs font-normal">kcal</span>
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 rounded-xl px-3 py-2.5">
-                    <p className="text-gray-400 text-xs">{tr.goal}</p>
-                    <p className="text-gray-800 font-black text-lg leading-none mt-0.5">
-                      {goal.toLocaleString()} <span className="text-gray-400 text-xs font-normal">kcal</span>
-                    </p>
-                  </div>
-                  <p className="text-[10px] text-gray-400 px-1">
-                    {goalMode === 'auto' && autoGoal ? `🤖 ${tr.fromProfile}` : `✏️ ${tr.customGoalLabel}`}
+            <div className="flex items-center gap-4">
+              <SummaryRing consumed={totalCal} goal={goal} remaining2Label={tr.remaining2} />
+              <div className="flex-1 space-y-2">
+                <div className="bg-teal-500 rounded-xl px-3 py-2.5">
+                  <p className="text-teal-100 text-xs">{tr.consumed}</p>
+                  <p className="text-white font-black text-lg leading-none mt-0.5">
+                    {totalCal.toLocaleString()} <span className="text-teal-200 text-xs font-normal">kcal</span>
                   </p>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-4">
-                {[
-                  { l: tr.carb,    v: Math.round(totalCarb * 10) / 10, max: macroGoals.carbs,   color: '#f59e0b' },
-                  { l: tr.protein, v: Math.round(totalPro  * 10) / 10, max: macroGoals.protein, color: '#0d9488' },
-                  { l: tr.fat,     v: Math.round(totalFat  * 10) / 10, max: macroGoals.fat,     color: '#8b5cf6' },
-                ].map(({ l, v, max, color }) => (
-                  <div key={l} className="bg-slate-50 rounded-xl p-3">
-                    <p className="text-xs text-gray-400">{l}</p>
-                    <p className="font-bold text-gray-800 text-sm mt-0.5">
-                      {v}<span className="font-normal text-xs text-gray-400">/{max}ก.</span>
-                    </p>
-                    <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((v / Math.max(max, 1)) * 100, 100)}%`, backgroundColor: color }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                <div className="bg-slate-50 rounded-xl px-3 py-2.5">
+                  <p className="text-gray-400 text-xs">{tr.goal}</p>
+                  <p className="text-gray-800 font-black text-lg leading-none mt-0.5">
+                    {goal.toLocaleString()} <span className="text-gray-400 text-xs font-normal">kcal</span>
+                  </p>
+                </div>
+                <p className="text-[10px] text-gray-400 px-1">
+                  {goalMode === 'auto' && autoGoal ? `🤖 ${tr.fromProfile}` : `✏️ ${tr.customGoalLabel}`}
+                </p>
               </div>
             </div>
 
-            {/* ── RIGHT: Meals + Water ── */}
-            <div className="space-y-3">
-              {MEALS.map(meal => {
-                const mealEntries = entries.filter(e => (e.meal || 'breakfast') === meal.key)
-                const mealCal = mealEntries.reduce((s, e) => s + (e.calories || 0), 0)
-                return (
-                  <div key={meal.key} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-3.5">
-                      <span className="font-semibold text-gray-900 text-sm">{meal.label}</span>
-                      <span className="text-sm text-gray-500 font-medium">{mealCal > 0 ? `${mealCal} kcal` : '—'}</span>
-                    </div>
+            <div className="grid grid-cols-3 gap-2 mt-4">
+              {[
+                { l: tr.carb,    v: Math.round(totalCarb * 10) / 10, max: macroGoals.carbs,   color: '#f59e0b' },
+                { l: tr.protein, v: Math.round(totalPro  * 10) / 10, max: macroGoals.protein, color: '#0d9488' },
+                { l: tr.fat,     v: Math.round(totalFat  * 10) / 10, max: macroGoals.fat,     color: '#8b5cf6' },
+              ].map(({ l, v, max, color }) => (
+                <div key={l} className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-xs text-gray-400">{l}</p>
+                  <p className="font-bold text-gray-800 text-sm mt-0.5">
+                    {v}<span className="font-normal text-xs text-gray-400">/{max}ก.</span>
+                  </p>
+                  <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((v / Math.max(max, 1)) * 100, 100)}%`, backgroundColor: color }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-                    {mealEntries.map(entry => (
-                      <div key={entry.id} className="px-4 py-3 flex gap-3 items-start border-t border-gray-50">
-                        {entry.image
-                          ? <img src={entry.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-                          : <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">🍽️</div>
-                        }
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="font-medium text-gray-900 text-sm truncate">{entry.foodName}</p>
-                              <p className="text-xs text-gray-400 mt-0.5">{entry.description || '1 หน่วย'}</p>
-                            </div>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <span className="font-semibold text-gray-700 text-sm">{entry.calories} kcal</span>
-                              <button onClick={() => deleteCalorieEntry(viewDate, entry.id)}
-                                className="text-gray-300 hover:text-red-400 p-0.5 transition-colors">
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
+          {/* ── RIGHT: Meals + Water ── */}
+          <div className="space-y-3">
+            {MEALS.map(meal => {
+              const mealEntries = entries.filter(e => (e.meal || 'breakfast') === meal.key)
+              const mealCal = mealEntries.reduce((s, e) => s + (e.calories || 0), 0)
+              return (
+                <div key={meal.key} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3.5">
+                    <span className="font-semibold text-gray-900 text-sm">{meal.label}</span>
+                    <span className="text-sm text-gray-500 font-medium">{mealCal > 0 ? `${mealCal} kcal` : '—'}</span>
+                  </div>
+
+                  {mealEntries.map(entry => (
+                    <div key={entry.id} className="px-4 py-3 flex gap-3 items-start border-t border-gray-50">
+                      {entry.image
+                        ? <img src={entry.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                        : <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">🍽️</div>
+                      }
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900 text-sm truncate">{entry.foodName}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{entry.description || '1 หน่วย'}</p>
                           </div>
-                          <div className="flex gap-3 mt-1">
-                            <span className="text-xs text-gray-400">{tr.carb} {Math.round((entry.carbs || 0) * 10) / 10}ก.</span>
-                            <span className="text-xs text-gray-400">{tr.protein} {Math.round((entry.protein || 0) * 10) / 10}ก.</span>
-                            <span className="text-xs text-gray-400">{tr.fat} {Math.round((entry.fat || 0) * 10) / 10}ก.</span>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span className="font-semibold text-gray-700 text-sm">{entry.calories} kcal</span>
+                            <button onClick={() => deleteCalorieEntry(viewDate, entry.id)}
+                              className="text-gray-300 hover:text-red-400 p-0.5 transition-colors">
+                              <Trash2 size={14} />
+                            </button>
                           </div>
                         </div>
+                        <div className="flex gap-3 mt-1">
+                          <span className="text-xs text-gray-400">{tr.carb} {Math.round((entry.carbs || 0) * 10) / 10}ก.</span>
+                          <span className="text-xs text-gray-400">{tr.protein} {Math.round((entry.protein || 0) * 10) / 10}ก.</span>
+                          <span className="text-xs text-gray-400">{tr.fat} {Math.round((entry.fat || 0) * 10) / 10}ก.</span>
+                        </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
 
-                    {isToday && (
-                      <button onClick={() => openAddFor(meal.key)}
-                        className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
-                        <Plus size={15} />
-                        {tr.addFoodLabel}
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
-
-            </div>
-
+                  {isToday && (
+                    <button onClick={() => openAddFor(meal.key)}
+                      className="flex items-center gap-2 px-4 py-3 text-teal-600 text-sm font-medium w-full hover:bg-teal-50 transition-colors border-t border-gray-50">
+                      <Plus size={15} />
+                      {tr.addFoodLabel}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        )}
 
-        {pageTab === 'if' && (
-          <div className="max-w-lg mx-auto space-y-3">
-            <IFTimer />
-          </div>
-        )}
+        </div>
 
       </div>
 
