@@ -29,55 +29,16 @@ export default function Login() {
 
   return (
     <div className="min-h-dvh relative overflow-hidden flex items-center justify-center"
-      style={{ background: '#0a1535' }}>
+      style={{
+        backgroundImage: 'url(/bg-login.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}>
 
-      {/* ── พื้นหลัง diagonal ── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        {/* แถบขาวทแยงกลาง */}
-        <div className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(115deg, transparent 28%, rgba(255,255,255,0.97) 28%, rgba(255,255,255,0.97) 72%, transparent 72%)',
-          }} />
-
-        {/* แถบเหลืองบน */}
-        <div className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(115deg, transparent 22%, #f5c800 22%, #f5c800 27%, transparent 27%)',
-            mixBlendMode: 'normal',
-          }} />
-
-        {/* แถบเหลืองล่าง */}
-        <div className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(115deg, transparent 73%, #f5c800 73%, #f5c800 78%, transparent 78%)',
-          }} />
-
-        {/* แถบน้ำเงินซ้าย */}
-        <div className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(115deg, transparent 18%, #1a3a8f 18%, #1a3a8f 22%, transparent 22%)',
-          }} />
-
-        {/* แถบน้ำเงินขวา */}
-        <div className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(115deg, transparent 78%, #1a3a8f 78%, #1a3a8f 82%, transparent 82%)',
-          }} />
-      </div>
-
-      {/* ⚡ สายฟ้าตกแต่ง */}
-      <span className="absolute top-12 left-[18%] text-5xl opacity-90 pointer-events-none select-none"
-        style={{ color: '#f5c800', filter: 'drop-shadow(0 0 8px #f5c800)' }}>⚡</span>
-      <span className="absolute top-8 left-[30%] text-3xl opacity-70 pointer-events-none select-none"
-        style={{ color: '#4f46e5', filter: 'drop-shadow(0 0 6px #6366f1)' }}>⚡</span>
-      <span className="absolute bottom-16 right-[18%] text-5xl opacity-90 pointer-events-none select-none"
-        style={{ color: '#f5c800', filter: 'drop-shadow(0 0 8px #f5c800)' }}>⚡</span>
-      <span className="absolute top-20 right-[26%] text-3xl opacity-70 pointer-events-none select-none"
-        style={{ color: '#4f46e5', filter: 'drop-shadow(0 0 6px #6366f1)' }}>⚡</span>
-      <span className="absolute bottom-24 left-[22%] text-2xl opacity-60 pointer-events-none select-none"
-        style={{ color: '#4f46e5' }}>⚡</span>
-      <span className="absolute top-32 right-[16%] text-2xl opacity-60 pointer-events-none select-none"
-        style={{ color: '#4f46e5' }}>⚡</span>
+      {/* overlay เพื่อให้ form อ่านง่าย */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'rgba(0,20,80,0.45)' }} />
 
       {/* ── กล่อง form ── */}
       <div className="relative z-10 w-full max-w-sm mx-4">

@@ -557,26 +557,11 @@ export default function Register() {
     <div style={{
       minHeight:'100dvh', position:'relative', overflow:'hidden',
       display:'flex', alignItems:'center', justifyContent:'center', padding:'16px',
-      background:'#0b1a5e',
+      backgroundImage:'url(/bg-login.jpg)',
+      backgroundSize:'cover', backgroundPosition:'center', backgroundRepeat:'no-repeat',
     }}>
-      {/* ── Gym BG overlay ── */}
-      <div style={{ position:'absolute', inset:0, background:'linear-gradient(160deg,#081245 0%,#0d2080 40%,#0b1a6e 100%)', opacity:.95 }} />
-
-      {/* ── Diagonal yellow stripes ── */}
-      <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none' }}>
-        {/* top-left stripe cluster */}
-        <div style={{ position:'absolute', top:'-8%', left:'-5%', width:'60%', height:'55%',
-          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #4f46e5 52%,#4f46e5 58%, transparent 58%)',
-          opacity:.75, transform:'skewY(-2deg)' }} />
-        {/* bottom-right stripe cluster */}
-        <div style={{ position:'absolute', bottom:'-8%', right:'-5%', width:'60%', height:'55%',
-          background:'linear-gradient(135deg, transparent 0%,transparent 38%, #fbbf24 38%,#fbbf24 44%, transparent 44%,transparent 52%, #4f46e5 52%,#4f46e5 58%, transparent 58%)',
-          opacity:.75, transform:'skewY(-2deg)' }} />
-        {/* shine dots */}
-        {[{top:'8%',left:'12%'},{top:'15%',right:'18%'},{bottom:'20%',left:'8%'},{bottom:'12%',right:'12%'}].map((p,i)=>(
-          <div key={i} style={{ position:'absolute', ...p, width:6, height:6, borderRadius:'50%', background:'#a5b4fc', opacity:.6 }} />
-        ))}
-      </div>
+      {/* overlay */}
+      <div style={{ position:'absolute', inset:0, background:'rgba(0,20,80,0.45)', pointerEvents:'none' }} />
 
       {/* ── Left character (desktop only) ── */}
       <div className="hidden lg:flex" style={{ position:'absolute', left:0, bottom:0, width:'20%', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', pointerEvents:'none', userSelect:'none' }}>
