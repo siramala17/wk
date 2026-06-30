@@ -8,10 +8,11 @@ import {
 } from 'recharts'
 import { subscribeUsers, subscribeAssessments } from '../services/userSync'
 
-const DOMAINS  = ['นอนหลับ','ออกกำลังกาย','สื่อดิจิทัล','ความเครียด','โภชนาการ']
-const D_KEYS   = ['sleepScore','exerciseScore','digitalScore','stressScore','nutritionScore']
-const D_EMOJIS = ['🌙','🏃','📱','🧘','🥗']
-const D_COLORS = ['#6366f1','#10b981','#8b5cf6','#f59e0b','#f97316']
+const DOMAINS  = ['อาหาร','ออกกำลังกาย','อารมณ์']
+const D_SHORT  = ['อาหาร','ออกกำลัง','อารมณ์']
+const D_KEYS   = ['nutritionScore','exerciseScore','stressScore']
+const D_EMOJIS = ['🍱','🏃','🧘']
+const D_COLORS = ['#10b981','#3b82f6','#8b5cf6']
 const GRADES   = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
 const GRADE_KEYS = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:14 }
@@ -32,8 +33,8 @@ function avg(arr, key) {
 function RoleScoreCard({ roleLabel, emoji, accentColor, assessments: ass, userCount }) {
   const overallAvg = ass.length ? avg(ass, 'overallScore') : null
   const [lvlLabel, lvlColor] = overallAvg ? lvl(overallAvg) : ['ยังไม่มีข้อมูล','#475569']
-  const domainData = DOMAINS.map((d,i) => ({
-    name: D_EMOJIS[i]+' '+d.slice(0,4),
+  const domainData = DOMAINS.map((_,i) => ({
+    name: D_EMOJIS[i]+' '+D_SHORT[i],
     คะแนน: ass.length ? avg(ass, D_KEYS[i]) : 0,
   }))
   return (
@@ -180,18 +181,20 @@ export default function SchoolDashboard() {
   ] : [{ name:'ยังไม่มีข้อมูล', value:1, color:'rgba(255,255,255,0.08)' }]
 
   // Radar — real-time เท่านั้น
-  const radarData = DOMAINS.map((d, i) => ({
-    subject: D_EMOJIS[i]+' '+d,
+  const radarData = DOMAINS.map((_, i) => ({
+    subject: D_EMOJIS[i]+' '+D_SHORT[i],
     คะแนน: filtered.length ? avg(filtered, D_KEYS[i]) : 0,
     เป้าหมาย: 80,
   }))
 
-  // Bar by grade (always grade-based, used in line chart)
+  // Grade-domain line chart data (3อ.2ส.)
   const barData = GRADE_KEYS.map(g => {
     const gAss = assessments.filter(x => x.gradeLevel === g)
     return {
       grade: g,
-      คะแนน: gAss.length ? avg(gAss, 'overallScore') : 0,
+      อาหาร:         gAss.length ? avg(gAss, 'nutritionScore') : 0,
+      ออกกำลังกาย:  gAss.length ? avg(gAss, 'exerciseScore')  : 0,
+      อารมณ์:        gAss.length ? avg(gAss, 'stressScore')    : 0,
     }
   })
 
@@ -202,8 +205,8 @@ export default function SchoolDashboard() {
 
   const dynamicBarData = useMemo(() => {
     if (role === 'ครู' || role === 'บุคคลทั่วไป') {
-      return DOMAINS.map((d, i) => ({
-        label: D_EMOJIS[i] + ' ' + d,
+      return DOMAINS.map((_, i) => ({
+        label: D_EMOJIS[i] + ' ' + D_SHORT[i],
         คะแนน: filtered.length ? avg(filtered, D_KEYS[i]) : 0,
         fill: D_COLORS[i],
       }))
@@ -320,7 +323,7 @@ export default function SchoolDashboard() {
         </div>
       ) : (
 
-      <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 295px', gap:10, padding:'12px 16px 20px', alignItems:'start' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'210px 1fr 260px', gap:10, padding:'12px 16px 20px', alignItems:'start' }}>
 
         {/* ── LEFT KPIs ── */}
         <div>
@@ -417,14 +420,14 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Mini domain cards */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:8 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
             {domainScores.map((d,i)=>{
               const [lbl,c]=lvl(d.score)
               return (
-                <div key={i} style={{ ...CARD, padding:'10px 8px', textAlign:'center', transition:'.2s', cursor:'default' }}>
-                  <div style={{ fontSize:18, marginBottom:4 }}>{D_EMOJIS[i]}</div>
-                  <div style={{ fontSize:18, fontWeight:800, color:d.color }}>{d.score}</div>
-                  <div style={{ fontSize:9.5, color:'#64748b', fontWeight:700, marginBottom:3 }}>{DOMAINS[i]}</div>
+                <div key={i} style={{ ...CARD, padding:'12px 10px', textAlign:'center', transition:'.2s', cursor:'default' }}>
+                  <div style={{ fontSize:22, marginBottom:4 }}>{D_EMOJIS[i]}</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:d.color }}>{d.score}</div>
+                  <div style={{ fontSize:11, color:'#64748b', fontWeight:700, marginBottom:4 }}>{DOMAINS[i]}</div>
                   <div style={{ background: c+'22', color:c, fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:8 }}>{lbl}</div>
                 </div>
               )
@@ -502,16 +505,19 @@ export default function SchoolDashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Line domain comparison */}
+          {/* Line domain comparison — 3อ.2ส. */}
           <div style={{ ...CARD, padding:'14px 16px' }}>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนแยกด้านรายชั้น</div>
-            <ResponsiveContainer width="100%" height={140}>
-              <LineChart data={barData} margin={{ top:4, right:4, left:-28, bottom:0 }}>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนแยกด้านรายชั้น (3อ.2ส.)</div>
+            <ResponsiveContainer width="100%" height={150}>
+              <LineChart data={barData} margin={{ top:4, right:8, left:-28, bottom:0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
                 <XAxis dataKey="grade" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                <YAxis domain={[40,90]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0,100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CUSTOM_TT />} />
-                <Line type="monotone" dataKey="คะแนน" stroke="#fbbf24" strokeWidth={2.5} dot={{ r:4, fill:'#fbbf24', stroke:'#0a1628', strokeWidth:2 }} activeDot={{ r:6 }} />
+                <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10, color:'#64748b' }} />
+                <Line type="monotone" dataKey="อาหาร"        stroke="#10b981" strokeWidth={2} dot={{ r:3, fill:'#10b981', stroke:'#0a1628', strokeWidth:1.5 }} activeDot={{ r:5 }} />
+                <Line type="monotone" dataKey="ออกกำลังกาย" stroke="#3b82f6" strokeWidth={2} dot={{ r:3, fill:'#3b82f6', stroke:'#0a1628', strokeWidth:1.5 }} activeDot={{ r:5 }} />
+                <Line type="monotone" dataKey="อารมณ์"       stroke="#8b5cf6" strokeWidth={2} dot={{ r:3, fill:'#8b5cf6', stroke:'#0a1628', strokeWidth:1.5 }} activeDot={{ r:5 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
