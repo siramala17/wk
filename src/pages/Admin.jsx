@@ -479,6 +479,17 @@ export default function Admin() {
           </div>
         )}
 
+        {/* PDPA / sensitive data warning */}
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-start gap-3">
+          <AlertTriangle size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-amber-800 text-sm">⚠️ ข้อมูลสุขภาพส่วนบุคคล — เป็นความลับ</p>
+            <p className="text-amber-600 text-xs mt-0.5 leading-relaxed">
+              ข้อมูลในระบบนี้เป็นข้อมูลสุขภาพของนักเรียนซึ่งถือเป็น <strong>ข้อมูลอ่อนไหว</strong> ตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA) · ห้ามเปิดเผย คัดลอก หรือนำไปใช้โดยไม่ได้รับอนุญาต · ผู้ดูแลระบบมีความรับผิดชอบทางกฎหมายในการรักษาความลับ
+            </p>
+          </div>
+        </div>
+
         {/* success banner */}
         {deleteSuccess && (
           <div className="mb-4 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-green-700 text-sm font-medium">
