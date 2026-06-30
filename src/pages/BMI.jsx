@@ -83,90 +83,103 @@ function renderMarkdown(text) {
   return elements
 }
 
-// 5-dimension WHO Adolescent Health Assessment (12–18 yr)
-// Reference: กระทรวงสาธารณสุข — กรมอนามัย กรมสุขภาพจิต กรมควบคุมโรค
+// แบบประเมินพฤติกรรมสุขภาพ ตามหลัก 3อ.2ส. กระทรวงสาธารณสุข
+// 3อ = อาหาร ออกกำลังกาย อารมณ์ | อ้างอิง: กรมอนามัย กรมสุขภาพจิต กรมควบคุมโรค
+// isRisk=false = พฤติกรรมดี (ทำบ่อย = คะแนนสุขภาพสูง)
+// isRisk=true  = พฤติกรรมเสี่ยง (ทำบ่อย = คะแนนสุขภาพต่ำ)
 const DIMENSIONS = [
   {
-    id: 'nutrition', emoji: '🥗', label: 'ด้านโภชนาการ',
-    desc: 'พฤติกรรมการกินตาม WHO Nutrition Guidelines',
+    id: 'food', emoji: '🍱', label: 'พฤติกรรมการบริโภคอาหาร',
+    desc: 'พฤติกรรมการกินและโภชนาการประจำวัน',
     color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', head: 'bg-emerald-600',
-    ref: 'กองโภชนาการ กรมอนามัย กระทรวงสาธารณสุข',
+    ref: 'กองโภชนาการ กรมอนามัย กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
     questions: [
-      'คุณข้ามมื้ออาหาร โดยเฉพาะมื้อเช้า',
-      'คุณดื่มน้ำอัดลม เครื่องดื่มชูกำลัง หรือน้ำหวานบรรจุขวดแทนน้ำเปล่า',
-      'คุณกินผักและผลไม้รวมน้อยกว่า 5 ส่วนต่อวัน (WHO แนะนำ ≥400 ก./วัน)',
+      { text: 'กินอาหารที่ปรุงสุกและสะอาด',                                                                                                              isRisk: false },
+      { text: 'กินอาหารครบ 5 หมู่อย่างหลากหลาย โดยใน 1 มื้อ มีข้าว-แป้ง เนื้อสัตว์ ไขมัน ผักและผลไม้',                                                isRisk: false },
+      { text: 'กินผักและผลไม้รวมกันอย่างน้อยวันละ 5 กำมือ (400 กรัม)',                                                                                   isRisk: false },
+      { text: 'กินอาหารหวาน เช่น ขนมเค้ก ช็อกโกแลต ไอศกรีม หรือดื่มเครื่องดื่มหวาน (ผสมน้ำตาล น้ำเชื่อม นมหวาน)',                                    isRisk: true  },
+      { text: 'กินอาหารมัน เช่น ข้าวขาหมู ข้าวมันไก่ แกงกะทิ',                                                                                          isRisk: true  },
+      { text: 'กินอาหารเค็มหรือปรุงรสเค็ม เช่น ไก่รสจัด ขนมกรุบกรอบ',                                                                                  isRisk: true  },
+      { text: 'กินอาหารแปรรูป อาหารปิ้งย่าง ของทอด เช่น ไก่ทอด หมูทอด อาหารใส่สี',                                                                      isRisk: true  },
+      { text: 'ดื่มน้ำสะอาด วันละ 6-8 แก้ว',                                                                                                            isRisk: false },
     ],
   },
   {
-    id: 'activity', emoji: '🏃', label: 'ด้านกิจกรรมทางกาย',
-    desc: 'WHO แนะนำ ≥60 นาที/วันสำหรับวัยรุ่น',
+    id: 'exercise', emoji: '🏃', label: 'พฤติกรรมการออกกำลังกาย',
+    desc: 'ความสม่ำเสมอในการเคลื่อนไหวร่างกาย',
     color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200', head: 'bg-blue-600',
-    ref: 'กรมอนามัย กระทรวงสาธารณสุข · แนวทางส่งเสริมกิจกรรมทางกายวัยรุ่น',
+    ref: 'กรมอนามัย กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
     questions: [
-      'คุณออกกำลังกายน้อยกว่า 60 นาทีต่อวัน (วิ่ง ว่ายน้ำ ปั่นจักรยาน เล่นกีฬา)',
-      'คุณใช้เวลาหน้าจอรวม (โทรศัพท์/ทีวี/เกม) มากกว่า 4 ชั่วโมงต่อวัน',
-      'คุณนั่งหรือนอนเฉยโดยไม่เคลื่อนไหวร่างกายนานกว่า 2 ชั่วโมงต่อเนื่อง',
+      { text: 'ลุกขยับร่างกายทุก 2 ชั่วโมง ระหว่างเรียนหรือระหว่างวัน',                                                                                   isRisk: false },
+      { text: 'วิ่งเล่นหรือออกกำลังกายจนหัวใจเต้นเร็วขึ้นหรือเหนื่อยจนพูดได้ไม่กี่คำ สะสมวันละ ≥ 1 ชั่วโมง',                                          isRisk: false },
+      { text: 'ฝึกความแข็งแรงของกล้ามเนื้อ เช่น ดันพื้น ดึงข้อ แกว่งแขน ลูกน้ำ',                                                                         isRisk: false },
     ],
   },
   {
-    id: 'mental', emoji: '🧠', label: 'ด้านสุขภาพจิต',
-    desc: 'อารมณ์ ความเครียด และสุขภาวะทางจิต',
+    id: 'emotion', emoji: '🧘', label: 'พฤติกรรมการจัดการอารมณ์',
+    desc: 'การดูแลสุขภาพจิตและจัดการความเครียด',
     color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200', head: 'bg-purple-600',
-    ref: 'กรมสุขภาพจิต กระทรวงสาธารณสุข · คู่มือสุขภาพจิตวัยรุ่น',
+    ref: 'กรมสุขภาพจิต กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
     questions: [
-      'คุณรู้สึกเครียด วิตกกังวล หรือหนักใจจนส่งผลต่อการเรียนหรือชีวิตประจำวัน',
-      'คุณมีอารมณ์หดหู่ ซึมเศร้า หรือรู้สึกไม่มีคุณค่าในตนเอง',
-      'คุณรู้สึกโดดเดี่ยวหรือขาดคนที่ไว้ใจได้ในชีวิต',
-    ],
-  },
-  {
-    id: 'sleep', emoji: '💤', label: 'ด้านการนอนหลับ',
-    desc: 'กรมสุขภาพจิต แนะนำวัยรุ่น 8–10 ชม./คืน',
-    color: 'text-indigo-700', bg: 'bg-indigo-50', border: 'border-indigo-200', head: 'bg-indigo-600',
-    ref: 'กรมสุขภาพจิต กระทรวงสาธารณสุข · แนวทางการนอนหลับในวัยรุ่น',
-    questions: [
-      'คุณนอนหลับน้อยกว่า 8 ชั่วโมงต่อคืนในวันเรียน',
-      'คุณใช้โทรศัพท์หรือหน้าจอจนดึกหลัง 5 ทุ่ม ทำให้เข้านอนช้า',
-      'คุณตื่นนอนรู้สึกเหนื่อยล้า ไม่สดชื่น หรืองัวเงียตลอดวัน',
-    ],
-  },
-  {
-    id: 'risk', emoji: '🛡️', label: 'ด้านพฤติกรรมเสี่ยง',
-    desc: 'สิ่งแวดล้อม สังคม และพฤติกรรมที่เสี่ยงต่อสุขภาพ',
-    color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', head: 'bg-red-600',
-    ref: 'กรมควบคุมโรค กระทรวงสาธารณสุข · แผนป้องกันพฤติกรรมเสี่ยงวัยรุ่น',
-    questions: [
-      'คุณอยู่ในสภาพแวดล้อมที่มีการสูบบุหรี่ ดื่มแอลกอฮอล์ หรือใช้สารเสพติด',
-      'คุณรู้สึกถูกกดดัน บูลลี่ หรือมีความขัดแย้งรุนแรงกับเพื่อนหรือคนรอบข้าง',
-      'คุณเปรียบเทียบรูปลักษณ์หรือชีวิตตัวเองกับผู้อื่นในโซเชียลมีเดียจนรู้สึกแย่กับตัวเอง',
+      { text: 'สังเกตอารมณ์หรือความรู้สึกของตนเองในแต่ละวัน',                                                                                             isRisk: false },
+      { text: 'ใช้วิธีผ่อนคลายเมื่อรู้สึกเครียดหรือไม่สบายใจ เช่น เล่นกีฬา ฟังเพลง ดูภาพยนตร์',                                                        isRisk: false },
+      { text: 'ทำกิจกรรมพัฒนาตนเองหรือมีส่วนร่วม เช่น คุยกับเพื่อน ทำงานอดิเรก ทำงานจิตอาสา ร้องเพลง',                                                 isRisk: false },
+      { text: 'สามารถจัดเวลาให้เพียงพอในเรื่องการเรียน ชีวิตส่วนตัว และครอบครัว',                                                                         isRisk: false },
+      { text: 'นอนหลับ วันละ 9-10 ชั่วโมง',                                                                                                              isRisk: false },
     ],
   },
 ]
 
-// Flatten questions for array index compatibility
-const HEALTH_QUESTIONS = DIMENSIONS.flatMap(d => d.questions)
-const SCORE_LABELS = ['ไม่เคย', 'นานๆ ครั้ง', 'บางครั้ง', 'บ่อยครั้ง', 'เป็นประจำ']
+// ระดับความถี่ (1=ไม่ปฏิบัติ … 5=ทุกวัน)
+const SCORE_LABELS = ['ไม่ปฏิบัติ', '1-2 วัน', '3-4 วัน', '5-6 วัน', 'ทุกวัน']
+const TOTAL_Q = DIMENSIONS.reduce((s, d) => s + d.questions.length, 0)  // 16
 
-function getDimScore(dimIdx, answers) {
-  return answers.slice(dimIdx * 3, dimIdx * 3 + 3).reduce((s, v) => s + v, 0)
+// คำนวณ index เริ่มต้นของแต่ละหมวด
+function getDimStart(dimIdx) {
+  let start = 0
+  for (let i = 0; i < dimIdx; i++) start += DIMENSIONS[i].questions.length
+  return start
 }
-function getDimLevel(score) {
-  if (score <= 6)  return { label: 'ดี',           color: 'text-emerald-600', bg: 'bg-emerald-100' }
-  if (score <= 10) return { label: 'ควรปรับปรุง',  color: 'text-yellow-600',  bg: 'bg-yellow-100' }
-  return                   { label: 'ต้องดูแล',    color: 'text-red-600',     bg: 'bg-red-100' }
+
+// คะแนนสุขภาพของหมวด: สูง = ดีกว่า (max = จำนวนข้อ × 5)
+function getDimHealthScore(dimIdx, answers) {
+  const start = getDimStart(dimIdx)
+  return DIMENSIONS[dimIdx].questions.reduce((s, q, qi) => {
+    const v = answers[start + qi]
+    if (!v) return s
+    return s + (q.isRisk ? (6 - v) : v)
+  }, 0)
 }
-function getRiskLevel(total) {
-  if (total <= 30) return { label: 'สุขภาพดี',            color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200', dot: '#10b981' }
-  if (total <= 45) return { label: 'ควรปรับปรุง',          color: 'text-yellow-700',  bg: 'bg-yellow-50',   border: 'border-yellow-200',  dot: '#f59e0b' }
-  if (total <= 60) return { label: 'ต้องดูแลพฤติกรรม',    color: 'text-orange-700',  bg: 'bg-orange-50',   border: 'border-orange-200',  dot: '#f97316' }
-  return                   { label: 'ต้องการความช่วยเหลือ', color: 'text-red-700',    bg: 'bg-red-50',      border: 'border-red-200',     dot: '#ef4444' }
+function getDimMaxScore(dimIdx) { return DIMENSIONS[dimIdx].questions.length * 5 }
+
+// คะแนนสุขภาพรวม (max = TOTAL_Q * 5 = 80)
+function getTotalHealthScore(answers) {
+  return DIMENSIONS.reduce((s, _, di) => s + getDimHealthScore(di, answers), 0)
+}
+const MAX_HEALTH = TOTAL_Q * 5  // 80
+
+function getDimLevel(score, maxScore) {
+  const pct = score / maxScore
+  if (pct >= 0.8) return { label: 'ดีมาก',         color: 'text-emerald-600', bg: 'bg-emerald-100' }
+  if (pct >= 0.6) return { label: 'ดี',             color: 'text-teal-600',    bg: 'bg-teal-100' }
+  if (pct >= 0.4) return { label: 'ควรปรับปรุง',   color: 'text-yellow-600',  bg: 'bg-yellow-100' }
+  return                   { label: 'ต้องดูแล',     color: 'text-red-600',     bg: 'bg-red-100' }
+}
+function getRiskLevel(healthScore) {
+  // healthScore out of MAX_HEALTH (80) — higher = better health
+  const pct = healthScore / MAX_HEALTH
+  if (pct >= 0.8) return { label: 'สุขภาพดีมาก',        color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200', dot: '#10b981' }
+  if (pct >= 0.6) return { label: 'สุขภาพดี',            color: 'text-teal-700',    bg: 'bg-teal-50',     border: 'border-teal-200',    dot: '#0d9488' }
+  if (pct >= 0.4) return { label: 'ควรปรับปรุง',          color: 'text-yellow-700',  bg: 'bg-yellow-50',   border: 'border-yellow-200',  dot: '#f59e0b' }
+  if (pct >= 0.2) return { label: 'ต้องดูแลพฤติกรรม',    color: 'text-orange-700',  bg: 'bg-orange-50',   border: 'border-orange-200',  dot: '#f97316' }
+  return                   { label: 'ต้องการความช่วยเหลือ', color: 'text-red-700',   bg: 'bg-red-50',      border: 'border-red-200',     dot: '#ef4444' }
 }
 
 function ObesityAssessment({ bmi, weight, height, category }) {
   const { user } = useHealth()
   const historyKey = `obesity_history_${user?.id || 'guest'}`
 
-  const [answers, setAnswers]         = useState(Array(15).fill(0))
+  const [answers, setAnswers]         = useState(Array(TOTAL_Q).fill(0))
   const [aiResult, setAiResult]       = useState('')
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState('')
@@ -178,20 +191,20 @@ function ObesityAssessment({ bmi, weight, height, category }) {
     catch { return [] }
   })
 
-  const answered  = answers.filter(v => v > 0).length
-  const total     = answers.reduce((s, v) => s + v, 0)
-  const allDone   = answered === 15
-  const risk      = getRiskLevel(total)
-  const pct       = (answered / 15) * 100
-  const dimScores = DIMENSIONS.map((_, di) => getDimScore(di, answers))
+  const answered    = answers.filter(v => v > 0).length
+  const allDone     = answered === TOTAL_Q
+  const healthScore = getTotalHealthScore(answers)
+  const risk        = getRiskLevel(healthScore)
+  const pct         = (answered / TOTAL_Q) * 100
+  const dimScores   = DIMENSIONS.map((_, di) => getDimHealthScore(di, answers))
 
   function saveRecord(resultText) {
     const record = {
       id: Date.now(),
       date: new Date().toISOString(),
       bmi, weight, height, category,
-      total,
-      riskLabel: getRiskLevel(total).label,
+      total: healthScore,
+      riskLabel: getRiskLevel(healthScore).label,
       answers: [...answers],
       aiResult: resultText,
     }
@@ -207,41 +220,44 @@ function ObesityAssessment({ bmi, weight, height, category }) {
     try {
       const dimText = DIMENSIONS.map((dim, di) => {
         const sc = dimScores[di]
-        const lv = getDimLevel(sc)
+        const lv = getDimLevel(sc, getDimMaxScore(di))
+        const start = getDimStart(di)
         const qRows = dim.questions.map((q, qi) => {
-          const ai = di * 3 + qi
-          return `  • ${q} → ${answers[ai]}/5 (${SCORE_LABELS[answers[ai] - 1]})`
+          const v = answers[start + qi]
+          const freq = SCORE_LABELS[v - 1] || '-'
+          const type = q.isRisk ? '⚠️พฤติกรรมเสี่ยง' : '✅พฤติกรรมดี'
+          return `  • [${type}] ${q.text} → ${freq}`
         }).join('\n')
-        return `${dim.emoji} ${dim.label} — คะแนน ${sc}/15 (${lv.label})\n${qRows}`
+        const maxSc = getDimMaxScore(di)
+        return `${dim.emoji} ${dim.label} — คะแนนสุขภาพ ${sc}/${maxSc} (${lv.label})\n${qRows}`
       }).join('\n\n')
 
-      const prompt = `คุณเป็นผู้เชี่ยวชาญด้านสุขภาพวัยรุ่น อ้างอิงแนวทางของ กระทรวงสาธารณสุข ประเทศไทย (กรมอนามัย กรมสุขภาพจิต กรมควบคุมโรค) สำหรับวัยรุ่นอายุ 12–18 ปี อย่างเคร่งครัด
+      const prompt = `คุณเป็นนักโภชนาการและผู้เชี่ยวชาญสุขภาพวัยรุ่น อ้างอิงแนวทางกระทรวงสาธารณสุขไทย (หลัก 3อ.2ส.)
 
 ข้อมูลผู้ใช้:
-- BMI: ${bmi} (${category}) — เกณฑ์กรมอนามัย (อ้างอิง WHO Asia-Pacific): ปกติ 18.5–22.9, เริ่มเกิน 23–24.9, อ้วน ≥25
+- BMI: ${bmi} (${category}) — เกณฑ์กรมอนามัย: ปกติ 18.5–22.9, เริ่มเกิน 23–24.9, อ้วน ≥25
 - น้ำหนัก: ${weight} kg · ส่วนสูง: ${height} cm
-- คะแนนรวม: ${total}/75 (${risk.label})
+- คะแนนสุขภาพรวม: ${healthScore}/${MAX_HEALTH} (${risk.label})
 
-ผลแบบประเมินสุขภาพ 5 ด้าน (1 = ไม่เคย … 5 = เป็นประจำ):
+ผลแบบประเมินพฤติกรรมสุขภาพ 3อ. (ความถี่/สัปดาห์ที่ผ่านมา):
 ${dimText}
 
-วิเคราะห์โดยอ้างอิงแนวทางกระทรวงสาธารณสุขสำหรับวัยรุ่น 12–18 ปี ดังนี้:
+หมายเหตุ: ✅พฤติกรรมดี = ยิ่งทำบ่อยยิ่งดี | ⚠️พฤติกรรมเสี่ยง = ยิ่งทำบ่อยยิ่งเสี่ยง
 
-### 1. ภาพรวมสุขภาพ 5 ด้าน
-วิเคราะห์แต่ละด้านที่มีคะแนนสูง เทียบกับเกณฑ์กระทรวงสาธารณสุข ได้แก่:
-- โภชนาการ: กองโภชนาการ กรมอนามัย แนะนำผักและผลไม้ ≥5 ส่วน/วัน ลดน้ำตาล-โซเดียม
-- กิจกรรมทางกาย: กรมอนามัย แนะนำวัยรุ่น ≥60 นาที/วัน ลดหน้าจอ ≤2 ชม./วัน
-- สุขภาพจิต: กรมสุขภาพจิต ระบุวัยรุ่นเป็นช่วงเสี่ยงโรคซึมเศร้า ความเครียด
-- การนอนหลับ: กรมสุขภาพจิต แนะนำวัยรุ่น 8–10 ชม./คืน
-- พฤติกรรมเสี่ยง: กรมควบคุมโรค ระบุปัจจัยเสี่ยง NCDs และสุขภาวะสังคมวัยรุ่น
+วิเคราะห์โดยอ้างอิงหลัก 3อ.2ส. กระทรวงสาธารณสุข:
 
-### 2. จุดเสี่ยงสำคัญที่ต้องแก้ไข
-ระบุ 2–3 ข้อที่คะแนนสูงสุดและส่งผลต่อสุขภาพมากที่สุด พร้อมอ้างอิงหน่วยงานกระทรวงสาธารณสุข
+### 1. ภาพรวมพฤติกรรมสุขภาพ 3 ด้าน
+- อาหาร: กองโภชนาการ กรมอนามัย — ผักผลไม้ ≥5 กำมือ/วัน น้ำ 6–8 แก้ว/วัน ลดหวาน-มัน-เค็ม
+- ออกกำลังกาย: กรมอนามัย — เคลื่อนไหว ≥1 ชม./วัน ลุกขยับทุก 2 ชม.
+- อารมณ์: กรมสุขภาพจิต — นอนหลับ 9–10 ชม./วัน จัดการความเครียดได้อย่างเหมาะสม
 
-### 3. แผนปรับพฤติกรรมเฉพาะตัว (ปฏิบัติได้จริง)
-แนะนำ 3–4 ขั้นตอนที่วัดผลได้ ตามแนวทางกระทรวงสาธารณสุขสำหรับวัยรุ่น 12–18 ปี
+### 2. พฤติกรรมที่ต้องปรับปรุงเร่งด่วน
+ระบุ 2–3 พฤติกรรมที่เป็นปัญหามากที่สุด พร้อมผลกระทบต่อ BMI และสุขภาพ
 
-ตอบภาษาไทย กระชับ ใช้หัวข้อย่อย ไม่เกิน 480 คำ`
+### 3. แผนปรับพฤติกรรมรายสัปดาห์ (ทำได้จริง)
+แนะนำ 3–4 เป้าหมายที่วัดผลได้ ตามแนวทางกระทรวงสาธารณสุข
+
+ตอบภาษาไทย กระชับ ชัดเจน ใช้หัวข้อย่อย ไม่เกิน 480 คำ`
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -277,19 +293,12 @@ ${dimText}
         style={{ background: 'linear-gradient(135deg, #7c3aed, #6366f1)' }}>
         <div className="absolute -top-5 -right-5 w-24 h-24 rounded-full bg-white/10" />
         <div className="relative">
-          <h2 className="font-black text-base">แบบประเมินสุขภาพ 5 ด้าน</h2>
-          <p className="text-purple-200 text-xs mt-0.5">ตามหลัก WHO สำหรับวัยรุ่น 12–18 ปี · 15 ข้อ 5 ด้าน</p>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {DIMENSIONS.map(d => (
-              <span key={d.id} className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold">
-                {d.emoji} {d.label.replace('ด้าน', '').trim()}
-              </span>
-            ))}
-          </div>
+          <h2 className="font-black text-base">แบบประเมินพฤติกรรมสุขภาพ 3อ.</h2>
+          <p className="text-purple-200 text-xs mt-0.5">หลัก 3อ.2ส. กระทรวงสาธารณสุข · {DIMENSIONS.length} หมวด รวม {TOTAL_Q} ข้อ</p>
           <div className="mt-3 space-y-1.5">
             <div className="flex justify-between text-xs text-purple-200">
-              <span>ตอบแล้ว {answered}/15 ข้อ</span>
-              {answered > 0 && <span className="font-bold text-white">คะแนนสะสม {total}/75</span>}
+              <span>ตอบแล้ว {answered}/{TOTAL_Q} ข้อ</span>
+              {answered > 0 && <span className="font-bold text-white">คะแนนสุขภาพ {healthScore}/{MAX_HEALTH}</span>}
             </div>
             <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
               <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
@@ -301,19 +310,56 @@ ${dimText}
       {/* Score legend */}
       <div className="flex gap-1 overflow-x-auto pb-1">
         {SCORE_LABELS.map((l, i) => (
-          <div key={i} className="flex-1 min-w-0 text-center bg-slate-50 rounded-xl py-1.5 px-1">
+          <div key={i} className="flex-shrink-0 text-center bg-slate-50 rounded-xl py-1.5 px-2.5">
             <p className="text-xs font-black text-slate-700">{i + 1}</p>
-            <p className="text-[9px] text-slate-400 leading-tight mt-0.5">{l}</p>
+            <p className="text-[9px] text-slate-400 leading-tight mt-0.5 whitespace-nowrap">{l}</p>
           </div>
         ))}
+      </div>
+
+      {/* Overview — dimension TOC card (matching screenshot) */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+          <p className="text-sm font-black text-slate-700">
+            📋 หัวข้อที่ประเมิน ({DIMENSIONS.length} ด้าน รวม {TOTAL_Q} ข้อ)
+          </p>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {DIMENSIONS.map((dim, di) => {
+            const start = getDimStart(di)
+            const dimLen = dim.questions.length
+            const dimAnswered = answers.slice(start, start + dimLen).filter(v => v > 0).length
+            const sc = dimScores[di]
+            const lv = getDimLevel(sc, getDimMaxScore(di))
+            return (
+              <div key={dim.id} className="flex items-center gap-3 px-4 py-2.5">
+                <span className="text-xl flex-shrink-0">{dim.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-700 leading-tight">{dim.label}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{dim.desc}</p>
+                </div>
+                <div className="flex-shrink-0 flex items-center gap-1.5">
+                  {dimAnswered === dimLen
+                    ? <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${lv.bg} ${lv.color}`}>{lv.label}</span>
+                    : <span className="text-[10px] text-slate-400">{dimAnswered}/{dimLen} ข้อ</span>
+                  }
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">{dimLen} ข้อ</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Questions — grouped by dimension */}
       <div className="space-y-4">
         {DIMENSIONS.map((dim, di) => {
-          const dimAnswered = answers.slice(di * 3, di * 3 + 3).filter(v => v > 0).length
+          const start = getDimStart(di)
+          const dimLen = dim.questions.length
+          const dimAnswered = answers.slice(start, start + dimLen).filter(v => v > 0).length
           const sc = dimScores[di]
-          const lv = getDimLevel(sc)
+          const maxSc = getDimMaxScore(di)
+          const lv = getDimLevel(sc, maxSc)
           return (
             <div key={dim.id} className={`rounded-2xl border ${dim.border} overflow-hidden`}>
               {/* Dimension header */}
@@ -326,21 +372,23 @@ ${dimText}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-white/80 text-[10px]">{dimAnswered}/3 ข้อ</p>
-                  {dimAnswered === 3 && (
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${lv.bg} ${lv.color}`}>{sc}/15 · {lv.label}</span>
+                  <p className="text-white/80 text-[10px]">{dimAnswered}/{dimLen} ข้อ</p>
+                  {dimAnswered === dimLen && (
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${lv.bg} ${lv.color}`}>{sc}/{maxSc} · {lv.label}</span>
                   )}
                 </div>
               </div>
               {/* Questions */}
               <div className={`${dim.bg} divide-y divide-white/60`}>
                 {dim.questions.map((q, qi) => {
-                  const i = di * 3 + qi
+                  const i = start + qi
                   const picked = answers[i]
                   return (
                     <div key={qi} className="px-4 py-3.5 bg-white/80">
                       <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
-                        <span className={`${dim.color} font-black mr-1.5`}>{i + 1}.</span>{q}
+                        <span className={`${dim.color} font-black mr-1.5`}>{i + 1}.</span>
+                        {q.isRisk && <span className="text-[10px] text-red-400 font-semibold mr-1">[เสี่ยง]</span>}
+                        {q.text}
                       </p>
                       <div className="flex gap-1.5">
                         {[1, 2, 3, 4, 5].map(v => (
@@ -372,9 +420,9 @@ ${dimText}
         <div className={`rounded-2xl border ${risk.border} ${risk.bg} p-4 space-y-3`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-500">คะแนนรวมสุขภาพ 5 ด้าน</p>
+              <p className="text-xs text-slate-500">คะแนนรวมสุขภาพ 3 หมวด (3อ.)</p>
               <p className={`text-3xl font-black mt-0.5 ${risk.color}`}>
-                {total} <span className="text-base font-normal text-slate-400">/ 75</span>
+                {healthScore} <span className="text-base font-normal text-slate-400">/ {MAX_HEALTH}</span>
               </p>
             </div>
             <span className={`inline-block px-4 py-2 rounded-2xl font-bold text-sm ${risk.color} bg-white/70 border ${risk.border}`}>
@@ -385,16 +433,17 @@ ${dimText}
           <div className="space-y-1.5">
             {DIMENSIONS.map((dim, di) => {
               const sc = dimScores[di]
-              const lv = getDimLevel(sc)
-              const pct = (sc / 15) * 100
+              const maxSc = getDimMaxScore(di)
+              const lv = getDimLevel(sc, maxSc)
+              const barPct = (sc / maxSc) * 100
               return (
                 <div key={dim.id} className="flex items-center gap-2">
                   <span className="text-sm w-5 text-center">{dim.emoji}</span>
                   <div className="flex-1 h-2 bg-white/60 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%`, background: pct <= 40 ? '#10b981' : pct <= 67 ? '#f59e0b' : '#ef4444' }} />
+                      style={{ width: `${barPct}%`, background: barPct >= 80 ? '#10b981' : barPct >= 60 ? '#0d9488' : barPct >= 40 ? '#f59e0b' : '#ef4444' }} />
                   </div>
-                  <span className={`text-[10px] font-bold w-16 text-right ${lv.color}`}>{sc}/15 {lv.label}</span>
+                  <span className={`text-[10px] font-bold w-24 text-right ${lv.color}`}>{sc}/{maxSc} {lv.label}</span>
                 </div>
               )
             })}
@@ -418,7 +467,7 @@ ${dimText}
       )}
 
       {!allDone && answered > 0 && (
-        <p className="text-center text-xs text-slate-400">ตอบให้ครบ {15 - answered} ข้อที่เหลือเพื่อวิเคราะห์</p>
+        <p className="text-center text-xs text-slate-400">ตอบให้ครบ {TOTAL_Q - answered} ข้อที่เหลือเพื่อวิเคราะห์</p>
       )}
 
       {/* AI Result */}
@@ -442,8 +491,8 @@ ${dimText}
           </div>
           {/* WHO badge */}
           <div className="bg-purple-50 border-b border-purple-100 px-5 py-2 flex items-center gap-2">
-            <span className="text-[10px] font-bold text-purple-600 bg-white border border-purple-200 px-2 py-0.5 rounded-full">WHO Adolescent Health</span>
-            <span className="text-[10px] text-purple-400">12–18 ปี · กระทรวงสาธารณสุข · วิเคราะห์เฉพาะบุคคล</span>
+            <span className="text-[10px] font-bold text-purple-600 bg-white border border-purple-200 px-2 py-0.5 rounded-full">หลัก 3อ.2ส.</span>
+            <span className="text-[10px] text-purple-400">กระทรวงสาธารณสุข · {DIMENSIONS.length} หมวด {TOTAL_Q} ข้อ · วิเคราะห์เฉพาะบุคคล</span>
           </div>
           {/* Content */}
           <div className="bg-white px-5 py-4 space-y-0.5">
@@ -502,7 +551,7 @@ function HistoryCard({ rec, r, dateStr, timeStr }) {
         <div className="flex items-center gap-2 text-left">
           <div>
             <p className="text-xs font-bold text-slate-700">{dateStr} · {timeStr}</p>
-            <p className="text-[10px] text-slate-500">BMI {rec.bmi} · {rec.category} · คะแนน {rec.total}/75</p>
+            <p className="text-[10px] text-slate-500">BMI {rec.bmi} · {rec.category} · คะแนน {rec.total}/{MAX_HEALTH}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -512,7 +561,7 @@ function HistoryCard({ rec, r, dateStr, timeStr }) {
       </button>
       {open && rec.aiResult && (
         <div className="px-3 pb-3 pt-2 bg-white border-t border-slate-100">
-          <p className="text-[10px] font-bold text-slate-400 mb-2">ผลวิเคราะห์ AI (อ้างอิง WHO)</p>
+          <p className="text-[10px] font-bold text-slate-400 mb-2">ผลวิเคราะห์ AI (อ้างอิงหลัก 3อ.2ส. กระทรวงสาธารณสุข)</p>
           <div className="space-y-0.5">{renderMarkdown(rec.aiResult)}</div>
         </div>
       )}
