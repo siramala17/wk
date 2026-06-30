@@ -1,14 +1,262 @@
-﻿import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect, useRef } from 'react'
 import {
   Award, Star, Zap, Share2, Flame, Trophy,
-  Lock, Gift, Check, X, Clock, RefreshCw, AlertCircle, Camera,
+  Lock, Gift, Check, X, Clock, RefreshCw, AlertCircle, Camera, XCircle, Image,
 } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import { getUserLevel, getBadges } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
-import { fetchRedemptions, fetchRewardCatalog } from '../services/userSync'
+import { fetchRedemptions, fetchRewardCatalog, addSubmission } from '../services/userSync'
 import ActivitySubmit from './ActivitySubmit'
+
+const WORKOUT = [
+  { id:'E01', label:'เดินขึ้นบันได 200 ขั้น 1 ครั้ง',                      pts:50,  color:'#fcd34d' },
+  { id:'E02', label:'เดินแกว่งแขน 30 นาที 1 ครั้ง',                        pts:50,  color:'#fca5a5' },
+  { id:'E03', label:'เดินเร็ว 3 กิโลเมตร 1 ครั้ง',                        pts:100, color:'#6ee7b7' },
+  { id:'E04', label:'แบดมินตัน 30 นาที 1 ครั้ง',                           pts:30,  color:'#7dd3fc' },
+  { id:'E05', label:'ปั่นจักรยาน 25 กิโลเมตร 1 ครั้ง',                    pts:100, color:'#93c5fd' },
+  { id:'E06', label:'สควอท 5 เซต เซตละ 50 ครั้ง',                         pts:100, color:'#86efac' },
+  { id:'E07', label:'เต้นแอโรบิก 60 นาที 1 ครั้ง',                        pts:50,  color:'#f9a8d4' },
+  { id:'E08', label:'ฮูลาฮูป 30 นาที 1 ครั้ง',                            pts:50,  color:'#fde68a' },
+  { id:'E09', label:'กระโดดเชือก 5 เซต เซตละ 20 ครั้ง',                   pts:50,  color:'#fcd34d' },
+  { id:'E10', label:'แบดมินตัน 30 นาที 1 ครั้ง',                           pts:50,  color:'#f9a8d4' },
+  { id:'E11', label:'ออกกำลังกายชนิดใดก็ได้ ต่อเนื่อง 30 นาที 1 ครั้ง',  pts:50,  color:'#d8b4fe' },
+  { id:'E12', label:'ออกกำลังกายชนิดใดก็ได้ ต่อเนื่อง 60 นาที 1 ครั้ง',  pts:100, color:'#fde68a' },
+  { id:'E13', label:'ฟุตบอล / ฟุตวอล 60 นาที 1 ครั้ง',                   pts:100, color:'#86efac' },
+  { id:'E14', label:'เปตอง 30 นาที 1 ครั้ง',                               pts:50,  color:'#d8b4fe' },
+  { id:'E15', label:'เดินเร็ว 5 กิโลเมตร 1 ครั้ง',                        pts:100, color:'#fcd34d' },
+  { id:'E16', label:'เดินเร็ว 3 กิโลเมตร 1 ครั้ง',                        pts:50,  color:'#fca5a5' },
+  { id:'E17', label:'วิ่ง 8 กิโลเมตร 1 ครั้ง',                            pts:150, color:'#93c5fd' },
+  { id:'E18', label:'วิ่ง 10 กิโลเมตร 1 ครั้ง',                           pts:200, color:'#fca5a5' },
+  { id:'E19', label:'วิดพื้น 5 เซต เซตละ 10 ครั้ง',                       pts:100, color:'#7dd3fc' },
+  { id:'E20', label:'กระโดดตบ 5 เซต เซตละ 20 ครั้ง',                      pts:100, color:'#fcd34d' },
+  { id:'E21', label:'กีฬาตามความชอบ 60 นาที',                              pts:150, color:'#fca5a5' },
+]
+
+function WorkoutChallenge({ user }) {
+  const fileRef = useRef(null)
+  const storageKey = `workout_${user.id}`
+  const [submitted, setSubmitted] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(storageKey) || '[]') } catch { return [] }
+  })
+  const [active, setActive]       = useState(null)
+  const [photo, setPhoto]         = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError]         = useState('')
+  const [justDone, setJustDone]   = useState(null)
+  const [confirmReset, setConfirmReset] = useState(false)
+
+  const allDone = submitted.length >= WORKOUT.length
+
+  function saveProgress(ids) {
+    localStorage.setItem(storageKey, JSON.stringify(ids))
+    setSubmitted(ids)
+  }
+
+  function handleFile(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => setPhoto(ev.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  async function handleSubmitProof() {
+    if (!photo) { setError('กรุณาแนบภาพหลักฐาน'); return }
+    setError('')
+    setSubmitting(true)
+    try {
+      await addSubmission({
+        id: Date.now(),
+        userId: user.id,
+        userName: `${user.firstName} ${user.lastName}`,
+        userAvatar: user.faceImage,
+        category: 'exercise',
+        description: `[Workout ${active.id}] ${active.label}`,
+        photo,
+        challengeId: active.id,
+        pointsValue: active.pts,
+      })
+      const next = [...submitted, active.id]
+      saveProgress(next)
+      setJustDone(active.id)
+      setActive(null)
+      setPhoto(null)
+      setTimeout(() => setJustDone(null), 2500)
+    } catch (e) {
+      setError(e?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const totalPts = WORKOUT.filter(w => submitted.includes(w.id)).reduce((s, w) => s + w.pts, 0)
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="rounded-3xl p-4 text-white relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg,#f97316,#ec4899)' }}>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-10 translate-x-10" />
+        <div className="relative flex items-center justify-between">
+          <div>
+            <h2 className="font-black text-xl leading-tight">Let's Workout! 🏋️</h2>
+            <p className="text-white/80 text-xs mt-0.5">ทำครบ 21 กิจกรรม แล้วเริ่มรอบใหม่</p>
+            <p className="text-white/70 text-xs mt-0.5">แต้มสะสมรอบนี้: <span className="font-black text-white">+{totalPts}</span></p>
+          </div>
+          <div className="text-right">
+            <div className="text-4xl font-black">{submitted.length}</div>
+            <div className="text-white/70 text-xs">/ 21 กิจกรรม</div>
+          </div>
+        </div>
+        <div className="relative mt-3 h-2 bg-white/30 rounded-full overflow-hidden">
+          <div className="h-full bg-white rounded-full transition-all duration-700"
+            style={{ width: `${(submitted.length / 21) * 100}%` }} />
+        </div>
+      </div>
+
+      {/* รูปแผนกิจกรรม */}
+      <div className="w-full rounded-2xl overflow-hidden border-2 border-orange-200 shadow-sm">
+        <img src="/workout-chart.png" alt="Let's Workout Chart" className="w-full h-auto" />
+      </div>
+
+      {/* จบรอบ */}
+      {allDone && (
+        <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4 text-center">
+          <div className="text-4xl mb-2">🎉</div>
+          <p className="font-black text-green-700 text-lg">ทำครบทุกกิจกรรมแล้ว!</p>
+          <p className="text-sm text-green-600 mb-3">สุดยอดมาก! พร้อมเริ่มรอบใหม่ไหม?</p>
+          {!confirmReset ? (
+            <button onClick={() => setConfirmReset(true)}
+              className="bg-green-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-green-600 active:scale-95 transition-all flex items-center gap-2 mx-auto">
+              <RefreshCw size={15} /> เริ่มรอบใหม่
+            </button>
+          ) : (
+            <div className="flex gap-2 justify-center">
+              <button onClick={() => setConfirmReset(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold">
+                ยกเลิก
+              </button>
+              <button onClick={() => { saveProgress([]); setConfirmReset(false) }}
+                className="px-5 py-2 rounded-xl bg-green-500 text-white text-sm font-bold hover:bg-green-600 active:scale-95 transition-all">
+                ยืนยัน เริ่มใหม่
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* แจ้งเตือนส่งสำเร็จ */}
+      {justDone && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-emerald-700 text-sm font-semibold animate-bounce">
+          <Check size={16} /> ส่งหลักฐาน {justDone} เรียบร้อย! รอ Admin ยืนยันแต้ม
+        </div>
+      )}
+
+      {/* Grid */}
+      <div className="grid grid-cols-3 gap-2">
+        {WORKOUT.map(w => {
+          const done = submitted.includes(w.id)
+          return (
+            <button key={w.id}
+              onClick={() => { if (!done && !allDone) { setActive(w); setPhoto(null); setError('') } }}
+              disabled={done}
+              className={`rounded-2xl p-2.5 text-left transition-all relative overflow-hidden ${
+                done ? 'cursor-default' : 'hover:shadow-md active:scale-95 cursor-pointer'
+              }`}
+              style={{
+                background: done ? '#f1f5f9' : w.color + '55',
+                border: `2px solid ${done ? '#e2e8f0' : w.color}`,
+              }}>
+              <div className="text-[9px] font-black text-slate-500 mb-0.5">{w.id}</div>
+              <div className="text-[10px] font-semibold text-slate-700 leading-snug mb-1.5">{w.label}</div>
+              <div className="text-[10px] font-black" style={{ color: done ? '#94a3b8' : '#d97706' }}>
+                +{w.pts} แต้ม
+              </div>
+              {done && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                  <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
+                    <Check size={20} className="text-white" />
+                  </div>
+                </div>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      <p className="text-xs text-slate-400 text-center">
+        กดกิจกรรมที่ต้องการแล้วส่งภาพหลักฐาน · Admin จะยืนยันและให้แต้ม
+      </p>
+
+      {/* Modal ส่งหลักฐาน */}
+      {active && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
+          <div className="bg-white rounded-t-3xl w-full max-w-lg shadow-2xl p-5 space-y-4 max-h-[88vh] overflow-y-auto">
+            {/* Title */}
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-black mb-1"
+                  style={{ background: active.color + '60', color: '#374151' }}>{active.id}</span>
+                <h3 className="font-bold text-slate-800 text-base leading-tight">{active.label}</h3>
+                <p className="text-orange-500 font-black text-sm mt-0.5">+{active.pts} แต้ม</p>
+              </div>
+              <button onClick={() => { setActive(null); setPhoto(null); setError('') }}
+                className="text-slate-400 hover:text-slate-600 ml-2 flex-shrink-0">
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Upload */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                ส่งภาพหลักฐาน <span className="text-red-400">*</span>
+              </label>
+              <input ref={fileRef} type="file" accept="image/*" capture="environment"
+                onChange={handleFile} className="hidden" />
+              {photo ? (
+                <div className="relative rounded-2xl overflow-hidden">
+                  <img src={photo} alt="proof" className="w-full max-h-52 object-cover rounded-2xl" />
+                  <button onClick={() => setPhoto(null)}
+                    className="absolute top-2 right-2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white">
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => fileRef.current?.click()}
+                  className="w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-orange-400 hover:text-orange-400 hover:bg-orange-50 transition-all">
+                  <Camera size={30} />
+                  <span className="text-sm font-medium">ถ่ายหรือเลือกภาพจากเครื่อง</span>
+                  <span className="text-xs">รองรับ JPG, PNG</span>
+                </button>
+              )}
+            </div>
+
+            {error && <p className="text-red-500 text-sm">⚠️ {error}</p>}
+
+            <div className="flex gap-2">
+              <button onClick={() => { setActive(null); setPhoto(null); setError('') }}
+                className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">
+                ยกเลิก
+              </button>
+              <button onClick={handleSubmitProof} disabled={submitting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[.98] transition-all"
+                style={{ background: 'linear-gradient(135deg,#f97316,#ec4899)' }}>
+                {submitting
+                  ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> ส่ง...</>
+                  : <><Check size={16} /> ส่งหลักฐาน</>}
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+              กิจกรรมจะถูกตัดออกทันทีหลังส่ง · รอ Admin ยืนยันแต้ม
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function shuffle(arr) {
   const a = [...arr]
@@ -441,37 +689,49 @@ export default function Rewards() {
   return (
     <>
       <div className="max-w-2xl mx-auto px-4 pt-4">
-        <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
+        <div className="flex gap-1.5 bg-slate-100 p-1 rounded-2xl">
           <button
             onClick={() => setMainTab('rewards')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
               mainTab === 'rewards' ? 'bg-white text-yellow-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <Award size={15} /> {r.tabRewards}
+            <Award size={13} /> {r.tabRewards}
+          </button>
+          <button
+            onClick={() => setMainTab('workout')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              mainTab === 'workout' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            🏋️ Workout
           </button>
           <button
             onClick={() => setMainTab('activity')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
               mainTab === 'activity' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <Camera size={15} /> {r.tabActivity}
+            <Camera size={13} /> {r.tabActivity}
           </button>
         </div>
       </div>
 
       {mainTab === 'activity' ? (
         <ActivitySubmit />
+      ) : mainTab === 'workout' ? (
+        <div className="max-w-2xl mx-auto px-4 pt-4 pb-6">
+          <WorkoutChallenge user={user} />
+        </div>
       ) : (
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-6 space-y-5 animate-fade-in">
           <PointsCard points={user.points} level={level} progress={progress} nextLevel={nextLevel} streak={user.streak} r={r} />
 
           <div className="flex bg-slate-100 rounded-2xl p-1 gap-1">
             {[
-              { key: 'rewards',  label: r.innerRedeem },
-              { key: 'history',  label: r.innerHistory },
-              { key: 'badges',   label: r.innerBadges },
+              { key: 'rewards', label: r.innerRedeem },
+              { key: 'history', label: r.innerHistory },
+              { key: 'badges',  label: r.innerBadges },
             ].map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
                 className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
