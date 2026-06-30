@@ -1,24 +1,13 @@
-﻿import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Send, Check, XCircle, RefreshCw, Image, Star } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
+import { useLang } from '../context/LangContext'
 import { addSubmission, fetchSubmissions } from '../services/userSync'
-
-const CATEGORIES = [
-  { value: 'exercise', label: 'ออกกำลังกาย', emoji: '🏃' },
-  { value: 'food', label: 'อาหารสุขภาพ', emoji: '🥗' },
-  { value: 'sleep', label: 'นอนหลับพักผ่อน', emoji: '🌙' },
-  { value: 'stress', label: 'จัดการความเครียด', emoji: '🧘' },
-  { value: 'other', label: 'กิจกรรมอื่น ๆ', emoji: '⭐' },
-]
-
-const STATUS_CONFIG = {
-  pending:  { label: 'รอตรวจสอบ',  emoji: '⏳', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
-  approved: { label: 'อนุมัติแล้ว', emoji: '✅', bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200' },
-  rejected: { label: 'ไม่ผ่าน',    emoji: '❌', bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200' },
-}
 
 export default function ActivitySubmit() {
   const { user, claimActivityPoints } = useHealth()
+  const { t } = useLang()
+  const ac = t.activity
   const fileRef = useRef(null)
   const [tab, setTab] = useState('submit')
   const [category, setCategory] = useState('')
@@ -32,7 +21,12 @@ export default function ActivitySubmit() {
   const [claimedPts, setClaimedPts] = useState(0)
   const [claiming, setClaiming] = useState(false)
 
-  // ดึงแต้มที่รอรับเมื่อเข้าหน้านี้
+  const STATUS_CONFIG = {
+    pending:  { label: ac.statusPending,  emoji: '⏳', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
+    approved: { label: ac.statusApproved, emoji: '✅', bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200' },
+    rejected: { label: ac.statusRejected, emoji: '❌', bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200' },
+  }
+
   useEffect(() => {
     async function checkPoints() {
       setClaiming(true)
@@ -65,8 +59,8 @@ export default function ActivitySubmit() {
   }
 
   async function handleSubmit() {
-    if (!category) { setError('กรุณาเลือกประเภทกิจกรรม'); return }
-    if (!photo)    { setError('กรุณาแนบภาพกิจกรรม'); return }
+    if (!category) { setError(ac.noCatError); return }
+    if (!photo)    { setError(ac.noPhotoError); return }
     setError('')
     setSubmitting(true)
     try {
@@ -85,7 +79,7 @@ export default function ActivitySubmit() {
       setPhoto(null)
       setTimeout(() => setSubmitted(false), 3000)
     } catch (e) {
-      setError(e?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
+      setError(e?.message || ac.submitError)
     } finally {
       setSubmitting(false)
     }
@@ -94,55 +88,55 @@ export default function ActivitySubmit() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-5">
 
-      {/* แต้มที่เพิ่งได้รับ */}
       {claimedPts > 0 && (
         <div className="bg-yellow-400 rounded-2xl px-4 py-3 flex items-center gap-3 mb-4 shadow-lg animate-bounce">
           <Star size={24} className="text-yellow-900 fill-yellow-700 flex-shrink-0" />
           <div>
-            <p className="font-bold text-yellow-900">ได้รับแต้มใหม่ +{claimedPts} แต้ม!</p>
-            <p className="text-yellow-800 text-xs">Admin อนุมัติภาพกิจกรรมของคุณแล้ว</p>
+            <p className="font-bold text-yellow-900">{ac.claimedPts.replace('{n}', claimedPts)}</p>
+            <p className="text-yellow-800 text-xs">{ac.claimedSub}</p>
           </div>
         </div>
       )}
 
-      {/* กำลังตรวจสอบแต้ม */}
       {claiming && (
         <div className="flex items-center gap-2 text-xs text-slate-400 mb-3">
           <div className="w-3 h-3 border border-indigo-400 border-t-transparent rounded-full animate-spin" />
-          กำลังตรวจสอบแต้มที่รอรับ...
+          {ac.checkingPts}
         </div>
       )}
 
-      {/* header */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-3xl p-5 text-white mb-5 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">📸</div>
           <div>
-            <h1 className="font-bold text-lg">ส่งภาพกิจกรรม</h1>
-            <p className="text-indigo-100 text-xs mt-0.5">1 ภาพ = 5 แต้ม เมื่อ Admin อนุมัติ</p>
+            <h1 className="font-bold text-lg">{ac.headerTitle}</h1>
+            <p className="text-indigo-100 text-xs mt-0.5">{ac.headerSub}</p>
           </div>
         </div>
       </div>
 
-      {/* tabs */}
+      {/* Tabs */}
       <div className="flex bg-slate-100 rounded-2xl p-1 mb-5">
-        {[['submit','ส่งภาพใหม่'],['history','ประวัติของฉัน']].map(([t, l]) => (
-          <button key={t} onClick={() => setTab(t)}
+        {[['submit', ac.tabSubmit], ['history', ac.tabHistory]].map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
-            }`}>{l}</button>
+              tab === key ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
+            }`}>{label}</button>
         ))}
       </div>
 
-      {/* ── TAB: ส่งภาพ ── */}
+      {/* ── TAB: Submit ── */}
       {tab === 'submit' && (
         <div className="space-y-4">
 
-          {/* เลือกประเภท */}
+          {/* Category */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">ประเภทกิจกรรม <span className="text-red-400">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              {ac.catLabel} <span className="text-red-400">*</span>
+            </label>
             <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map(c => (
+              {ac.categories.map(c => (
                 <button key={c.value} onClick={() => { setCategory(c.value); setError('') }}
                   className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-2 text-xs font-semibold transition-all active:scale-95 ${
                     category === c.value
@@ -156,24 +150,25 @@ export default function ActivitySubmit() {
             </div>
           </div>
 
-          {/* คำอธิบาย */}
+          {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">คำอธิบาย (ไม่บังคับ)</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">{ac.descLabel}</label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="เช่น วันนี้วิ่ง 30 นาที รอบสนามโรงเรียน..."
+              placeholder={ac.descHint}
               rows={3}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-800 text-sm placeholder-slate-400 resize-none"
             />
           </div>
 
-          {/* แนบภาพ */}
+          {/* Photo */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">ภาพหลักฐาน <span className="text-red-400">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              {ac.photoLabel} <span className="text-red-400">*</span>
+            </label>
             <input ref={fileRef} type="file" accept="image/*" capture="environment"
               onChange={handleFile} className="hidden" />
-
             {photo ? (
               <div className="relative rounded-2xl overflow-hidden">
                 <img src={photo} alt="activity" className="w-full max-h-64 object-cover rounded-2xl" />
@@ -186,43 +181,41 @@ export default function ActivitySubmit() {
               <button onClick={() => fileRef.current?.click()}
                 className="w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-indigo-400 hover:text-indigo-400 hover:bg-indigo-50 transition-all">
                 <Image size={32} />
-                <span className="text-sm font-medium">กดเพื่อเลือกหรือถ่ายภาพ</span>
-                <span className="text-xs">รองรับ JPG, PNG</span>
+                <span className="text-sm font-medium">{ac.takeOrPick}</span>
+                <span className="text-xs">{ac.formats}</span>
               </button>
             )}
           </div>
 
-          {/* error */}
           {error && <p className="text-red-500 text-sm flex items-center gap-1.5">⚠️ {error}</p>}
 
-          {/* ส่ง / success */}
           {submitted ? (
             <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-4 flex items-center gap-3">
               <Check size={22} className="text-green-600" />
               <div>
-                <p className="font-semibold text-green-700">ส่งภาพสำเร็จ!</p>
-                <p className="text-xs text-green-500">รอ Admin ตรวจสอบและยืนยัน</p>
+                <p className="font-semibold text-green-700">{ac.successTitle}</p>
+                <p className="text-xs text-green-500">{ac.successSub}</p>
               </div>
             </div>
           ) : (
             <button onClick={handleSubmit} disabled={submitting}
               className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               {submitting
-                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> กำลังส่ง...</>
-                : <><Send size={16} /> ส่งภาพให้ Admin ตรวจสอบ</>}
+                ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {ac.sendingBtn}</>
+                : <><Send size={16} /> {ac.sendBtn}</>}
             </button>
           )}
         </div>
       )}
 
-      {/* ── TAB: ประวัติ ── */}
+      {/* ── TAB: History ── */}
       {tab === 'history' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">ภาพที่ส่งทั้งหมด {mySubmissions.length} รายการ</p>
+            <p className="text-sm text-slate-500">{ac.historyCount.replace('{n}', mySubmissions.length)}</p>
             <button onClick={loadHistory} disabled={loadingHistory}
               className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700">
-              <RefreshCw size={13} className={loadingHistory ? 'animate-spin' : ''} /> รีเฟรช
+              <RefreshCw size={13} className={loadingHistory ? 'animate-spin' : ''} /> {ac.refresh}
             </button>
           </div>
 
@@ -235,12 +228,12 @@ export default function ActivitySubmit() {
           {!loadingHistory && mySubmissions.length === 0 && (
             <div className="text-center py-12 text-slate-400">
               <Image size={40} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">ยังไม่มีภาพที่ส่ง</p>
+              <p className="text-sm">{ac.noHistory}</p>
             </div>
           )}
 
           {!loadingHistory && mySubmissions.map(s => {
-            const cat = CATEGORIES.find(c => c.value === s.category)
+            const cat = ac.categories.find(c => c.value === s.category)
             const st = STATUS_CONFIG[s.status] || STATUS_CONFIG.pending
             return (
               <div key={s.id} className={`${st.bg} border ${st.border} rounded-2xl overflow-hidden`}>
@@ -269,7 +262,9 @@ export default function ActivitySubmit() {
                             ? 'bg-slate-100 text-slate-400'
                             : 'bg-yellow-100 text-yellow-700'
                         }`}>
-                          ⭐ +{s.pointsValue || 5} แต้ม{s.pointsClaimed ? ' (รับแล้ว)' : ' (รอรับ)'}
+                          ⭐ {s.pointsClaimed
+                            ? ac.ptsClaimed.replace('{n}', s.pointsValue || 5)
+                            : ac.ptsWaiting.replace('{n}', s.pointsValue || 5)}
                         </span>
                       )}
                     </div>

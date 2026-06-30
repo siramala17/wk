@@ -11,30 +11,33 @@ import { fetchRedemptions, fetchRewardCatalog, addSubmission } from '../services
 import ActivitySubmit from './ActivitySubmit'
 
 const WORKOUT = [
-  { id:'E01', label:'เดินขึ้นบันได 200 ขั้น 1 ครั้ง',                      pts:50,  color:'#fcd34d' },
-  { id:'E02', label:'เดินแกว่งแขน 30 นาที 1 ครั้ง',                        pts:50,  color:'#fca5a5' },
-  { id:'E03', label:'เดินเร็ว 3 กิโลเมตร 1 ครั้ง',                        pts:100, color:'#6ee7b7' },
-  { id:'E04', label:'แบดมินตัน 30 นาที 1 ครั้ง',                           pts:30,  color:'#7dd3fc' },
-  { id:'E05', label:'ปั่นจักรยาน 25 กิโลเมตร 1 ครั้ง',                    pts:100, color:'#93c5fd' },
-  { id:'E06', label:'สควอท 5 เซต เซตละ 50 ครั้ง',                         pts:100, color:'#86efac' },
-  { id:'E07', label:'เต้นแอโรบิก 60 นาที 1 ครั้ง',                        pts:50,  color:'#f9a8d4' },
-  { id:'E08', label:'ฮูลาฮูป 30 นาที 1 ครั้ง',                            pts:50,  color:'#fde68a' },
-  { id:'E09', label:'กระโดดเชือก 5 เซต เซตละ 20 ครั้ง',                   pts:50,  color:'#fcd34d' },
-  { id:'E10', label:'แบดมินตัน 30 นาที 1 ครั้ง',                           pts:50,  color:'#f9a8d4' },
-  { id:'E11', label:'ออกกำลังกายชนิดใดก็ได้ ต่อเนื่อง 30 นาที 1 ครั้ง',  pts:50,  color:'#d8b4fe' },
-  { id:'E12', label:'ออกกำลังกายชนิดใดก็ได้ ต่อเนื่อง 60 นาที 1 ครั้ง',  pts:100, color:'#fde68a' },
-  { id:'E13', label:'ฟุตบอล / ฟุตวอล 60 นาที 1 ครั้ง',                   pts:100, color:'#86efac' },
-  { id:'E14', label:'เปตอง 30 นาที 1 ครั้ง',                               pts:50,  color:'#d8b4fe' },
-  { id:'E15', label:'เดินเร็ว 5 กิโลเมตร 1 ครั้ง',                        pts:100, color:'#fcd34d' },
-  { id:'E16', label:'เดินเร็ว 3 กิโลเมตร 1 ครั้ง',                        pts:50,  color:'#fca5a5' },
-  { id:'E17', label:'วิ่ง 8 กิโลเมตร 1 ครั้ง',                            pts:150, color:'#93c5fd' },
-  { id:'E18', label:'วิ่ง 10 กิโลเมตร 1 ครั้ง',                           pts:200, color:'#fca5a5' },
-  { id:'E19', label:'วิดพื้น 5 เซต เซตละ 10 ครั้ง',                       pts:100, color:'#7dd3fc' },
-  { id:'E20', label:'กระโดดตบ 5 เซต เซตละ 20 ครั้ง',                      pts:100, color:'#fcd34d' },
-  { id:'E21', label:'กีฬาตามความชอบ 60 นาที',                              pts:150, color:'#fca5a5' },
+  { id:'E01', pts:50,  color:'#fcd34d' },
+  { id:'E02', pts:50,  color:'#fca5a5' },
+  { id:'E03', pts:100, color:'#6ee7b7' },
+  { id:'E04', pts:30,  color:'#7dd3fc' },
+  { id:'E05', pts:100, color:'#93c5fd' },
+  { id:'E06', pts:100, color:'#86efac' },
+  { id:'E07', pts:50,  color:'#f9a8d4' },
+  { id:'E08', pts:50,  color:'#fde68a' },
+  { id:'E09', pts:50,  color:'#fcd34d' },
+  { id:'E10', pts:50,  color:'#f9a8d4' },
+  { id:'E11', pts:50,  color:'#d8b4fe' },
+  { id:'E12', pts:100, color:'#fde68a' },
+  { id:'E13', pts:100, color:'#86efac' },
+  { id:'E14', pts:50,  color:'#d8b4fe' },
+  { id:'E15', pts:100, color:'#fcd34d' },
+  { id:'E16', pts:50,  color:'#fca5a5' },
+  { id:'E17', pts:150, color:'#93c5fd' },
+  { id:'E18', pts:200, color:'#fca5a5' },
+  { id:'E19', pts:100, color:'#7dd3fc' },
+  { id:'E20', pts:100, color:'#fcd34d' },
+  { id:'E21', pts:150, color:'#fca5a5' },
 ]
 
 function WorkoutChallenge({ user }) {
+  const { t } = useLang()
+  const wt = t.workout
+  const ptsUnit = t.rewards.ptsUnit
   const fileRef = useRef(null)
   const storageKey = `workout_${user.id}`
   const [submitted, setSubmitted] = useState(() => {
@@ -47,7 +50,8 @@ function WorkoutChallenge({ user }) {
   const [justDone, setJustDone]   = useState(null)
   const [confirmReset, setConfirmReset] = useState(false)
 
-  const allDone = submitted.length >= WORKOUT.length
+  const workouts = WORKOUT.map((w, i) => ({ ...w, label: wt.exerciseLabels[i] }))
+  const allDone = submitted.length >= workouts.length
 
   function saveProgress(ids) {
     localStorage.setItem(storageKey, JSON.stringify(ids))
@@ -63,7 +67,7 @@ function WorkoutChallenge({ user }) {
   }
 
   async function handleSubmitProof() {
-    if (!photo) { setError('กรุณาแนบภาพหลักฐาน'); return }
+    if (!photo) { setError(wt.noPhotoError); return }
     setError('')
     setSubmitting(true)
     try {
@@ -85,45 +89,40 @@ function WorkoutChallenge({ user }) {
       setPhoto(null)
       setTimeout(() => setJustDone(null), 2500)
     } catch (e) {
-      setError(e?.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
+      setError(e?.message || wt.submitError)
     } finally {
       setSubmitting(false)
     }
   }
 
-  const totalPts = WORKOUT.filter(w => submitted.includes(w.id)).reduce((s, w) => s + w.pts, 0)
+  const totalPts = workouts.filter(w => submitted.includes(w.id)).reduce((s, w) => s + w.pts, 0)
 
   return (
     <div className="space-y-4">
       {/* Hero Header */}
       <div className="rounded-3xl text-white relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg,#f97316 0%,#ec4899 60%,#a855f7 100%)', minHeight: 140 }}>
-        {/* blobs */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-10" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-6" />
 
-        {/* รูปการ์ตูนซ้าย */}
         <img src="/char-workout.png" alt=""
           className="absolute left-0 bottom-0 object-contain pointer-events-none select-none"
           style={{ height:128, width:'auto', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.20))' }} />
 
-        {/* รูปการ์ตูนขวา */}
         <img src="/char-chibi.png" alt=""
           className="absolute right-0 bottom-0 object-contain pointer-events-none select-none"
           style={{ height:128, width:'auto', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.20))', transform:'scaleX(-1)' }} />
 
-        {/* ข้อความกลาง */}
         <div className="relative flex flex-col items-center justify-center py-5 px-28 text-center">
           <div className="text-2xl font-black tracking-wide drop-shadow">Let's Workout! 🔥</div>
-          <div className="text-white/85 text-xs mt-0.5 font-medium">ทำครบ 21 กิจกรรม แล้วเริ่มรอบใหม่</div>
+          <div className="text-white/85 text-xs mt-0.5 font-medium">{wt.completeSub}</div>
           <div className="mt-2 flex items-center gap-2">
             <span className="text-3xl font-black">{submitted.length}</span>
             <span className="text-white/70 text-sm font-semibold">/ 21</span>
           </div>
-          <div className="text-white/70 text-xs">แต้มรอบนี้ <span className="font-black text-white">+{totalPts}</span> แต้ม</div>
+          <div className="text-white/70 text-xs">{wt.thisPts} <span className="font-black text-white">+{totalPts}</span> {ptsUnit}</div>
         </div>
 
-        {/* Progress bar */}
         <div className="mx-4 mb-4 h-3 bg-white/25 rounded-full overflow-hidden">
           <div className="h-full bg-white rounded-full transition-all duration-700 relative"
             style={{ width: `${(submitted.length / 21) * 100}%` }}>
@@ -134,57 +133,57 @@ function WorkoutChallenge({ user }) {
         </div>
       </div>
 
-      {/* รูปแผนกิจกรรม */}
+      {/* Chart */}
       <div className="w-full rounded-2xl overflow-hidden border-2 border-orange-200 shadow-sm">
         <div className="bg-gradient-to-r from-orange-500 to-pink-500 px-4 py-2 flex items-center gap-2">
-          <span className="text-white font-black text-sm">📋 ตารางกิจกรรมทั้งหมด</span>
+          <span className="text-white font-black text-sm">{wt.chartHeader}</span>
         </div>
         <img src="/workout-chart.png" alt="Let's Workout Chart" className="w-full h-auto" />
       </div>
 
-      {/* จบรอบ */}
+      {/* All done */}
       {allDone && (
         <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4 text-center">
           <div className="text-4xl mb-2">🎉</div>
-          <p className="font-black text-green-700 text-lg">ทำครบทุกกิจกรรมแล้ว!</p>
-          <p className="text-sm text-green-600 mb-3">สุดยอดมาก! พร้อมเริ่มรอบใหม่ไหม?</p>
+          <p className="font-black text-green-700 text-lg">{wt.allDoneTitle}</p>
+          <p className="text-sm text-green-600 mb-3">{wt.allDoneSub}</p>
           {!confirmReset ? (
             <button onClick={() => setConfirmReset(true)}
               className="bg-green-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-green-600 active:scale-95 transition-all flex items-center gap-2 mx-auto">
-              <RefreshCw size={15} /> เริ่มรอบใหม่
+              <RefreshCw size={15} /> {wt.restartBtn}
             </button>
           ) : (
             <div className="flex gap-2 justify-center">
               <button onClick={() => setConfirmReset(false)}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold">
-                ยกเลิก
+                {wt.cancelBtn}
               </button>
               <button onClick={() => { saveProgress([]); setConfirmReset(false) }}
                 className="px-5 py-2 rounded-xl bg-green-500 text-white text-sm font-bold hover:bg-green-600 active:scale-95 transition-all">
-                ยืนยัน เริ่มใหม่
+                {wt.confirmBtn}
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* แจ้งเตือนส่งสำเร็จ */}
+      {/* Proof sent notification */}
       {justDone && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-emerald-700 text-sm font-semibold animate-bounce">
-          <Check size={16} /> ส่งหลักฐาน {justDone} เรียบร้อย! รอ Admin ยืนยันแต้ม
+          <Check size={16} /> {wt.proofSent.replace('{id}', justDone)}
         </div>
       )}
 
       {/* Section title */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent" />
-        <span className="text-xs font-black text-orange-500 tracking-widest uppercase">เลือกกิจกรรม</span>
+        <span className="text-xs font-black text-orange-500 tracking-widest uppercase">{wt.selectLabel}</span>
         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent" />
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-3 gap-2">
-        {WORKOUT.map(w => {
+        {workouts.map(w => {
           const done = submitted.includes(w.id)
           return (
             <button key={w.id}
@@ -213,7 +212,7 @@ function WorkoutChallenge({ user }) {
                     <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shadow">
                       <Check size={18} className="text-white" />
                     </div>
-                    <span className="text-[9px] font-black text-emerald-600">ส่งแล้ว!</span>
+                    <span className="text-[9px] font-black text-emerald-600">{wt.sentLabel}</span>
                   </div>
                 </div>
               )}
@@ -225,22 +224,19 @@ function WorkoutChallenge({ user }) {
       {/* Footer tip */}
       <div className="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-3">
         <img src="/kids-yoga.webp" alt="" className="h-12 object-contain flex-shrink-0" />
-        <p className="text-xs text-orange-700 leading-relaxed font-medium">
-          กดการ์ดกิจกรรมที่ทำแล้ว → ส่งภาพหลักฐาน → รอ Admin ยืนยันแต้ม 🎉
-        </p>
+        <p className="text-xs text-orange-700 leading-relaxed font-medium">{wt.footerTip}</p>
       </div>
 
-      {/* Modal ส่งหลักฐาน */}
+      {/* Proof modal */}
       {active && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
           <div className="bg-white rounded-t-3xl w-full max-w-lg shadow-2xl p-5 space-y-4 max-h-[88vh] overflow-y-auto">
-            {/* Title */}
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-black mb-1"
                   style={{ background: active.color + '60', color: '#374151' }}>{active.id}</span>
                 <h3 className="font-bold text-slate-800 text-base leading-tight">{active.label}</h3>
-                <p className="text-orange-500 font-black text-sm mt-0.5">+{active.pts} แต้ม</p>
+                <p className="text-orange-500 font-black text-sm mt-0.5">{wt.ptsLabel.replace('{pts}', active.pts)}</p>
               </div>
               <button onClick={() => { setActive(null); setPhoto(null); setError('') }}
                 className="text-slate-400 hover:text-slate-600 ml-2 flex-shrink-0">
@@ -248,10 +244,9 @@ function WorkoutChallenge({ user }) {
               </button>
             </div>
 
-            {/* Upload */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                ส่งภาพหลักฐาน <span className="text-red-400">*</span>
+                {wt.proofModalTitle} <span className="text-red-400">*</span>
               </label>
               <input ref={fileRef} type="file" accept="image/*" capture="environment"
                 onChange={handleFile} className="hidden" />
@@ -267,8 +262,8 @@ function WorkoutChallenge({ user }) {
                 <button onClick={() => fileRef.current?.click()}
                   className="w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-orange-400 hover:text-orange-400 hover:bg-orange-50 transition-all">
                   <Camera size={30} />
-                  <span className="text-sm font-medium">ถ่ายหรือเลือกภาพจากเครื่อง</span>
-                  <span className="text-xs">รองรับ JPG, PNG</span>
+                  <span className="text-sm font-medium">{wt.takeOrChoose}</span>
+                  <span className="text-xs">{wt.formats}</span>
                 </button>
               )}
             </div>
@@ -278,19 +273,17 @@ function WorkoutChallenge({ user }) {
             <div className="flex gap-2">
               <button onClick={() => { setActive(null); setPhoto(null); setError('') }}
                 className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">
-                ยกเลิก
+                {wt.cancelBtn}
               </button>
               <button onClick={handleSubmitProof} disabled={submitting}
                 className="flex-1 py-3 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[.98] transition-all"
                 style={{ background: 'linear-gradient(135deg,#f97316,#ec4899)' }}>
                 {submitting
-                  ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> ส่ง...</>
-                  : <><Check size={16} /> ส่งหลักฐาน</>}
+                  ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {wt.sendingBtn}</>
+                  : <><Check size={16} /> {wt.sendProofBtn}</>}
               </button>
             </div>
-            <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-              กิจกรรมจะถูกตัดออกทันทีหลังส่ง · รอ Admin ยืนยันแต้ม
-            </p>
+            <p className="text-[11px] text-slate-400 text-center leading-relaxed">{wt.proofNote}</p>
           </div>
         </div>
       )}
