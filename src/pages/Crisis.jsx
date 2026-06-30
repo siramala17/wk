@@ -117,10 +117,33 @@ function GuideScreen({ onStart }) {
         </div>
       </div>
 
-      <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4">
-        <p className="text-sm font-semibold text-purple-700 mb-1">📞 สายด่วนกรมสุขภาพจิต</p>
-        <p className="text-2xl font-black text-purple-800">1323</p>
-        <p className="text-xs text-purple-500">ตลอด 24 ชั่วโมง</p>
+      {/* Crisis hotline card */}
+      <div className="rounded-2xl overflow-hidden border border-purple-200 shadow-sm">
+        <div className="px-4 py-3 flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}>
+          <Phone size={16} className="text-white flex-shrink-0" />
+          <p className="text-white font-bold text-sm">สายด่วนสุขภาพจิต 1323</p>
+        </div>
+        <div className="bg-purple-50 px-4 py-4 space-y-3">
+          <p className="text-sm text-purple-800 leading-relaxed">
+            หากคุณกำลังเผชิญกับ<strong>ความเครียด วิตกกังวล</strong> หรือต้องการผู้รับฟัง สามารถติดต่อขอรับคำปรึกษาได้ทันทีผ่าน
+          </p>
+          <div className="flex items-center gap-4">
+            <a href="tel:1323"
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-black text-2xl px-5 py-3 rounded-2xl shadow-md active:scale-95 transition-all">
+              <Phone size={20} />
+              1323
+            </a>
+            <div>
+              <p className="text-xs font-semibold text-purple-700">โทรฟรีตลอด 24 ชั่วโมง</p>
+              <p className="text-[11px] text-purple-500 mt-0.5">ให้บริการโดยกรมสุขภาพจิต</p>
+              <p className="text-[11px] text-purple-500">กระทรวงสาธารณสุข</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl px-3 py-2 border border-purple-100">
+            <p className="text-[11px] text-purple-600 font-semibold">สายด่วนสุขภาพจิต 1323</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">โดยกรมสุขภาพจิต — Happy Workplace</p>
+          </div>
+        </div>
       </div>
 
       <button onClick={onStart}
