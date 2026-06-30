@@ -2,102 +2,78 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, ChevronLeft, Check, ChevronDown, ClipboardList, Star } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
+import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
 import Survey from './Survey'
 
-// ── แบบประเมินพฤติกรรมสุขภาพ ตามหลัก 3อ.2ส. กระทรวงสาธารณสุข ────────────
-const DIMENSIONS = [
-  {
-    id: 'food', emoji: '🍱', label: 'พฤติกรรมการบริโภคอาหาร',
-    desc: 'พฤติกรรมการกินและโภชนาการประจำวัน',
-    color: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-700',
-    border: 'border-emerald-200', ring: '#10b981',
-    ref: 'กองโภชนาการ กรมอนามัย กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
-    questions: [
-      { text: 'กินอาหารที่ปรุงสุกและสะอาด',                                                                     isRisk: false },
-      { text: 'กินอาหารครบ 5 หมู่อย่างหลากหลาย โดยใน 1 มื้อ มีข้าว-แป้ง เนื้อสัตว์ ไขมัน ผักและผลไม้',       isRisk: false },
-      { text: 'กินผักและผลไม้รวมกันอย่างน้อยวันละ 5 กำมือ (400 กรัม)',                                          isRisk: false },
-      { text: 'กินอาหารหวาน เช่น ขนมเค้ก ช็อกโกแลต ไอศกรีม หรือดื่มเครื่องดื่มหวาน (น้ำตาล น้ำเชื่อม นมหวาน)', isRisk: true  },
-      { text: 'กินอาหารมัน เช่น ข้าวขาหมู ข้าวมันไก่ แกงกะทิ',                                                 isRisk: true  },
-      { text: 'กินอาหารเค็มหรือปรุงรสเค็ม เช่น ไก่รสจัด ขนมกรุบกรอบ',                                         isRisk: true  },
-      { text: 'กินอาหารแปรรูป อาหารปิ้งย่าง ของทอด เช่น ไก่ทอด หมูทอด อาหารใส่สี',                            isRisk: true  },
-      { text: 'ดื่มน้ำสะอาด วันละ 6-8 แก้ว',                                                                   isRisk: false },
-    ],
-  },
-  {
-    id: 'exercise', emoji: '🏃', label: 'พฤติกรรมการออกกำลังกาย',
-    desc: 'ความสม่ำเสมอในการเคลื่อนไหวร่างกาย',
-    color: 'bg-blue-500', light: 'bg-blue-50', text: 'text-blue-700',
-    border: 'border-blue-200', ring: '#3b82f6',
-    ref: 'กรมอนามัย กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
-    questions: [
-      { text: 'ลุกขยับร่างกายทุก 2 ชั่วโมง ระหว่างเรียนหรือระหว่างวัน',                                         isRisk: false },
-      { text: 'วิ่งเล่นหรือออกกำลังกายจนหัวใจเต้นเร็วขึ้นหรือเหนื่อยจนพูดได้ไม่กี่คำ สะสมวันละ ≥ 1 ชั่วโมง', isRisk: false },
-      { text: 'ฝึกความแข็งแรงของกล้ามเนื้อ เช่น ดันพื้น ดึงข้อ แกว่งแขน ลูกน้ำ',                               isRisk: false },
-    ],
-  },
-  {
-    id: 'emotion', emoji: '🧘', label: 'พฤติกรรมการจัดการอารมณ์',
-    desc: 'การดูแลสุขภาพจิตและจัดการความเครียด',
-    color: 'bg-purple-500', light: 'bg-purple-50', text: 'text-purple-700',
-    border: 'border-purple-200', ring: '#8b5cf6',
-    ref: 'กรมสุขภาพจิต กระทรวงสาธารณสุข (หลัก 3อ.2ส.)',
-    questions: [
-      { text: 'สังเกตอารมณ์หรือความรู้สึกของตนเองในแต่ละวัน',                                                   isRisk: false },
-      { text: 'ใช้วิธีผ่อนคลายเมื่อรู้สึกเครียดหรือไม่สบายใจ เช่น เล่นกีฬา ฟังเพลง ดูภาพยนตร์',               isRisk: false },
-      { text: 'ทำกิจกรรมพัฒนาตนเองหรือมีส่วนร่วม เช่น คุยกับเพื่อน ทำงานอดิเรก ทำงานจิตอาสา ร้องเพลง',        isRisk: false },
-      { text: 'สามารถจัดเวลาให้เพียงพอในเรื่องการเรียน ชีวิตส่วนตัว และครอบครัว',                               isRisk: false },
-      { text: 'นอนหลับ วันละ 9-10 ชั่วโมง',                                                                     isRisk: false },
-    ],
-  },
+// ── Static config: no user-facing text ────────────────────────────────────────
+const DIMS_META = [
+  { id:'food',     emoji:'🍱', color:'bg-emerald-500', light:'bg-emerald-50', text:'text-emerald-700', border:'border-emerald-200', ring:'#10b981' },
+  { id:'exercise', emoji:'🏃', color:'bg-blue-500',    light:'bg-blue-50',    text:'text-blue-700',   border:'border-blue-200',   ring:'#3b82f6' },
+  { id:'emotion',  emoji:'🧘', color:'bg-purple-500',  light:'bg-purple-50',  text:'text-purple-700', border:'border-purple-200', ring:'#8b5cf6' },
 ]
 
-const SCALE_LABELS = ['ไม่ปฏิบัติ', '1-2 วัน', '3-4 วัน', '5-6 วัน', 'ทุกวัน']
-const TOTAL_Q  = DIMENSIONS.reduce((s, d) => s + d.questions.length, 0) // 16
+// isRisk flag per question per dimension (used for scoring math)
+const DIMS_RISKS = [
+  [false, false, false, true, true, true, true, false], // food (8)
+  [false, false, false],                                 // exercise (3)
+  [false, false, false, false, false],                   // emotion (5)
+]
+
+const TOTAL_Q    = DIMS_RISKS.reduce((s, r) => s + r.length, 0) // 16
 const MAX_HEALTH = TOTAL_Q * 5 // 80
 
 function getDimStart(dimIdx) {
   let start = 0
-  for (let i = 0; i < dimIdx; i++) start += DIMENSIONS[i].questions.length
+  for (let i = 0; i < dimIdx; i++) start += DIMS_RISKS[i].length
   return start
 }
 
 function getDimHealthScore(dimIdx, answers) {
   const start = getDimStart(dimIdx)
-  return DIMENSIONS[dimIdx].questions.reduce((s, q, qi) => {
+  return DIMS_RISKS[dimIdx].reduce((s, isRisk, qi) => {
     const v = answers[start + qi] || 0
     if (!v) return s
-    return s + (q.isRisk ? (6 - v) : v)
+    return s + (isRisk ? (6 - v) : v)
   }, 0)
 }
 
-function getDimMaxScore(dimIdx) { return DIMENSIONS[dimIdx].questions.length * 5 }
+function getDimMaxScore(dimIdx) { return DIMS_RISKS[dimIdx].length * 5 }
 
 function getTotalHealthScore(answers) {
-  return DIMENSIONS.reduce((s, _, di) => s + getDimHealthScore(di, answers), 0)
+  return DIMS_META.reduce((s, _, di) => s + getDimHealthScore(di, answers), 0)
 }
 
-function getDimLevel(score, maxScore) {
+function getDimensions(t3o) {
+  return DIMS_META.map((m, di) => ({
+    ...m,
+    label:     t3o.dims[m.id].label,
+    desc:      t3o.dims[m.id].desc,
+    ref:       t3o.dims[m.id].ref,
+    questions: t3o.dims[m.id].questions.map((text, qi) => ({
+      text,
+      isRisk: DIMS_RISKS[di][qi],
+    })),
+  }))
+}
+
+function getDimLevel(score, maxScore, t3o) {
   const pct = score / maxScore
-  if (pct >= 0.8) return { label: 'ดีมาก', color: 'text-emerald-600', bg: 'bg-emerald-100' }
-  if (pct >= 0.6) return { label: 'ดี',     color: 'text-teal-600',    bg: 'bg-teal-100' }
-  if (pct >= 0.4) return { label: 'ควรปรับ', color: 'text-yellow-600', bg: 'bg-yellow-100' }
-  return               { label: 'ต้องดูแล', color: 'text-red-600',    bg: 'bg-red-100' }
+  const lv  = t3o.dimLevels
+  if (pct >= 0.8) return { label: lv[0], color: 'text-emerald-600', bg: 'bg-emerald-100' }
+  if (pct >= 0.6) return { label: lv[1], color: 'text-teal-600',    bg: 'bg-teal-100' }
+  if (pct >= 0.4) return { label: lv[2], color: 'text-yellow-600',  bg: 'bg-yellow-100' }
+  return               { label: lv[3], color: 'text-red-600',       bg: 'bg-red-100' }
 }
 
-function getOverallLevel(healthScore) {
+function getOverallLevel(healthScore, t3o) {
   const pct = healthScore / MAX_HEALTH
-  if (pct >= 0.8) return { label: 'สุขภาพดีมาก', emoji: '🌟', color: 'text-emerald-600', bg: 'bg-emerald-50', ring: '#10b981', desc: 'พฤติกรรมสุขภาพดีเยี่ยม ทำต่อไปอย่างนี้!' }
-  if (pct >= 0.6) return { label: 'สุขภาพดี',     emoji: '😊', color: 'text-teal-600',    bg: 'bg-teal-50',    ring: '#0d9488', desc: 'มีพฤติกรรมสุขภาพที่ดี ยังปรับเพิ่มได้อีก' }
-  if (pct >= 0.4) return { label: 'ควรปรับปรุง',  emoji: '⚠️', color: 'text-yellow-600', bg: 'bg-yellow-50',  ring: '#f59e0b', desc: 'ควรปรับพฤติกรรมหลายด้านให้ดีขึ้น' }
-  return                  { label: 'ต้องดูแลมาก', emoji: '🚨', color: 'text-red-600',    bg: 'bg-red-50',     ring: '#ef4444', desc: 'ต้องการการปรับพฤติกรรมอย่างเร่งด่วน' }
+  const ol  = t3o.overallLevels
+  if (pct >= 0.8) return { ...ol[0], emoji: '🌟', color: 'text-emerald-600', bg: 'bg-emerald-50', ring: '#10b981' }
+  if (pct >= 0.6) return { ...ol[1], emoji: '😊', color: 'text-teal-600',    bg: 'bg-teal-50',   ring: '#0d9488' }
+  if (pct >= 0.4) return { ...ol[2], emoji: '⚠️', color: 'text-yellow-600',  bg: 'bg-yellow-50', ring: '#f59e0b' }
+  return               { ...ol[3], emoji: '🚨', color: 'text-red-600',       bg: 'bg-red-50',    ring: '#ef4444' }
 }
-
-const COMPARE_DIMS = [
-  { scoreKey: 'nutritionScore', emoji: '🍱', label: 'อาหาร' },
-  { scoreKey: 'exerciseScore',  emoji: '🏃', label: 'ออกกำลังกาย' },
-  { scoreKey: 'stressScore',    emoji: '🧘', label: 'อารมณ์' },
-]
 
 function DeltaBadge({ delta }) {
   if (delta === 0) return <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400 font-semibold min-w-[2.5rem] text-center inline-block">—</span>
@@ -109,19 +85,26 @@ function DeltaBadge({ delta }) {
 }
 
 function BeforeAfterSection({ currentResult, prevAssessment }) {
+  const { t } = useLang()
+  const t3o = t.assess3o
   if (!prevAssessment) return null
   const overallDelta = (currentResult.overallScore ?? 0) - (prevAssessment.overallScore ?? 0)
+  const COMPARE_DIMS = [
+    { scoreKey: 'nutritionScore', emoji: '🍱', label: t3o.compareLabels[0] },
+    { scoreKey: 'exerciseScore',  emoji: '🏃', label: t3o.compareLabels[1] },
+    { scoreKey: 'stressScore',    emoji: '🧘', label: t3o.compareLabels[2] },
+  ]
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       <div className="px-4 py-3 bg-slate-800 flex items-center justify-between">
-        <p className="text-white font-bold text-sm">🔄 เปรียบเทียบกับครั้งก่อน</p>
+        <p className="text-white font-bold text-sm">{t3o.compare.title}</p>
         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${overallDelta > 0 ? 'bg-green-500 text-white' : overallDelta < 0 ? 'bg-red-500 text-white' : 'bg-slate-600 text-white'}`}>
-          {overallDelta > 0 ? '↑ +' : overallDelta < 0 ? '↓ ' : ''}{overallDelta === 0 ? 'เท่าเดิม' : overallDelta}
+          {overallDelta > 0 ? '↑ +' : overallDelta < 0 ? '↓ ' : ''}{overallDelta === 0 ? t3o.compare.same : overallDelta}
         </span>
       </div>
       <div className="px-4 py-3 flex items-center gap-2 bg-slate-50 border-b border-slate-100">
         <span className="text-base">🏅</span>
-        <span className="text-sm font-semibold text-slate-700 flex-1">คะแนนรวม</span>
+        <span className="text-sm font-semibold text-slate-700 flex-1">{t3o.compare.total}</span>
         <span className="text-xs text-slate-400 w-7 text-right">{prevAssessment.overallScore ?? 0}</span>
         <span className="text-slate-300 text-xs mx-1">→</span>
         <span className="text-sm font-bold text-slate-800 w-7 text-right">{currentResult.overallScore ?? 0}</span>
@@ -147,6 +130,8 @@ function BeforeAfterSection({ currentResult, prevAssessment }) {
 }
 
 function HistorySection({ history }) {
+  const { t } = useLang()
+  const t3o = t.assess3o
   const [open, setOpen] = useState(false)
   if (!history || history.length === 0) return null
   const sorted = [...history].sort((a, b) => b.fullDate.localeCompare(a.fullDate))
@@ -154,7 +139,7 @@ function HistorySection({ history }) {
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       <button onClick={() => setOpen(o => !o)} className="w-full px-4 py-3 flex items-center gap-2 text-left hover:bg-slate-50 transition-colors">
         <span className="text-base">📅</span>
-        <p className="text-sm font-bold text-slate-700 flex-1">ประวัติการประเมิน ({history.length} ครั้ง)</p>
+        <p className="text-sm font-bold text-slate-700 flex-1">{t3o.history.title} ({t3o.history.nTimes.replace('{n}', history.length)})</p>
         <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
@@ -178,7 +163,7 @@ function HistorySection({ history }) {
                   ))}
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {isLatest && <span className="text-[10px] bg-emerald-100 text-emerald-600 font-semibold px-1.5 py-0.5 rounded-full">ล่าสุด</span>}
+                  {isLatest && <span className="text-[10px] bg-emerald-100 text-emerald-600 font-semibold px-1.5 py-0.5 rounded-full">{t3o.history.latest}</span>}
                   <span className="text-sm font-black" style={{ color }}>{h.score}</span>
                 </div>
               </div>
@@ -191,15 +176,18 @@ function HistorySection({ history }) {
 }
 
 function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentResult, prevAssessment, history }) {
+  const { t } = useLang()
+  const t3o = t.assess3o
   const safeAnswers = Array.isArray(answers) && answers.length === TOTAL_Q ? answers : Array(TOTAL_Q).fill(3)
   const healthScore = getTotalHealthScore(safeAnswers)
   const overallPct  = Math.round((healthScore / MAX_HEALTH) * 100)
-  const level       = getOverallLevel(healthScore)
+  const level       = getOverallLevel(healthScore, t3o)
 
-  const dimResults = DIMENSIONS.map((dim, di) => {
-    const sc   = getDimHealthScore(di, safeAnswers)
+  const dims = getDimensions(t3o)
+  const dimResults = dims.map((dim, di) => {
+    const sc    = getDimHealthScore(di, safeAnswers)
     const maxSc = getDimMaxScore(di)
-    return { ...dim, score: sc, maxScore: maxSc, pct: Math.round((sc / maxSc) * 100), lv: getDimLevel(sc, maxSc) }
+    return { ...dim, score: sc, maxScore: maxSc, pct: Math.round((sc / maxSc) * 100), lv: getDimLevel(sc, maxSc, t3o) }
   })
 
   return (
@@ -207,7 +195,7 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
       {/* Overall score card */}
       <div className={`${level.bg} rounded-3xl p-6 text-center`}>
         <p className="text-4xl mb-2">{level.emoji}</p>
-        <p className="text-sm text-slate-500 mb-2">คะแนนพฤติกรรมสุขภาพ 3อ.</p>
+        <p className="text-sm text-slate-500 mb-2">{t3o.result.scoreLabel}</p>
         <div className="flex items-center justify-center mb-3 relative">
           <ScoreRing score={overallPct} size={130} strokeWidth={10} color={level.ring} />
           <div className="absolute text-center">
@@ -216,7 +204,9 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
         </div>
         <p className={`text-lg font-bold ${level.color}`}>{level.label}</p>
         <p className="text-xs text-slate-500 mt-1">{level.desc}</p>
-        <p className="text-[10px] text-slate-400 mt-1">คะแนนสุขภาพ {healthScore}/{MAX_HEALTH} · หลัก 3อ.2ส. กระทรวงสาธารณสุข</p>
+        <p className="text-[10px] text-slate-400 mt-1">
+          {healthScore}/{MAX_HEALTH} · 3อ.2ส.
+        </p>
       </div>
 
       {/* Points earned */}
@@ -224,16 +214,16 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
         <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">🔒</span>
           <div>
-            <p className="text-sm font-semibold text-slate-600">ประเมินแล้ววันนี้</p>
-            <p className="text-xs text-slate-400">กลับมาประเมินได้อีกครั้งพรุ่งนี้</p>
+            <p className="text-sm font-semibold text-slate-600">{t3o.result.alreadyTitle}</p>
+            <p className="text-xs text-slate-400">{t3o.result.alreadySub}</p>
           </div>
         </div>
       ) : (
         <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3 flex items-center gap-3">
           <span className="text-2xl">⭐</span>
           <div>
-            <p className="text-sm font-semibold text-yellow-700">ได้รับ {pointsEarned} แต้ม</p>
-            <p className="text-xs text-yellow-500">ประเมินได้อีกครั้งพรุ่งนี้</p>
+            <p className="text-sm font-semibold text-yellow-700">{t3o.result.earnedPts.replace('{n}', pointsEarned)}</p>
+            <p className="text-xs text-yellow-500">{t3o.result.reassess}</p>
           </div>
         </div>
       )}
@@ -242,7 +232,7 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
 
       {/* Per-dimension scores */}
       <div>
-        <h3 className="font-bold text-slate-700 text-sm mb-2">ผลรายหมวด (3อ.)</h3>
+        <h3 className="font-bold text-slate-700 text-sm mb-2">{t3o.result.byDomain}</h3>
         <div className="space-y-2">
           {dimResults.map(d => (
             <div key={d.id} className="bg-white rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm">
@@ -262,13 +252,17 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
       <HistorySection history={history} />
 
       <button onClick={onShare} className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-semibold rounded-xl py-3 transition-colors">
-        แชร์ผลลัพธ์
+        {t3o.result.shareBtn}
       </button>
     </div>
   )
 }
 
 function GuideScreen({ onStart }) {
+  const { t } = useLang()
+  const t3o = t.assess3o
+  const dims = getDimensions(t3o)
+  const g = t3o.guide
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-8 space-y-5">
       <div className="relative text-center">
@@ -278,17 +272,17 @@ function GuideScreen({ onStart }) {
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
           <span className="text-3xl">📋</span>
         </div>
-        <h1 className="text-2xl font-extrabold text-emerald-700">แบบประเมินพฤติกรรมสุขภาพ</h1>
-        <p className="text-slate-500 text-sm mt-1">ตามหลัก 3อ.2ส. · กระทรวงสาธารณสุข · วัยรุ่น 12–18 ปี</p>
+        <h1 className="text-2xl font-extrabold text-emerald-700">{g.title}</h1>
+        <p className="text-slate-500 text-sm mt-1">{g.subtitle}</p>
       </div>
 
       <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 space-y-2">
-        <p className="font-bold text-emerald-700 text-sm">📌 วิธีตอบคำถาม</p>
+        <p className="font-bold text-emerald-700 text-sm">{g.howTitle}</p>
         <p className="text-slate-600 text-sm leading-relaxed">
-          แต่ละข้อให้เลือกระดับที่ตรงกับพฤติกรรมจริงๆ ของคุณในช่วง <strong>1 เดือนที่ผ่านมา</strong> มากที่สุด ไม่มีคำตอบถูกหรือผิด
+          {g.howParts[0]}<strong>{g.howParts[1]}</strong>{g.howParts[2]}
         </p>
         <div className="grid grid-cols-5 gap-1 pt-1">
-          {SCALE_LABELS.map((label, i) => (
+          {t3o.scaleLabels.map((label, i) => (
             <div key={i} className="text-center">
               <div className="w-8 h-8 rounded-full bg-white border-2 border-emerald-200 flex items-center justify-center mx-auto text-sm font-bold text-emerald-600">{i + 1}</div>
               <p className="text-[10px] text-slate-500 mt-1 leading-tight">{label}</p>
@@ -298,30 +292,30 @@ function GuideScreen({ onStart }) {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm p-4">
-        <p className="font-bold text-slate-700 text-sm mb-3">📊 หัวข้อที่ประเมิน ({DIMENSIONS.length} ด้าน รวม {TOTAL_Q} ข้อ)</p>
+        <p className="font-bold text-slate-700 text-sm mb-3">{g.topicsTitle} ({dims.length} · {TOTAL_Q} {t3o.qUnit})</p>
         <div className="space-y-2">
-          {DIMENSIONS.map((d, i) => (
+          {dims.map((d, i) => (
             <div key={i} className="flex items-center gap-3 py-1.5 border-b border-slate-50 last:border-0">
               <span className="text-xl w-7 text-center">{d.emoji}</span>
               <div>
                 <p className="text-sm font-semibold text-slate-700">{d.label}</p>
                 <p className="text-xs text-slate-400">{d.desc}</p>
               </div>
-              <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{d.questions.length} ข้อ</span>
+              <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{d.questions.length} {t3o.qUnit}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4">
-        <p className="font-bold text-yellow-700 text-sm mb-1">⏱️ ใช้เวลาประมาณ 5 นาที</p>
-        <p className="text-slate-500 text-xs leading-relaxed">ตอบทั้ง {TOTAL_Q} ข้อ รับแต้มสุขภาพสะสมได้เลย</p>
+        <p className="font-bold text-yellow-700 text-sm mb-1">{g.timeTitle}</p>
+        <p className="text-slate-500 text-xs leading-relaxed">{g.timeSub.replace('{total}', TOTAL_Q)}</p>
       </div>
 
       <button onClick={onStart}
         className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-md transition-all active:scale-95"
         style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}>
-        เริ่มประเมิน
+        {g.start}
       </button>
     </div>
   )
@@ -330,25 +324,28 @@ function GuideScreen({ onStart }) {
 export default function Assessment() {
   const [activeTab, setActiveTab] = useState('assessment')
   const { saveAssessment, latestAssessment, history } = useHealth()
+  const { t } = useLang()
+  const t3o = t.assess3o
   const navigate = useNavigate()
 
   const todayStr  = new Date().toISOString().split('T')[0]
   const hasToday  = latestAssessment?.assessedAt === todayStr
 
-  const [showGuide, setShowGuide]         = useState(() => !hasToday)
-  const [step, setStep]                   = useState(0)
-  const [answers, setAnswers]             = useState(Array(TOTAL_Q).fill(0))
-  const [result, setResult]               = useState(() => hasToday ? latestAssessment : null)
-  const [earnInfo, setEarnInfo]           = useState(() =>
+  const [showGuide, setShowGuide]           = useState(() => !hasToday)
+  const [step, setStep]                     = useState(0)
+  const [answers, setAnswers]               = useState(Array(TOTAL_Q).fill(0))
+  const [result, setResult]                 = useState(() => hasToday ? latestAssessment : null)
+  const [earnInfo, setEarnInfo]             = useState(() =>
     hasToday ? { pointsEarned: 0, alreadyToday: true } : { pointsEarned: 0, alreadyToday: false }
   )
   const [prevAssessment, setPrevAssessment] = useState(() => {
     try { return JSON.parse(localStorage.getItem('hc_prev') ?? 'null') } catch { return null }
   })
 
-  const dim        = DIMENSIONS[step]
+  const dims       = getDimensions(t3o)
+  const dim        = dims[step]
   const dimStart   = getDimStart(step)
-  const progress   = (step / DIMENSIONS.length) * 100
+  const progress   = (step / dims.length) * 100
   const dimAnswers = answers.slice(dimStart, dimStart + dim.questions.length)
   const allAnswered = dimAnswers.every(v => v > 0)
 
@@ -357,7 +354,7 @@ export default function Assessment() {
   }
 
   function handleNext() {
-    if (step < DIMENSIONS.length - 1) {
+    if (step < dims.length - 1) {
       setStep(s => s + 1)
       window.scrollTo(0, 0)
     } else {
@@ -382,17 +379,17 @@ export default function Assessment() {
   function handleShare() {
     const healthScore = getTotalHealthScore(answers)
     const overallPct  = Math.round((healthScore / MAX_HEALTH) * 100)
-    const level       = getOverallLevel(healthScore)
-    const dimLines    = DIMENSIONS.map((d, di) => {
+    const level       = getOverallLevel(healthScore, t3o)
+    const dimLines    = dims.map((d, di) => {
       const sc  = getDimHealthScore(di, answers)
       const pct = Math.round((sc / getDimMaxScore(di)) * 100)
       return `${d.emoji} ${d.label}: ${pct}%`
     }).join('\n')
-    const text = `🏥 ผลประเมินพฤติกรรมสุขภาพ 3อ. ของฉัน\n${level.emoji} คะแนนรวม: ${overallPct}/100 — ${level.label}\n${dimLines}`
+    const text = `${t3o.share.header}\n${level.emoji} ${overallPct}/100 — ${level.label}\n${dimLines}`
     if (navigator.share) {
-      navigator.share({ title: 'ผลสุขภาพของฉัน', text })
+      navigator.share({ title: t3o.share.title, text })
     } else {
-      navigator.clipboard.writeText(text).then(() => alert('คัดลอกข้อความแล้ว!'))
+      navigator.clipboard.writeText(text).then(() => alert(t3o.share.copied))
     }
   }
 
@@ -407,7 +404,7 @@ export default function Assessment() {
               activeTab === 'assessment' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
             }`}>
             <ClipboardList size={15} />
-            ประเมินสุขภาพ
+            {t3o.tabAssess}
           </button>
           <button
             onClick={() => setActiveTab('survey')}
@@ -415,7 +412,7 @@ export default function Assessment() {
               activeTab === 'survey' ? 'bg-white text-yellow-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
             }`}>
             <Star size={15} />
-            ความพึงพอใจ
+            {t3o.tabSurvey}
           </button>
         </div>
       </div>
@@ -427,9 +424,9 @@ export default function Assessment() {
       ) : result ? (
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-6">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-slate-800">ผลการประเมิน</h1>
+            <h1 className="text-xl font-bold text-slate-800">{t3o.result.title}</h1>
             <button onClick={() => navigate('/analytics')} className="text-sm text-emerald-600 font-medium">
-              ดูคำแนะนำ →
+              {t3o.result.seeAdvice}
             </button>
           </div>
           <ResultScreen
@@ -447,7 +444,7 @@ export default function Assessment() {
           {/* Progress bar */}
           <div className="mb-5">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-              <span>หมวดที่ {step + 1} / {DIMENSIONS.length}</span>
+              <span>{t3o.progress.replace('{step}', step + 1).replace('{total}', dims.length)}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -455,7 +452,7 @@ export default function Assessment() {
                 style={{ width: `${progress}%`, background: dim.ring }} />
             </div>
             <div className="flex gap-1.5 mt-2.5">
-              {DIMENSIONS.map((d, i) => (
+              {dims.map((d, i) => (
                 <div key={d.id} className={`flex-1 h-1 rounded-full transition-colors ${
                   i < step ? d.color : i === step ? `${d.color} opacity-70` : 'bg-slate-100'
                 }`} />
@@ -469,7 +466,7 @@ export default function Assessment() {
               {dim.emoji}
             </div>
             <div>
-              <p className="text-xs text-slate-400">หมวดที่ {step + 1} / {DIMENSIONS.length}</p>
+              <p className="text-xs text-slate-400">{t3o.progress.replace('{step}', step + 1).replace('{total}', dims.length)}</p>
               <p className={`font-bold ${dim.text}`}>{dim.label}</p>
             </div>
           </div>
@@ -477,7 +474,7 @@ export default function Assessment() {
           {/* Scale legend */}
           <div className="bg-slate-50 rounded-xl px-3 py-2 mb-4">
             <div className="flex justify-between text-[10px] text-slate-400">
-              {SCALE_LABELS.map((label, i) => (
+              {t3o.scaleLabels.map((label, i) => (
                 <span key={i} className="text-center w-1/5">{i + 1}<br/>{label}</span>
               ))}
             </div>
@@ -498,7 +495,7 @@ export default function Assessment() {
                       <p className="text-sm text-slate-700 leading-relaxed">{q.text}</p>
                       {q.isRisk && (
                         <p className="text-[10px] text-orange-400 flex items-center gap-1 mt-1">
-                          ⚠️ พฤติกรรมเสี่ยง — ยิ่งทำบ่อยยิ่งมีผลต่อสุขภาพ
+                          ⚠️ {t3o.riskWarn}
                         </p>
                       )}
                     </div>
@@ -518,7 +515,7 @@ export default function Assessment() {
                   </div>
                   {picked > 0 && (
                     <p className={`text-[10px] ${dim.text} font-semibold mt-1.5 text-right`}>
-                      {SCALE_LABELS[picked - 1]}
+                      {t3o.scaleLabels[picked - 1]}
                     </p>
                   )}
                 </div>
@@ -530,7 +527,7 @@ export default function Assessment() {
           <div className={`${dim.light} border ${dim.border} rounded-xl px-3 py-2 flex items-start gap-1.5 mt-4`}>
             <span className="text-[11px] flex-shrink-0 mt-0.5">📚</span>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              <span className="font-semibold text-slate-600">แหล่งอ้างอิง: </span>
+              <span className="font-semibold text-slate-600">{t3o.refLabel}</span>
               {dim.ref}
             </p>
           </div>
@@ -540,7 +537,7 @@ export default function Assessment() {
             {step > 0 && (
               <button onClick={() => { setStep(s => s - 1); window.scrollTo(0, 0) }}
                 className="flex items-center gap-1.5 px-4 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
-                <ChevronLeft size={18} /> ย้อนกลับ
+                <ChevronLeft size={18} /> {t3o.backBtn}
               </button>
             )}
             <button onClick={handleNext} disabled={!allAnswered}
@@ -549,9 +546,9 @@ export default function Assessment() {
                   ? `${dim.color} text-white hover:opacity-90`
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}>
-              {step === DIMENSIONS.length - 1
-                ? <><Check size={18} /> ดูผลการประเมิน</>
-                : <>ถัดไป <ChevronRight size={18} /></>
+              {step === dims.length - 1
+                ? <><Check size={18} /> {t3o.finishBtn}</>
+                : <>{t3o.nextBtn} <ChevronRight size={18} /></>
               }
             </button>
           </div>
