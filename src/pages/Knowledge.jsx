@@ -421,6 +421,7 @@ export default function Knowledge() {
         style={{ background: 'linear-gradient(135deg, #0e7490, #0891b2, #06b6d4)' }}>
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
         <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/10" />
+        <img src="/char-girl-run.png" alt="" style={{ position:'absolute', right:0, bottom:0, height:145, width:'auto', opacity:.9, pointerEvents:'none', userSelect:'none' }} />
         <div className="relative flex items-center gap-3">
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 text-4xl">
             📚

@@ -95,29 +95,50 @@ function WorkoutChallenge({ user }) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="rounded-3xl p-4 text-white relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg,#f97316,#ec4899)' }}>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-10 translate-x-10" />
-        <div className="relative flex items-center justify-between">
-          <div>
-            <h2 className="font-black text-xl leading-tight">Let's Workout! 🏋️</h2>
-            <p className="text-white/80 text-xs mt-0.5">ทำครบ 21 กิจกรรม แล้วเริ่มรอบใหม่</p>
-            <p className="text-white/70 text-xs mt-0.5">แต้มสะสมรอบนี้: <span className="font-black text-white">+{totalPts}</span></p>
+      {/* Hero Header */}
+      <div className="rounded-3xl text-white relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg,#f97316 0%,#ec4899 60%,#a855f7 100%)', minHeight: 140 }}>
+        {/* blobs */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-10" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-6" />
+
+        {/* รูปการ์ตูนซ้าย */}
+        <img src="/char-workout.png" alt=""
+          className="absolute left-0 bottom-0 object-contain pointer-events-none select-none"
+          style={{ height:128, width:'auto', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.20))' }} />
+
+        {/* รูปการ์ตูนขวา */}
+        <img src="/char-chibi.png" alt=""
+          className="absolute right-0 bottom-0 object-contain pointer-events-none select-none"
+          style={{ height:128, width:'auto', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.20))', transform:'scaleX(-1)' }} />
+
+        {/* ข้อความกลาง */}
+        <div className="relative flex flex-col items-center justify-center py-5 px-28 text-center">
+          <div className="text-2xl font-black tracking-wide drop-shadow">Let's Workout! 🔥</div>
+          <div className="text-white/85 text-xs mt-0.5 font-medium">ทำครบ 21 กิจกรรม แล้วเริ่มรอบใหม่</div>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-3xl font-black">{submitted.length}</span>
+            <span className="text-white/70 text-sm font-semibold">/ 21</span>
           </div>
-          <div className="text-right">
-            <div className="text-4xl font-black">{submitted.length}</div>
-            <div className="text-white/70 text-xs">/ 21 กิจกรรม</div>
-          </div>
+          <div className="text-white/70 text-xs">แต้มรอบนี้ <span className="font-black text-white">+{totalPts}</span> แต้ม</div>
         </div>
-        <div className="relative mt-3 h-2 bg-white/30 rounded-full overflow-hidden">
-          <div className="h-full bg-white rounded-full transition-all duration-700"
-            style={{ width: `${(submitted.length / 21) * 100}%` }} />
+
+        {/* Progress bar */}
+        <div className="mx-4 mb-4 h-3 bg-white/25 rounded-full overflow-hidden">
+          <div className="h-full bg-white rounded-full transition-all duration-700 relative"
+            style={{ width: `${(submitted.length / 21) * 100}%` }}>
+            {submitted.length > 0 && (
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/60 to-white/80 rounded-full" />
+            )}
+          </div>
         </div>
       </div>
 
       {/* รูปแผนกิจกรรม */}
       <div className="w-full rounded-2xl overflow-hidden border-2 border-orange-200 shadow-sm">
+        <div className="bg-gradient-to-r from-orange-500 to-pink-500 px-4 py-2 flex items-center gap-2">
+          <span className="text-white font-black text-sm">📋 ตารางกิจกรรมทั้งหมด</span>
+        </div>
         <img src="/workout-chart.png" alt="Let's Workout Chart" className="w-full h-auto" />
       </div>
 
@@ -154,6 +175,13 @@ function WorkoutChallenge({ user }) {
         </div>
       )}
 
+      {/* Section title */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent" />
+        <span className="text-xs font-black text-orange-500 tracking-widest uppercase">เลือกกิจกรรม</span>
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent" />
+      </div>
+
       {/* Grid */}
       <div className="grid grid-cols-3 gap-2">
         {WORKOUT.map(w => {
@@ -163,21 +191,29 @@ function WorkoutChallenge({ user }) {
               onClick={() => { if (!done && !allDone) { setActive(w); setPhoto(null); setError('') } }}
               disabled={done}
               className={`rounded-2xl p-2.5 text-left transition-all relative overflow-hidden ${
-                done ? 'cursor-default' : 'hover:shadow-md active:scale-95 cursor-pointer'
+                done ? 'cursor-default' : 'hover:shadow-lg active:scale-95 cursor-pointer hover:-translate-y-0.5'
               }`}
               style={{
-                background: done ? '#f1f5f9' : w.color + '55',
+                background: done ? '#f8fafc' : `linear-gradient(135deg,${w.color}55,${w.color}22)`,
                 border: `2px solid ${done ? '#e2e8f0' : w.color}`,
+                boxShadow: done ? 'none' : `0 2px 8px ${w.color}55`,
               }}>
-              <div className="text-[9px] font-black text-slate-500 mb-0.5">{w.id}</div>
-              <div className="text-[10px] font-semibold text-slate-700 leading-snug mb-1.5">{w.label}</div>
-              <div className="text-[10px] font-black" style={{ color: done ? '#94a3b8' : '#d97706' }}>
-                +{w.pts} แต้ม
+              <div className="text-[9px] font-black tracking-wider mb-0.5"
+                style={{ color: done ? '#94a3b8' : '#7c3aed' }}>{w.id}</div>
+              <div className="text-[10px] font-semibold leading-snug mb-1.5"
+                style={{ color: done ? '#94a3b8' : '#334155' }}>{w.label}</div>
+              <div className="text-[10px] font-black"
+                style={{ color: done ? '#cbd5e1' : '#d97706' }}>
+                ⭐ +{w.pts}
               </div>
               {done && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-                  <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
-                    <Check size={20} className="text-white" />
+                <div className="absolute inset-0 flex items-center justify-center"
+                  style={{ background: 'rgba(240,253,244,0.85)' }}>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shadow">
+                      <Check size={18} className="text-white" />
+                    </div>
+                    <span className="text-[9px] font-black text-emerald-600">ส่งแล้ว!</span>
                   </div>
                 </div>
               )}
@@ -186,9 +222,13 @@ function WorkoutChallenge({ user }) {
         })}
       </div>
 
-      <p className="text-xs text-slate-400 text-center">
-        กดกิจกรรมที่ต้องการแล้วส่งภาพหลักฐาน · Admin จะยืนยันและให้แต้ม
-      </p>
+      {/* Footer tip */}
+      <div className="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-3">
+        <img src="/kids-yoga.webp" alt="" className="h-12 object-contain flex-shrink-0" />
+        <p className="text-xs text-orange-700 leading-relaxed font-medium">
+          กดการ์ดกิจกรรมที่ทำแล้ว → ส่งภาพหลักฐาน → รอ Admin ยืนยันแต้ม 🎉
+        </p>
+      </div>
 
       {/* Modal ส่งหลักฐาน */}
       {active && (

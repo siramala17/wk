@@ -271,7 +271,10 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
 function GuideScreen({ onStart }) {
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-8 space-y-5">
-      <div className="text-center">
+      <div className="relative text-center">
+        {/* ตัวการ์ตูนซ้าย-ขวา */}
+        <img src="/char-chibi.png" alt="" style={{ position:'absolute', left:-8, bottom:0, height:115, width:'auto', opacity:.9, pointerEvents:'none', userSelect:'none' }} />
+        <img src="/char-yoga-girl.png" alt="" style={{ position:'absolute', right:-8, bottom:0, height:115, width:'auto', opacity:.9, pointerEvents:'none', userSelect:'none', transform:'scaleX(-1)' }} />
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
           <span className="text-3xl">📋</span>
         </div>

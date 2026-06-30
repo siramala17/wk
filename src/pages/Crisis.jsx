@@ -78,7 +78,8 @@ function ProgressBar({ current, total }) {
 function GuideScreen({ onStart }) {
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-8 space-y-5">
-      <div className="text-center">
+      <div className="text-center relative">
+        <img src="/char-yoga-girl.png" alt="" style={{ position:'absolute', right:-8, top:-8, height:105, width:'auto', opacity:.88, pointerEvents:'none', userSelect:'none' }} />
         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
           <span className="text-3xl">🧠</span>
         </div>
