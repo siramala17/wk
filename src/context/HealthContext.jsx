@@ -184,6 +184,7 @@ export function HealthProvider({ children }) {
         localStorage.setItem('hc_sync_failed', JSON.stringify({ at: new Date().toISOString(), error: e?.message || 'unknown' }))
       } catch {}
     })
+    return id
   }
 
   function saveAssessment(data) {

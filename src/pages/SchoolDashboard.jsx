@@ -147,7 +147,24 @@ export default function SchoolDashboard() {
     return users.filter(u => u.role === role)
   }, [users, role, researchParticipants])
 
-  const roleUserIds = useMemo(() => new Set(roleUsers.map(u => String(u.id))), [roleUsers])
+  // IDs ของผู้เข้าร่วมวิจัยที่ match กับ user accounts จริงๆ (ใช้ทุกที่)
+  const researchUserIds = useMemo(() => {
+    const ids = new Set()
+    researchParticipants.forEach(p => {
+      if (p.userId) { ids.add(String(p.userId)); return }
+      const matched = users.find(u =>
+        u.firstName?.trim() === p.firstName?.trim() &&
+        u.lastName?.trim() === p.lastName?.trim()
+      )
+      if (matched) ids.add(String(matched.id))
+    })
+    return ids
+  }, [researchParticipants, users])
+
+  const roleUserIds = useMemo(() => {
+    if (role === 'วิจัย') return researchUserIds
+    return new Set(roleUsers.map(u => String(u.id)))
+  }, [role, roleUsers, researchUserIds])
 
   const filtered = useMemo(() => {
     let a = assessments
@@ -275,12 +292,11 @@ export default function SchoolDashboard() {
   }, [assessments, publicIds, year])
   const teacherCount = useMemo(() => users.filter(u=>u.role==='ครู').length, [users])
   const publicCount  = useMemo(() => users.filter(u=>u.role==='บุคคลทั่วไป').length, [users])
-  const researchIds  = useMemo(() => new Set(researchParticipants.map(p => String(p.id))), [researchParticipants])
   const researchAss  = useMemo(() => {
-    let a = assessments.filter(x => researchIds.has(String(x.userId)))
+    let a = assessments.filter(x => researchUserIds.has(String(x.userId)))
     if (year !== 'all') a = a.filter(x => x.year === year)
     return a
-  }, [assessments, researchIds, year])
+  }, [assessments, researchUserIds, year])
   const researchCount = researchParticipants.length
 
   const selectStyle = { background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.12)', borderRadius:8, color:'#94a3b8', padding:'6px 10px', fontFamily:'Sarabun,sans-serif', fontSize:12, outline:'none', cursor:'pointer' }

@@ -230,10 +230,20 @@ export default function BodyComposition() {
       const m = text.match(/\{[\s\S]*\}/)
       if (!m) throw new Error('ไม่สามารถอ่านผลได้')
       const parsed = JSON.parse(m[0])
+      const date = todayStr()
+      const time = nowTimeStr()
       setResult(parsed)
-      setSaveDate(todayStr())
-      setSaveTime(nowTimeStr())
-      setSaveStatus('idle')
+      setSaveDate(date)
+      setSaveTime(time)
+      // auto-save หลัง analyze เสร็จ
+      if (user?.id) {
+        setSaveStatus('saving')
+        saveBodyComposition(String(user.id), date, time, parsed)
+          .then(() => { setSavedDates(prev => new Set([...prev, date])); setSaveStatus('saved') })
+          .catch(() => setSaveStatus('idle'))
+      } else {
+        setSaveStatus('idle')
+      }
     } catch (err) {
       setError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
     } finally {

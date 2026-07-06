@@ -68,7 +68,7 @@ export default function ResearchRegister() {
     setError(''); setSubmitting(true)
     try {
       // สร้าง user account เพื่อเข้าใช้แอปได้เลย
-      await registerUser({
+      const userId = await registerUser({
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         age: +form.age,
@@ -78,9 +78,10 @@ export default function ResearchRegister() {
         pin: form.pin,
         faceImage: null,
       })
-      // บันทึกข้อมูลวิจัยแยกใน Firestore (background)
+      // บันทึกข้อมูลวิจัยแยกใน Firestore (background) พร้อม userId เพื่อ link กับ assessments
       submitResearchConsent({
-        id: Date.now(),
+        id: userId,
+        userId,
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         age: +form.age,
