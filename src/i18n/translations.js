@@ -44,12 +44,12 @@ export const translations = {
     },
 
     quick: {
-      assessment: 'ประเมิน\nสุขภาพ',
-      bodyComp:   'สัดส่วน\nร่างกาย',
-      calories:   'บันทึก\nแคลอรี่',
-      aiChat:     'AI\nสุขภาพ',
+      assessment: 'ประเมินสุขภาพ',
+      bodyComp:   'สัดส่วนร่างกาย',
+      calories:   'บันทึกแคลอรี่',
+      aiChat:     'AI สุขภาพ',
       rewards:    'Challenge',
-      knowledge:  'คลัง\nความรู้',
+      knowledge:  'คลังความรู้',
     },
 
     stats: {
