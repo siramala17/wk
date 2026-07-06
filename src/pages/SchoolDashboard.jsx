@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   LineChart, Line,
 } from 'recharts'
-import { subscribeUsers, subscribeAssessments } from '../services/userSync'
+import { subscribeUsers, subscribeAssessments, fetchResearchParticipants } from '../services/userSync'
 
 const DOMAINS  = ['อาหาร','ออกกำลังกาย','อารมณ์']
 const D_SHORT  = ['อาหาร','ออกกำลัง','อารมณ์']
@@ -107,6 +107,7 @@ const ROLES = [
   { value: 'นักเรียน',  label: '👨‍🎓 นักเรียน' },
   { value: 'ครู',        label: '👩‍🏫 ครู' },
   { value: 'บุคคลทั่วไป', label: '🧑 บุคคลทั่วไป' },
+  { value: 'วิจัย',     label: '🔬 ผู้เข้าร่วมวิจัย' },
 ]
 
 export default function SchoolDashboard() {
@@ -118,6 +119,7 @@ export default function SchoolDashboard() {
   const [year, setYear]         = useState('all')
   const [role, setRole]         = useState('all')
   const [lastUpdate, setLastUpdate] = useState(null)
+  const [researchParticipants, setResearchParticipants] = useState([])
   const thaiYear = (new Date().getFullYear() + 543).toString()
 
   useEffect(() => {
@@ -134,11 +136,16 @@ export default function SchoolDashboard() {
     return () => { unsubUsers(); unsubAss() }
   }, [])
 
+  useEffect(() => {
+    fetchResearchParticipants().then(data => setResearchParticipants(data)).catch(() => {})
+  }, [])
+
   // users filtered by role
   const roleUsers = useMemo(() => {
     if (role === 'all') return users
+    if (role === 'วิจัย') return researchParticipants
     return users.filter(u => u.role === role)
-  }, [users, role])
+  }, [users, role, researchParticipants])
 
   const roleUserIds = useMemo(() => new Set(roleUsers.map(u => String(u.id))), [roleUsers])
 
@@ -156,8 +163,8 @@ export default function SchoolDashboard() {
     return u
   }, [roleUsers, grade])
 
-  const totalLabel = role === 'ครู' ? 'ครูทั้งหมด' : role === 'บุคคลทั่วไป' ? 'บุคคลทั่วไป' : role === 'นักเรียน' ? 'นักเรียนทั้งหมด' : 'ผู้ใช้ทั้งหมด'
-  const showGrade  = role === 'all' || role === 'นักเรียน'
+  const totalLabel = role === 'ครู' ? 'ครูทั้งหมด' : role === 'บุคคลทั่วไป' ? 'บุคคลทั่วไป' : role === 'นักเรียน' ? 'นักเรียนทั้งหมด' : role === 'วิจัย' ? 'ผู้เข้าร่วมวิจัย' : 'ผู้ใช้ทั้งหมด'
+  const showGrade  = role === 'all' || role === 'นักเรียน' || role === 'วิจัย'
 
   // KPIs
   const totalStudents = filteredUsers.length || users.length
@@ -201,6 +208,7 @@ export default function SchoolDashboard() {
   // Dynamic bar chart — เปลี่ยนตาม role filter
   const barChartTitle = role === 'ครู' ? 'คะแนนเฉลี่ยรายด้าน · ครู'
     : role === 'บุคคลทั่วไป' ? 'คะแนนเฉลี่ยรายด้าน · บุคคลทั่วไป'
+    : role === 'วิจัย' ? 'จำนวนผู้เข้าร่วมวิจัยแยกชั้น'
     : 'คะแนนเฉลี่ยรายชั้น'
 
   const dynamicBarData = useMemo(() => {
@@ -211,6 +219,13 @@ export default function SchoolDashboard() {
         fill: D_COLORS[i],
       }))
     }
+    if (role === 'วิจัย') {
+      return GRADE_KEYS.map((g, i) => ({
+        label: g,
+        คะแนน: researchParticipants.filter(p => p.gradeLevel === g).length,
+        fill: D_COLORS[i % D_COLORS.length],
+      }))
+    }
     return GRADE_KEYS.map(g => {
       const gAss = assessments.filter(x => x.gradeLevel === g)
       return {
@@ -219,7 +234,7 @@ export default function SchoolDashboard() {
         fill: D_COLORS[GRADE_KEYS.indexOf(g) % D_COLORS.length],
       }
     })
-  }, [role, filtered, assessments])
+  }, [role, filtered, assessments, researchParticipants])
 
   // Stacked bar by grade — real-time เท่านั้น
   const stackedData = GRADE_KEYS.map(g => {
@@ -260,6 +275,13 @@ export default function SchoolDashboard() {
   }, [assessments, publicIds, year])
   const teacherCount = useMemo(() => users.filter(u=>u.role==='ครู').length, [users])
   const publicCount  = useMemo(() => users.filter(u=>u.role==='บุคคลทั่วไป').length, [users])
+  const researchIds  = useMemo(() => new Set(researchParticipants.map(p => String(p.id))), [researchParticipants])
+  const researchAss  = useMemo(() => {
+    let a = assessments.filter(x => researchIds.has(String(x.userId)))
+    if (year !== 'all') a = a.filter(x => x.year === year)
+    return a
+  }, [assessments, researchIds, year])
+  const researchCount = researchParticipants.length
 
   const selectStyle = { background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.12)', borderRadius:8, color:'#94a3b8', padding:'6px 10px', fontFamily:'Sarabun,sans-serif', fontSize:12, outline:'none', cursor:'pointer' }
 
@@ -290,7 +312,7 @@ export default function SchoolDashboard() {
               </div>
             </div>
             <div style={{ fontSize:11, color:'#64748b', marginTop:1 }}>
-              {ROLES.find(r=>r.value===role)?.label.replace(/[👥👨‍🎓👩‍🏫🧑]\s?/,'')} · ปีการศึกษา {thaiYear}
+              {ROLES.find(r=>r.value===role)?.label.replace(/[👥👨‍🎓👩‍🏫🧑🔬]\s?/g,'')} · ปีการศึกษา {thaiYear}
               {lastUpdate && <span style={{ marginLeft:8, color:'#475569' }}>อัปเดต {lastUpdate.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>}
             </div>
           </div>
@@ -409,7 +431,7 @@ export default function SchoolDashboard() {
                   <XAxis dataKey="label"
                     tick={{ fontSize: (role === 'ครู' || role === 'บุคคลทั่วไป') ? 8.5 : 10.5, fill:'#64748b', fontFamily:'Sarabun' }}
                     axisLine={false} tickLine={false} />
-                  <YAxis domain={[0,100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                  <YAxis domain={role === 'วิจัย' ? [0, 'auto'] : [0, 100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CUSTOM_TT />} />
                   <Bar dataKey="คะแนน" radius={[5,5,0,0]}>
                     {dynamicBarData.map((d,i) => <Cell key={i} fill={d.fill} />)}
@@ -434,14 +456,19 @@ export default function SchoolDashboard() {
             })}
           </div>
 
-          {/* ── ครู & บุคคลทั่วไป Score Cards ── */}
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          {/* ── ครู & บุคคลทั่วไป & วิจัย Score Cards ── */}
+          <div style={{ display:'grid', gridTemplateColumns:`repeat(${researchCount > 0 ? 3 : 2},1fr)`, gap:10 }}>
             <RoleScoreCard
               roleLabel="ครู" emoji="👩‍🏫" accentColor="#10b981"
               assessments={teacherAss} userCount={teacherCount} />
             <RoleScoreCard
               roleLabel="บุคคลทั่วไป" emoji="🧑" accentColor="#8b5cf6"
               assessments={publicAss} userCount={publicCount} />
+            {researchCount > 0 && (
+              <RoleScoreCard
+                roleLabel="ผู้เข้าร่วมวิจัย" emoji="🔬" accentColor="#ec4899"
+                assessments={researchAss} userCount={researchCount} />
+            )}
           </div>
 
           {/* Domain table */}

@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink, Clock, FileDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, fetchAllAssessments, fetchResearchParticipants, deleteResearchParticipant } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, fetchAllAssessments, fetchResearchParticipants, deleteResearchParticipant, fetchBodyCompositions } from '../services/userSync'
 import { exportImprovementPDF, exportComparisonPDF } from '../utils/exportPdf'
 import { sendPushToAll, fcmReady } from '../services/fcm'
 import { useHealth } from '../context/HealthContext'
@@ -198,9 +198,106 @@ ${hasAss ? `<h2>📈 ภาพรวมสุขภาพ (จาก ${assessmen
   setTimeout(() => win.print(), 600)
 }
 
+// ── Research Individual PDF ───────────────────────────────────────────────────
+function exportParticipantPDF(p) {
+  const now = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const regDate = new Date(p.registeredAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const CONSENT_LABELS = [
+    ['consentData',    'ยินยอมให้นำข้อมูลส่วนตัวไปใช้เพื่อการวิจัย (ปกปิดตัวตน)'],
+    ['consentHealth',  'ยินยอมให้นำข้อมูลสุขภาพไปใช้เพื่อการวิจัยและพัฒนาระบบ'],
+    ['consentPublish', 'ยินยอมให้เผยแพร่ผลการวิจัยในรูปแบบภาพรวม (ไม่ระบุชื่อ)'],
+    ['consentContact', 'ยินยอมให้ติดต่อกลับเพื่อติดตามผลการวิจัย'],
+  ]
+  const consentRows = CONSENT_LABELS.map(([key, label]) => {
+    const yes = p.consent?.[key]
+    return `<tr>
+      <td style="width:80px;text-align:center;font-weight:700;color:${yes ? '#059669' : '#94a3b8'}">${yes ? '✓ ยินยอม' : '✗ ไม่ยินยอม'}</td>
+      <td>${label}</td>
+    </tr>`
+  }).join('')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<style>
+  body { font-family:'Sarabun',sans-serif; margin:36px; color:#1e293b; font-size:13px; }
+  h1  { font-size:20px; color:#4c1d95; margin-bottom:2px; }
+  .sub { color:#64748b; font-size:12px; margin-bottom:24px; }
+  .section { border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; margin-bottom:16px; }
+  .section-title { font-size:11px; font-weight:700; color:#7c3aed; text-transform:uppercase; letter-spacing:.6px; margin-bottom:12px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; }
+  .field-label { font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+  .field-value { font-size:14px; font-weight:600; color:#1e293b; }
+  table { width:100%; border-collapse:collapse; }
+  td { padding:7px 8px; border-bottom:1px solid #f1f5f9; font-size:12px; vertical-align:top; }
+  .footer { margin-top:28px; font-size:10px; color:#94a3b8; text-align:center; border-top:1px solid #e2e8f0; padding-top:10px; }
+  @media print { body { margin:20px; } }
+</style></head><body>
+<h1>🔬 ข้อมูลผู้เข้าร่วมวิจัย</h1>
+<div class="sub">W.K. Smart Teen Health AI · พิมพ์วันที่ ${now}</div>
+
+<div class="section">
+  <div class="section-title">ข้อมูลส่วนตัว</div>
+  <div class="grid">
+    <div><div class="field-label">ชื่อ-นามสกุล</div><div class="field-value">${p.firstName} ${p.lastName}</div></div>
+    <div><div class="field-label">อายุ</div><div class="field-value">${p.age} ปี</div></div>
+    <div><div class="field-label">เพศ</div><div class="field-value">${p.gender}</div></div>
+    <div><div class="field-label">ระดับชั้น</div><div class="field-value">${p.gradeLevel || '-'}</div></div>
+    <div style="grid-column:1/-1"><div class="field-label">โรงเรียน / สถาบัน</div><div class="field-value">${p.school || '-'}</div></div>
+    <div><div class="field-label">เบอร์โทรผู้ปกครอง</div><div class="field-value">${p.parentPhone || '-'}</div></div>
+    <div><div class="field-label">เบอร์โทรตนเอง</div><div class="field-value">${p.phone || '-'}</div></div>
+    <div style="grid-column:1/-1"><div class="field-label">วันที่ลงทะเบียน</div><div class="field-value">${regDate}</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">การยินยอมเข้าร่วมวิจัย</div>
+  <table><tbody>${consentRows}</tbody></table>
+</div>
+
+<div class="footer">W.K. Smart Teen Health AI · ข้อมูลเพื่อการวิจัยเท่านั้น · ห้ามเผยแพร่โดยไม่ได้รับอนุญาต</div>
+</body></html>`
+  const win = window.open('', '_blank')
+  win.document.write(html)
+  win.document.close()
+  setTimeout(() => win.print(), 500)
+}
+
 // ── ResearchTab Component ─────────────────────────────────────────────────────
-function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, allAssessments }) {
+const CONSENT_LABELS = [
+  ['consentData',    'ยินยอมให้นำข้อมูลส่วนตัวไปใช้เพื่อการวิจัย (ปกปิดตัวตน)'],
+  ['consentHealth',  'ยินยอมให้นำข้อมูลสุขภาพไปใช้เพื่อการวิจัยและพัฒนาระบบ'],
+  ['consentPublish', 'ยินยอมให้เผยแพร่ผลการวิจัยในรูปแบบภาพรวม (ไม่ระบุชื่อ)'],
+  ['consentContact', 'ยินยอมให้ติดต่อกลับเพื่อติดตามผล (ไม่บังคับ)'],
+]
+
+function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, allAssessments, cloudUsers }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [selectedParticipant, setSelectedParticipant] = useState(null)
+  const [modalAssessments, setModalAssessments] = useState([])
+  const [modalBodyComps, setModalBodyComps] = useState([])
+  const [bodyCompLoading, setBodyCompLoading] = useState(false)
+
+  // when participant selected → match userId → load their data
+  useEffect(() => {
+    if (!selectedParticipant) { setModalAssessments([]); setModalBodyComps([]); return }
+    // match by firstName+lastName in cloudUsers
+    const matched = cloudUsers.find(u =>
+      u.firstName?.trim().toLowerCase() === selectedParticipant.firstName?.trim().toLowerCase() &&
+      u.lastName?.trim().toLowerCase()  === selectedParticipant.lastName?.trim().toLowerCase()
+    )
+    const uid = matched?.id ? String(matched.id) : null
+    if (uid) {
+      const userAss = allAssessments.filter(a => String(a.userId) === uid)
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+      setModalAssessments(userAss)
+      setBodyCompLoading(true)
+      fetchBodyCompositions(uid)
+        .then(bc => setModalBodyComps(bc.sort((a,b) => a.date.localeCompare(b.date))))
+        .catch(() => setModalBodyComps([]))
+        .finally(() => setBodyCompLoading(false))
+    } else {
+      setModalAssessments([])
+      setModalBodyComps([])
+    }
+  }, [selectedParticipant]) // eslint-disable-line
   const total = participants.length
   const maleCount   = participants.filter(p => p.gender === 'ชาย').length
   const femaleCount = participants.filter(p => p.gender === 'หญิง').length
@@ -289,10 +386,12 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
         <div className="space-y-2">
           <p className="text-xs text-slate-500">แสดง {total} รายการ</p>
           {participants.map((p, i) => (
-            <div key={p.id} className="bg-white rounded-2xl shadow-sm p-4 flex items-start gap-3">
+            <div key={p.id}
+              onClick={() => setSelectedParticipant(p)}
+              className="bg-white rounded-2xl shadow-sm p-4 flex items-start gap-3 cursor-pointer hover:bg-purple-50 hover:shadow-md transition-all">
               <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-black text-xs flex-shrink-0">{i+1}</div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-slate-800 text-sm">{p.firstName} {p.lastName}</p>
+                <p className="font-semibold text-slate-800 text-sm hover:text-purple-700 transition-colors">{p.firstName} {p.lastName}</p>
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
                   <span className="text-xs text-slate-500">อายุ {p.age} ปี · {p.gender}</span>
                   <span className="text-xs text-slate-500">{p.school}</span>
@@ -303,21 +402,240 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
                   ลงทะเบียน {new Date(p.registeredAt).toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}
                 </p>
               </div>
-              {confirmDeleteId === p.id ? (
-                <div className="flex gap-1.5 flex-shrink-0">
-                  <button onClick={() => setConfirmDeleteId(null)} className="text-xs px-2 py-1 rounded-lg border border-slate-200 text-slate-500">ยกเลิก</button>
-                  <button onClick={async () => { await onDelete(p.id); setConfirmDeleteId(null) }} disabled={deletingId === p.id}
-                    className="text-xs px-2 py-1 rounded-lg bg-red-500 text-white font-semibold disabled:opacity-50">
-                    {deletingId === p.id ? '...' : 'ลบ'}
+              <div onClick={e => e.stopPropagation()} className="flex-shrink-0 ml-1">
+                {confirmDeleteId === p.id ? (
+                  <div className="flex gap-1.5">
+                    <button onClick={() => setConfirmDeleteId(null)} className="text-xs px-2 py-1 rounded-lg border border-slate-200 text-slate-500">ยกเลิก</button>
+                    <button onClick={async () => { await onDelete(p.id); setConfirmDeleteId(null) }} disabled={deletingId === p.id}
+                      className="text-xs px-2 py-1 rounded-lg bg-red-500 text-white font-semibold disabled:opacity-50">
+                      {deletingId === p.id ? '...' : 'ลบ'}
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setConfirmDeleteId(p.id)} className="text-slate-300 hover:text-red-400 transition-colors">
+                    <Trash2 size={15} />
                   </button>
-                </div>
-              ) : (
-                <button onClick={() => setConfirmDeleteId(p.id)} className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0 ml-1">
-                  <Trash2 size={15} />
-                </button>
-              )}
+                )}
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── Participant Detail Modal ── */}
+      {selectedParticipant && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setSelectedParticipant(null)}>
+          <div
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="font-extrabold text-slate-800 text-lg leading-none">
+                  {selectedParticipant.firstName} {selectedParticipant.lastName}
+                </h2>
+                <p className="text-xs text-purple-500 mt-1 font-semibold">ผู้เข้าร่วมวิจัย · W.K. Smart Teen Health AI</p>
+              </div>
+              <button onClick={() => setSelectedParticipant(null)}
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors font-bold text-base">
+                ✕
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              {/* Personal Info */}
+              <div className="bg-purple-50 rounded-2xl p-4">
+                <p className="text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-3">ข้อมูลส่วนตัว</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                  {[
+                    ['อายุ',            `${selectedParticipant.age} ปี`],
+                    ['เพศ',             selectedParticipant.gender],
+                    ['ระดับชั้น',       selectedParticipant.gradeLevel || '-'],
+                    ['โรงเรียน',        selectedParticipant.school || '-'],
+                    ['เบอร์ผู้ปกครอง', selectedParticipant.parentPhone || '-'],
+                    ['เบอร์โทรตนเอง',  selectedParticipant.phone || '-'],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <div className="text-[10px] text-purple-400 font-semibold uppercase tracking-wide mb-0.5">{label}</div>
+                      <div className="text-sm font-semibold text-slate-800">{value}</div>
+                    </div>
+                  ))}
+                  <div className="col-span-2">
+                    <div className="text-[10px] text-purple-400 font-semibold uppercase tracking-wide mb-0.5">วันที่ลงทะเบียน</div>
+                    <div className="text-sm font-semibold text-slate-800">
+                      {new Date(selectedParticipant.registeredAt).toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Health Assessment Comparison ── */}
+              {(() => {
+                const ASS_DIMS = [
+                  { key: 'overallScore',   emoji: '⭐', label: 'คะแนนรวม' },
+                  { key: 'sleepScore',     emoji: '🌙', label: 'การนอนหลับ' },
+                  { key: 'nutritionScore', emoji: '🥗', label: 'โภชนาการ' },
+                  { key: 'exerciseScore',  emoji: '🏃', label: 'ออกกำลังกาย' },
+                  { key: 'digitalScore',   emoji: '📱', label: 'การใช้หน้าจอ' },
+                  { key: 'stressScore',    emoji: '🧠', label: 'ความเครียด' },
+                ]
+                const first  = modalAssessments[0]
+                const latest = modalAssessments[modalAssessments.length - 1]
+                const isSame = modalAssessments.length === 1
+                const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' }) : '-'
+                return (
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">การประเมินสุขภาพ</p>
+                      {modalAssessments.length > 0 && (
+                        <span className="text-[10px] text-slate-400">{modalAssessments.length} ครั้ง</span>
+                      )}
+                    </div>
+                    {modalAssessments.length === 0 ? (
+                      <p className="text-xs text-slate-400 text-center py-3">ยังไม่มีข้อมูลการประเมินสุขภาพ</p>
+                    ) : (
+                      <>
+                        <div className="flex gap-2 mb-3">
+                          <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">ครั้งแรก: {fmtDate(first?.date)}</span>
+                          {!isSame && <span className="text-[10px] px-2 py-0.5 bg-indigo-50 text-indigo-500 rounded-full font-semibold">ล่าสุด: {fmtDate(latest?.date)}</span>}
+                        </div>
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-slate-400 border-b border-slate-100">
+                              <th className="text-left py-1 font-medium">ด้าน</th>
+                              <th className="text-center py-1 font-medium">ครั้งแรก</th>
+                              {!isSame && <th className="text-center py-1 font-medium">ล่าสุด</th>}
+                              {!isSame && <th className="text-center py-1 font-medium">เปลี่ยน</th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ASS_DIMS.map(({ key, emoji, label }) => {
+                              const fv = first?.[key] ?? 0
+                              const lv = latest?.[key] ?? 0
+                              const diff = lv - fv
+                              const diffColor = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-500' : 'text-slate-400'
+                              const scoreColor = lv >= 80 ? '#059669' : lv >= 65 ? '#2563eb' : lv >= 50 ? '#d97706' : '#dc2626'
+                              return (
+                                <tr key={key} className="border-b border-slate-50 last:border-0">
+                                  <td className="py-1.5 text-slate-600">{emoji} {label}</td>
+                                  <td className="py-1.5 text-center font-semibold text-slate-600">{fv}</td>
+                                  {!isSame && <td className="py-1.5 text-center font-bold" style={{ color: scoreColor }}>{lv}</td>}
+                                  {!isSame && <td className={`py-1.5 text-center font-bold text-xs ${diffColor}`}>{diff > 0 ? `+${diff.toFixed(0)}` : diff.toFixed(0)}</td>}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </>
+                    )}
+                  </div>
+                )
+              })()}
+
+              {/* ── Body Composition Comparison ── */}
+              {(() => {
+                const BC_FIELDS = [
+                  { get: r => r?.data?.weight,       label: 'น้ำหนัก',       unit: 'kg',  upGood: false },
+                  { get: r => r?.data?.bodyFatPct,   label: 'ไขมัน',         unit: '%',   upGood: false },
+                  { get: r => r?.data?.muscleMassKg, label: 'กล้ามเนื้อ',    unit: 'kg',  upGood: true  },
+                  { get: r => r?.data?.protein,      label: 'โปรตีน',        unit: 'kg',  upGood: true  },
+                  { get: r => r?.data?.waterPct,     label: 'น้ำในร่างกาย',  unit: '%',   upGood: true  },
+                  { get: r => r?.data?.bodyScore,    label: 'คะแนนร่างกาย',  unit: '',    upGood: true  },
+                ]
+                const first  = modalBodyComps[0]
+                const latest = modalBodyComps[modalBodyComps.length - 1]
+                const isSame = modalBodyComps.length === 1
+                const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' }) : '-'
+                return (
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Body Composition</p>
+                      {bodyCompLoading && <span className="w-3 h-3 border border-slate-300 border-t-slate-600 rounded-full animate-spin" />}
+                      {!bodyCompLoading && modalBodyComps.length > 0 && (
+                        <span className="text-[10px] text-slate-400">{modalBodyComps.length} ครั้ง</span>
+                      )}
+                    </div>
+                    {bodyCompLoading ? (
+                      <p className="text-xs text-slate-400 text-center py-3">กำลังโหลด...</p>
+                    ) : modalBodyComps.length === 0 ? (
+                      <p className="text-xs text-slate-400 text-center py-3">ยังไม่มีข้อมูล Body Composition</p>
+                    ) : (
+                      <>
+                        <div className="flex gap-2 mb-3">
+                          <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">ครั้งแรก: {fmtDate(first?.date)}</span>
+                          {!isSame && <span className="text-[10px] px-2 py-0.5 bg-cyan-50 text-cyan-600 rounded-full font-semibold">ล่าสุด: {fmtDate(latest?.date)}</span>}
+                        </div>
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-slate-400 border-b border-slate-100">
+                              <th className="text-left py-1 font-medium">ค่า</th>
+                              <th className="text-center py-1 font-medium">ครั้งแรก</th>
+                              {!isSame && <th className="text-center py-1 font-medium">ล่าสุด</th>}
+                              {!isSame && <th className="text-center py-1 font-medium">เปลี่ยน</th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {BC_FIELDS.map(({ get, label, unit, upGood }) => {
+                              const fv = get(first?.result)
+                              const lv = get(latest?.result)
+                              if (fv == null && lv == null) return null
+                              const fvn = parseFloat(fv) || 0
+                              const lvn = parseFloat(lv) || 0
+                              const diff = lvn - fvn
+                              const isGood = upGood ? diff >= 0 : diff <= 0
+                              const diffColor = diff === 0 ? 'text-slate-400' : isGood ? 'text-green-600' : 'text-red-500'
+                              return (
+                                <tr key={label} className="border-b border-slate-50 last:border-0">
+                                  <td className="py-1.5 text-slate-600">🏋️ {label}</td>
+                                  <td className="py-1.5 text-center font-semibold text-slate-600">{fv ?? '-'}{unit}</td>
+                                  {!isSame && <td className="py-1.5 text-center font-bold text-slate-700">{lv ?? '-'}{unit}</td>}
+                                  {!isSame && <td className={`py-1.5 text-center font-bold text-xs ${diffColor}`}>{diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1)}</td>}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </>
+                    )}
+                  </div>
+                )
+              })()}
+
+              {/* Consent Status */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">การยินยอมเข้าร่วมวิจัย</p>
+                <div className="space-y-2">
+                  {CONSENT_LABELS.map(([key, label]) => {
+                    const yes = selectedParticipant.consent?.[key]
+                    return (
+                      <div key={key} className="flex items-start gap-2.5 py-1.5 border-b border-slate-50 last:border-0">
+                        <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center mt-0.5 ${yes ? 'bg-green-100' : 'bg-slate-100'}`}>
+                          <span className={`text-xs font-bold ${yes ? 'text-green-600' : 'text-slate-400'}`}>{yes ? '✓' : '✗'}</span>
+                        </div>
+                        <span className={`text-xs leading-snug ${yes ? 'text-slate-700' : 'text-slate-400'}`}>{label}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-1">
+                <button onClick={() => setSelectedParticipant(null)}
+                  className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors">
+                  ปิด
+                </button>
+                <button onClick={() => exportParticipantPDF(selectedParticipant)}
+                  className="flex-1 py-3 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                  style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>
+                  <FileDown size={15} /> Export PDF
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1188,6 +1506,7 @@ export default function Admin() {
             }}
             deletingId={deletingResearchId}
             allAssessments={allAssessments}
+            cloudUsers={cloudUsers}
           />
         )}
 
