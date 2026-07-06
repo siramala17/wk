@@ -125,11 +125,9 @@ function exportResearchPDF(participants, assessments) {
 
   // health summary from assessments
   const DIMS = [
-    { key: 'sleepScore',     label: 'การนอนหลับ' },
-    { key: 'nutritionScore', label: 'โภชนาการ' },
-    { key: 'exerciseScore',  label: 'การออกกำลังกาย' },
-    { key: 'digitalScore',   label: 'การใช้หน้าจอ' },
-    { key: 'stressScore',    label: 'ความเครียด' },
+    { key: 'nutritionScore', label: 'พฤติกรรมการบริโภคอาหาร' },
+    { key: 'exerciseScore',  label: 'พฤติกรรมการออกกำลังกาย' },
+    { key: 'stressScore',    label: 'พฤติกรรมการจัดการอารมณ์' },
   ]
   const hasAss = assessments.length > 0
   const avgOverall = hasAss ? (assessments.reduce((s,a) => s + (a.overallScore||0), 0) / assessments.length).toFixed(1) : '-'
@@ -303,11 +301,9 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
   const femaleCount = participants.filter(p => p.gender === 'หญิง').length
 
   const DIMS = [
-    { key: 'sleepScore',     label: 'การนอนหลับ',     emoji: '🌙' },
-    { key: 'nutritionScore', label: 'โภชนาการ',        emoji: '🥗' },
-    { key: 'exerciseScore',  label: 'การออกกำลังกาย',  emoji: '🏃' },
-    { key: 'digitalScore',   label: 'การใช้หน้าจอ',   emoji: '📱' },
-    { key: 'stressScore',    label: 'ความเครียด',      emoji: '🧠' },
+    { key: 'nutritionScore', label: 'พฤติกรรมการบริโภคอาหาร',  emoji: '🍱' },
+    { key: 'exerciseScore',  label: 'พฤติกรรมการออกกำลังกาย',  emoji: '🏃' },
+    { key: 'stressScore',    label: 'พฤติกรรมการจัดการอารมณ์', emoji: '🧘' },
   ]
   const hasAss = allAssessments.length > 0
   const avgOverall = hasAss ? (allAssessments.reduce((s,a) => s + (a.overallScore||0), 0) / allAssessments.length).toFixed(1) : null
@@ -476,11 +472,9 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
               {(() => {
                 const ASS_DIMS = [
                   { key: 'overallScore',   emoji: '⭐', label: 'คะแนนรวม' },
-                  { key: 'sleepScore',     emoji: '🌙', label: 'การนอนหลับ' },
-                  { key: 'nutritionScore', emoji: '🥗', label: 'โภชนาการ' },
-                  { key: 'exerciseScore',  emoji: '🏃', label: 'ออกกำลังกาย' },
-                  { key: 'digitalScore',   emoji: '📱', label: 'การใช้หน้าจอ' },
-                  { key: 'stressScore',    emoji: '🧠', label: 'ความเครียด' },
+                  { key: 'nutritionScore', emoji: '🍱', label: 'พฤติกรรมการบริโภคอาหาร' },
+                  { key: 'exerciseScore',  emoji: '🏃', label: 'พฤติกรรมการออกกำลังกาย' },
+                  { key: 'stressScore',    emoji: '🧘', label: 'พฤติกรรมการจัดการอารมณ์' },
                 ]
                 const first  = modalAssessments[0]
                 const latest = modalAssessments[modalAssessments.length - 1]
