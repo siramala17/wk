@@ -13,6 +13,7 @@ export function HealthProvider({ children }) {
     localStorage.getItem('hc_session') === 'true'
   )
   const [showRegister, setShowRegister] = useState(false)
+  const [showResearch, setShowResearch] = useState(false)
 
   const [user, setUser] = useState(() => {
     try {
@@ -313,6 +314,7 @@ export function HealthProvider({ children }) {
       isLoggedIn, login, loginByName, logout,
       claimActivityPoints,
       showRegister, setShowRegister,
+      showResearch, setShowResearch,
       user, setUser,
       latestAssessment, saveAssessment,
       history,

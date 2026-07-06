@@ -21,13 +21,16 @@ import SchoolDashboard from './pages/SchoolDashboard'
 import BodyComposition from './pages/BodyComposition'
 import BodyCompositionHistory from './pages/BodyCompositionHistory'
 import ChatPage from './pages/ChatPage'
+import ResearchRegister from './pages/ResearchRegister'
+
 function AppContent() {
-  const { isLoggedIn, showRegister } = useHealth()
+  const { isLoggedIn, showRegister, showResearch } = useHealth()
   const { pathname } = useLocation()
 
   if (pathname === '/admin') return <Admin />
   if (pathname === '/school-dashboard') return <SchoolDashboard />
 
+  if (showResearch) return <ResearchRegister />
   if (showRegister) return <Register />
 
   if (!isLoggedIn) return <Login />

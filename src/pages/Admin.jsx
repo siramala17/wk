@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink, Clock, FileDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, fetchAllAssessments } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, fetchAllAssessments, fetchResearchParticipants, deleteResearchParticipant } from '../services/userSync'
 import { exportImprovementPDF, exportComparisonPDF } from '../utils/exportPdf'
 import { sendPushToAll, fcmReady } from '../services/fcm'
 import { useHealth } from '../context/HealthContext'
@@ -103,6 +103,227 @@ service cloud.firestore {
   )
 }
 
+// ── Research Participants Export ─────────────────────────────────────────────
+function exportResearchPDF(participants, assessments) {
+  const now = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
+  const total = participants.length
+  const maleCount   = participants.filter(p => p.gender === 'ชาย').length
+  const femaleCount = participants.filter(p => p.gender === 'หญิง').length
+  const otherCount  = total - maleCount - femaleCount
+
+  // grade summary
+  const gradeMap = {}
+  participants.forEach(p => { gradeMap[p.gradeLevel] = (gradeMap[p.gradeLevel] || 0) + 1 })
+  const gradeRows = Object.entries(gradeMap).sort((a,b) => b[1]-a[1])
+    .map(([g, n]) => `<tr><td>${g}</td><td style="text-align:center">${n}</td><td style="text-align:center">${((n/total)*100).toFixed(1)}%</td></tr>`).join('')
+
+  // school summary
+  const schoolMap = {}
+  participants.forEach(p => { schoolMap[p.school] = (schoolMap[p.school] || 0) + 1 })
+  const schoolRows = Object.entries(schoolMap).sort((a,b) => b[1]-a[1]).slice(0,10)
+    .map(([s, n]) => `<tr><td>${s}</td><td style="text-align:center">${n}</td></tr>`).join('')
+
+  // health summary from assessments
+  const DIMS = [
+    { key: 'sleepScore',     label: 'การนอนหลับ' },
+    { key: 'nutritionScore', label: 'โภชนาการ' },
+    { key: 'exerciseScore',  label: 'การออกกำลังกาย' },
+    { key: 'digitalScore',   label: 'การใช้หน้าจอ' },
+    { key: 'stressScore',    label: 'ความเครียด' },
+  ]
+  const hasAss = assessments.length > 0
+  const avgOverall = hasAss ? (assessments.reduce((s,a) => s + (a.overallScore||0), 0) / assessments.length).toFixed(1) : '-'
+  const dimRows = DIMS.map(d => {
+    const avg = hasAss ? (assessments.reduce((s,a) => s + (a[d.key]||0), 0) / assessments.length).toFixed(1) : '-'
+    return `<tr><td>${d.label}</td><td style="text-align:center">${avg}</td></tr>`
+  }).join('')
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<style>
+  body { font-family: 'Sarabun', sans-serif; margin: 32px; color:#222; font-size:13px; }
+  h1 { font-size:20px; color:#4f46e5; margin-bottom:4px; }
+  h2 { font-size:15px; color:#4f46e5; margin-top:24px; border-bottom:2px solid #e0e7ff; padding-bottom:4px; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; }
+  th { background:#4f46e5; color:white; padding:7px 10px; font-size:12px; text-align:left; }
+  td { padding:6px 10px; border-bottom:1px solid #f0f0f0; }
+  tr:nth-child(even) td { background:#f8f7ff; }
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:10px; }
+  .stat-box { background:#f0f4ff; border-radius:10px; padding:12px; text-align:center; }
+  .stat-num { font-size:28px; font-weight:900; color:#4f46e5; }
+  .stat-lbl { font-size:11px; color:#666; margin-top:2px; }
+  .footer { margin-top:32px; font-size:10px; color:#888; border-top:1px solid #eee; padding-top:10px; }
+</style></head><body>
+<h1>🔬 รายงานผู้เข้าร่วมวิจัย — W.K. Smart Teen Health AI</h1>
+<p style="color:#666;font-size:12px">ส่งออกเมื่อ ${now} · ผู้ดูแลระบบ Admin</p>
+
+<h2>📊 ภาพรวมผู้เข้าร่วม</h2>
+<div class="stat-grid">
+  <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-lbl">ผู้เข้าร่วมทั้งหมด</div></div>
+  <div class="stat-box"><div class="stat-num">${maleCount}</div><div class="stat-lbl">เพศชาย</div></div>
+  <div class="stat-box"><div class="stat-num">${femaleCount}</div><div class="stat-lbl">เพศหญิง</div></div>
+</div>
+
+<h2>🎓 ระดับชั้นของผู้เข้าร่วม</h2>
+<table><thead><tr><th>ระดับชั้น</th><th>จำนวน</th><th>%</th></tr></thead><tbody>${gradeRows}</tbody></table>
+
+<h2>🏫 โรงเรียน / สถาบัน</h2>
+<table><thead><tr><th>โรงเรียน / สถาบัน</th><th>จำนวน</th></tr></thead><tbody>${schoolRows}</tbody></table>
+
+${hasAss ? `<h2>📈 ภาพรวมสุขภาพ (จาก ${assessments.length} การประเมิน)</h2>
+<div class="stat-grid" style="grid-template-columns:1fr 1fr">
+  <div class="stat-box"><div class="stat-num">${avgOverall}</div><div class="stat-lbl">คะแนนสุขภาพเฉลี่ย</div></div>
+  <div class="stat-box"><div class="stat-num">${assessments.length}</div><div class="stat-lbl">จำนวนการประเมินทั้งหมด</div></div>
+</div>
+<h2>📋 คะแนนรายสมรรถนะ (เฉลี่ย)</h2>
+<table><thead><tr><th>ด้าน</th><th>คะแนนเฉลี่ย</th></tr></thead><tbody>${dimRows}</tbody></table>` : ''}
+
+<h2>📋 รายชื่อผู้เข้าร่วมทั้งหมด</h2>
+<table><thead><tr><th>#</th><th>ชื่อ-นามสกุล</th><th>อายุ</th><th>เพศ</th><th>โรงเรียน</th><th>ระดับชั้น</th><th>วันที่ลงทะเบียน</th></tr></thead>
+<tbody>${participants.map((p,i) => `<tr>
+  <td style="text-align:center">${i+1}</td>
+  <td>${p.firstName} ${p.lastName}</td>
+  <td style="text-align:center">${p.age}</td>
+  <td style="text-align:center">${p.gender}</td>
+  <td>${p.school}</td>
+  <td>${p.gradeLevel}</td>
+  <td>${new Date(p.registeredAt).toLocaleDateString('th-TH')}</td>
+</tr>`).join('')}</tbody></table>
+
+<div class="footer">W.K. Smart Teen Health AI · ข้อมูลเพื่อการวิจัยเท่านั้น · ห้ามเผยแพร่โดยไม่ได้รับอนุญาต</div>
+</body></html>`
+
+  const win = window.open('', '_blank')
+  win.document.write(html)
+  win.document.close()
+  setTimeout(() => win.print(), 600)
+}
+
+// ── ResearchTab Component ─────────────────────────────────────────────────────
+function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, allAssessments }) {
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const total = participants.length
+  const maleCount   = participants.filter(p => p.gender === 'ชาย').length
+  const femaleCount = participants.filter(p => p.gender === 'หญิง').length
+
+  const DIMS = [
+    { key: 'sleepScore',     label: 'การนอนหลับ',     emoji: '🌙' },
+    { key: 'nutritionScore', label: 'โภชนาการ',        emoji: '🥗' },
+    { key: 'exerciseScore',  label: 'การออกกำลังกาย',  emoji: '🏃' },
+    { key: 'digitalScore',   label: 'การใช้หน้าจอ',   emoji: '📱' },
+    { key: 'stressScore',    label: 'ความเครียด',      emoji: '🧠' },
+  ]
+  const hasAss = allAssessments.length > 0
+  const avgOverall = hasAss ? (allAssessments.reduce((s,a) => s + (a.overallScore||0), 0) / allAssessments.length).toFixed(1) : null
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h2 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">🔬 ผู้เข้าร่วมวิจัย</h2>
+          <p className="text-sm text-slate-500 mt-0.5">W.K. Smart Teen Health AI</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onRefresh} disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> รีเฟรช
+          </button>
+          <button onClick={() => exportResearchPDF(participants, allAssessments)} disabled={total === 0}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>
+            <FileDown size={14} /> Export PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Dashboard Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'ผู้เข้าร่วมทั้งหมด', value: total, color: 'bg-indigo-50 border-indigo-100', textColor: 'text-indigo-700' },
+          { label: 'เพศชาย',             value: maleCount,   color: 'bg-blue-50 border-blue-100',   textColor: 'text-blue-700' },
+          { label: 'เพศหญิง',            value: femaleCount, color: 'bg-pink-50 border-pink-100',   textColor: 'text-pink-700' },
+          { label: 'คะแนนสุขภาพเฉลี่ย', value: avgOverall ?? '-', color: 'bg-green-50 border-green-100', textColor: 'text-green-700' },
+        ].map(({ label, value, color, textColor }) => (
+          <div key={label} className={`${color} border rounded-2xl p-4 text-center`}>
+            <p className={`text-2xl font-black ${textColor}`}>{value}</p>
+            <p className="text-xs text-slate-500 mt-1">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Health Scores by Domain */}
+      {hasAss && (
+        <div className="bg-white rounded-2xl shadow-sm p-4">
+          <p className="font-bold text-slate-700 mb-3 text-sm">📈 คะแนนรายสมรรถนะ (เฉลี่ยจาก {allAssessments.length} การประเมิน)</p>
+          <div className="space-y-2">
+            {DIMS.map(d => {
+              const avg = (allAssessments.reduce((s,a) => s + (a[d.key]||0), 0) / allAssessments.length)
+              const pct = Math.round(avg)
+              const color = pct >= 80 ? '#059669' : pct >= 65 ? '#2563eb' : pct >= 50 ? '#d97706' : '#dc2626'
+              return (
+                <div key={d.key} className="flex items-center gap-3">
+                  <span className="text-sm w-5">{d.emoji}</span>
+                  <span className="text-xs text-slate-600 w-32 flex-shrink-0">{d.label}</span>
+                  <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
+                  </div>
+                  <span className="text-xs font-bold w-10 text-right" style={{ color }}>{avg.toFixed(1)}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Participant List */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : total === 0 ? (
+        <div className="text-center py-14 text-slate-400">
+          <span className="text-4xl">🔬</span>
+          <p className="text-sm mt-3">ยังไม่มีผู้ลงทะเบียนเข้าร่วมวิจัย</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-xs text-slate-500">แสดง {total} รายการ</p>
+          {participants.map((p, i) => (
+            <div key={p.id} className="bg-white rounded-2xl shadow-sm p-4 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-black text-xs flex-shrink-0">{i+1}</div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-800 text-sm">{p.firstName} {p.lastName}</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                  <span className="text-xs text-slate-500">อายุ {p.age} ปี · {p.gender}</span>
+                  <span className="text-xs text-slate-500">{p.school}</span>
+                  <span className="text-xs text-slate-500">{p.gradeLevel}</span>
+                  {p.parentPhone && <span className="text-xs text-slate-400">ผู้ปกครอง: {p.parentPhone}</span>}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  ลงทะเบียน {new Date(p.registeredAt).toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+                </p>
+              </div>
+              {confirmDeleteId === p.id ? (
+                <div className="flex gap-1.5 flex-shrink-0">
+                  <button onClick={() => setConfirmDeleteId(null)} className="text-xs px-2 py-1 rounded-lg border border-slate-200 text-slate-500">ยกเลิก</button>
+                  <button onClick={async () => { await onDelete(p.id); setConfirmDeleteId(null) }} disabled={deletingId === p.id}
+                    className="text-xs px-2 py-1 rounded-lg bg-red-500 text-white font-semibold disabled:opacity-50">
+                    {deletingId === p.id ? '...' : 'ลบ'}
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmDeleteId(p.id)} className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0 ml-1">
+                  <Trash2 size={15} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Admin() {
   const navigate = useNavigate()
   const { deleteUser: deleteLocalUser } = useHealth()
@@ -170,6 +391,11 @@ export default function Admin() {
   const [pushSending, setPushSending] = useState(null) // ann.id ที่กำลังส่ง
   const [pushResult, setPushResult] = useState(null)   // { sent, errors, total }
 
+  // research tab
+  const [researchParticipants, setResearchParticipants] = useState([])
+  const [researchLoading, setResearchLoading] = useState(false)
+  const [deletingResearchId, setDeletingResearchId] = useState(null)
+
   // tab
   const [adminTab, setAdminTab] = useState('users')
   const [allAssessments, setAllAssessments] = useState([])
@@ -227,9 +453,16 @@ export default function Admin() {
     finally { setAnnLoading(false) }
   }, [])
 
+  const loadResearch = useCallback(async () => {
+    setResearchLoading(true)
+    try { setResearchParticipants(await fetchResearchParticipants()) }
+    catch { /* silent */ }
+    finally { setResearchLoading(false) }
+  }, [])
+
   useEffect(() => {
     if (authenticated) {
-      loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions(); loadCatalog(); loadAnnouncements()
+      loadUsers(); loadSubmissions(); loadSurveys(); loadRedemptions(); loadCatalog(); loadAnnouncements(); loadResearch()
       fetchAllAssessments().then(setAllAssessments).catch(() => {})
     }
   }, [authenticated, loadUsers, loadSubmissions, loadSurveys, loadRedemptions, loadCatalog, loadAnnouncements])
@@ -508,6 +741,7 @@ export default function Admin() {
               { key: 'redemptions',   label: '🎁 รางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
               { key: 'surveys',       label: '📊 สำรวจ',     badge: null },
               { key: 'announcements', label: '📢 ประกาศ',    badge: announcements.filter(a => a.active).length || null },
+              { key: 'research',      label: '🔬 วิจัย',     badge: researchParticipants.length || null },
             ].map(({ key, label, badge }) => (
               <button key={key} onClick={() => setAdminTab(key)}
                 className={`relative px-3 py-3 rounded-xl text-sm font-semibold transition-all text-left flex items-center justify-between gap-2 ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
@@ -530,6 +764,7 @@ export default function Admin() {
                 { key: 'redemptions',   label: '🎁 รางวัล',    badge: redemptions.filter(r => r.status === 'pending').length || null },
                 { key: 'surveys',       label: '📊 สำรวจ',     badge: null },
                 { key: 'announcements', label: '📢 ประกาศ',    badge: announcements.filter(a => a.active).length || null },
+                { key: 'research',      label: '🔬 วิจัย',     badge: researchParticipants.length || null },
               ].map(({ key, label, badge }) => (
                 <button key={key} onClick={() => setAdminTab(key)}
                   className={`relative py-2.5 rounded-xl text-xs font-semibold transition-all ${adminTab === key ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
@@ -936,6 +1171,23 @@ export default function Admin() {
             onSendPush={handleSendPush}
             pushSending={pushSending}
             pushResult={pushResult}
+          />
+        )}
+
+        {/* ══ TAB: วิจัย ══ */}
+        {adminTab === 'research' && (
+          <ResearchTab
+            participants={researchParticipants}
+            loading={researchLoading}
+            onRefresh={loadResearch}
+            onDelete={async (id) => {
+              setDeletingResearchId(id)
+              try { await deleteResearchParticipant(id); await loadResearch() }
+              catch { /* silent */ }
+              finally { setDeletingResearchId(null) }
+            }}
+            deletingId={deletingResearchId}
+            allAssessments={allAssessments}
           />
         )}
 

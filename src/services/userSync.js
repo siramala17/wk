@@ -422,6 +422,33 @@ export async function deleteAnnouncement(id) {
   await deleteDoc(doc(db, 'announcements', id))
 }
 
+// ── Research Participants ─────────────────────────────────────
+
+export async function submitResearchConsent(data) {
+  const id = String(data.id || Date.now())
+  if (!db) {
+    const local = JSON.parse(localStorage.getItem('research_participants') || '[]')
+    localStorage.setItem('research_participants', JSON.stringify([...local, { ...data, id }]))
+    return
+  }
+  await setDoc(doc(db, 'research_participants', id), { ...data, id })
+}
+
+export async function fetchResearchParticipants() {
+  if (!db) return JSON.parse(localStorage.getItem('research_participants') || '[]')
+  const snap = await getDocs(collection(db, 'research_participants'))
+  return snap.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => (b.registeredAt ?? '').localeCompare(a.registeredAt ?? ''))
+}
+
+export async function deleteResearchParticipant(id) {
+  if (!db) {
+    const local = JSON.parse(localStorage.getItem('research_participants') || '[]')
+    localStorage.setItem('research_participants', JSON.stringify(local.filter(r => String(r.id) !== String(id))))
+    return
+  }
+  await deleteDoc(doc(db, 'research_participants', String(id)))
+}
+
 export async function claimApprovedPoints(userId) {
   if (!db) return 0
   const snap = await getDocs(query(collection(db, 'submissions'), where('userId', '==', String(userId))))

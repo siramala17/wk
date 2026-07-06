@@ -3,7 +3,7 @@ import { Eye, EyeOff, User, Lock, UserPlus } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 
 export default function Login() {
-  const { loginByName, setShowRegister } = useHealth()
+  const { loginByName, setShowRegister, setShowResearch } = useHealth()
   const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
   const [showPin, setShowPin] = useState(false)
@@ -122,6 +122,16 @@ export default function Login() {
               className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
             >
               สมัครสมาชิก
+            </button>
+          </div>
+
+          {/* ลงทะเบียนวิจัย */}
+          <div className="mt-3 border-t border-slate-100 pt-3 text-center">
+            <button
+              onClick={() => setShowResearch(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-800 hover:underline transition-colors font-medium"
+            >
+              🔬 ลงทะเบียนผู้เข้าร่วมวิจัย
             </button>
           </div>
         </div>
