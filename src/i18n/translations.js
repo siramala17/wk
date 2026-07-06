@@ -47,7 +47,7 @@ export const translations = {
       assessment: 'ประเมิน\nสุขภาพ',
       bodyComp:   'สัดส่วน\nร่างกาย',
       calories:   'บันทึก\nแคลอรี่',
-      crisis:     'คู่มือ\nวิทยากร',
+
       rewards:    'Challenge',
       knowledge:  'คลัง\nความรู้',
     },
@@ -730,7 +730,7 @@ export const translations = {
       assessment: 'Health\nAssessment',
       bodyComp:   'Body\nComposition',
       calories:   'Calorie\nTracker',
-      crisis:     'Crisis\nManual',
+
       rewards:    'Challenge',
       knowledge:  'Health\nKnowledge',
     },

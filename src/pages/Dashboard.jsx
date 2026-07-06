@@ -24,7 +24,7 @@ function getQuickLinks(t) {
     { to: '/assessment',        label: t.quick.assessment, emoji: '📋', grad: ['#3730a3','#6366f1'], shadow: 'rgba(99,102,241,0.40)' },
     { to: '/body-composition',  label: t.quick.bodyComp,   emoji: '🏋️', grad: ['#b45309','#f59e0b'], shadow: 'rgba(245,158,11,0.40)' },
     { to: '/nubcal',            label: t.quick.calories,   emoji: '🔥', grad: ['#c2410c','#fb923c'], shadow: 'rgba(249,115,22,0.40)'  },
-    { to: '/crisis',            label: t.quick.crisis,     emoji: '🧠', grad: ['#6d28d9','#7c3aed'], shadow: 'rgba(109,40,217,0.40)'  },
+
     { to: '/rewards',           label: t.quick.rewards,    emoji: '⭐', grad: ['#065f46','#34d399'], shadow: 'rgba(16,185,129,0.40)'  },
     { to: '/knowledge',         label: t.quick.knowledge,  emoji: '📚', grad: ['#4338ca','#a78bfa'], shadow: 'rgba(139,92,246,0.40)'  },
   ]
