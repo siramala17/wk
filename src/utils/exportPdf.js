@@ -204,12 +204,12 @@ export function exportComparisonPDF(users, assessments) {
 </head>
 <body>
   <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e2e8f0;">
-    <div style="font-size:22px;font-weight:800;color:#1e40af;">W.K. Health — รายงานเปรียบเทียบผลประเมินก่อน-หลัง</div>
+    <div style="font-size:22px;font-weight:800;color:#1e40af;">WatklangHealthXAI — รายงานเปรียบเทียบผลประเมินก่อน-หลัง</div>
     <div style="color:#64748b;margin-top:6px;font-size:13px;">วันที่ออกรายงาน: ${today} · พบ ${targets.length} ราย ที่มีการประเมินมากกว่า 1 ครั้ง</div>
   </div>
   ${cards}
   <div style="text-align:center;color:#94a3b8;font-size:11px;margin-top:20px;">
-    รายงานนี้สร้างโดยระบบ W.K. Health — เป็นความลับ ห้ามเผยแพร่โดยไม่ได้รับอนุญาต
+    รายงานนี้สร้างโดยระบบ WatklangHealthXAI — เป็นความลับ ห้ามเผยแพร่โดยไม่ได้รับอนุญาต
   </div>
 </body>
 </html>`
@@ -260,12 +260,12 @@ export function exportImprovementPDF(users, assessments) {
 <body>
   <!-- Cover header -->
   <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e2e8f0;">
-    <div style="font-size:22px;font-weight:800;color:#1e40af;">W.K. Health — รายงานผู้ที่ต้องปรับปรุงสุขภาพ</div>
+    <div style="font-size:22px;font-weight:800;color:#1e40af;">WatklangHealthXAI — รายงานผู้ที่ต้องปรับปรุงสุขภาพ</div>
     <div style="color:#64748b;margin-top:6px;font-size:13px;">วันที่ออกรายงาน: ${today} · พบ ${targets.length} ราย (คะแนนรวม &lt; 65)</div>
   </div>
   ${cards}
   <div style="text-align:center;color:#94a3b8;font-size:11px;margin-top:20px;">
-    รายงานนี้สร้างโดยระบบ W.K. Health — เป็นความลับ ห้ามเผยแพร่โดยไม่ได้รับอนุญาต
+    รายงานนี้สร้างโดยระบบ WatklangHealthXAI — เป็นความลับ ห้ามเผยแพร่โดยไม่ได้รับอนุญาต
   </div>
 </body>
 </html>`

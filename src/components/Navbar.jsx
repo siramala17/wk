@@ -61,7 +61,7 @@ export default function Navbar() {
             <Activity size={16} className="text-white" />
           </div>
           <span className="font-black text-slate-800 text-base tracking-tight">
-            W.K. <span className="text-gradient">Health</span>
+            WatklangHealth<span className="text-gradient">X</span>AI
           </span>
         </Link>
 

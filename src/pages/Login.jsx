@@ -46,10 +46,8 @@ export default function Login() {
 
           {/* โลโก้ + ชื่อแอป */}
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-black tracking-wide mb-0.5"
-              style={{ color: '#0a1535', fontFamily: 'serif' }}>W.K.</h1>
-            <p className="text-lg font-bold italic"
-              style={{ color: '#0a1535', letterSpacing: '0.02em' }}>SmartTeen Health AI</p>
+            <h1 className="text-2xl font-black tracking-wide mb-0.5"
+              style={{ color: '#0a1535', fontFamily: 'serif' }}>WatklangHealth<span style={{ color: '#4f46e5' }}>X</span>AI</h1>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">

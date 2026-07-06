@@ -151,7 +151,7 @@ function exportResearchPDF(participants, assessments) {
   .stat-lbl { font-size:11px; color:#666; margin-top:2px; }
   .footer { margin-top:32px; font-size:10px; color:#888; border-top:1px solid #eee; padding-top:10px; }
 </style></head><body>
-<h1>🔬 รายงานผู้เข้าร่วมวิจัย — W.K. Smart Teen Health AI</h1>
+<h1>🔬 รายงานผู้เข้าร่วมวิจัย — WatklangHealthXAI</h1>
 <p style="color:#666;font-size:12px">ส่งออกเมื่อ ${now} · ผู้ดูแลระบบ Admin</p>
 
 <h2>📊 ภาพรวมผู้เข้าร่วม</h2>
@@ -187,7 +187,7 @@ ${hasAss ? `<h2>📈 ภาพรวมสุขภาพ (จาก ${assessmen
   <td>${new Date(p.registeredAt).toLocaleDateString('th-TH')}</td>
 </tr>`).join('')}</tbody></table>
 
-<div class="footer">W.K. Smart Teen Health AI · ข้อมูลเพื่อการวิจัยเท่านั้น · ห้ามเผยแพร่โดยไม่ได้รับอนุญาต</div>
+<div class="footer">WatklangHealthXAI · ข้อมูลเพื่อการวิจัยเท่านั้น · ห้ามเผยแพร่โดยไม่ได้รับอนุญาต</div>
 </body></html>`
 
   const win = window.open('', '_blank')
@@ -229,7 +229,7 @@ function exportParticipantPDF(p) {
   @media print { body { margin:20px; } }
 </style></head><body>
 <h1>🔬 ข้อมูลผู้เข้าร่วมวิจัย</h1>
-<div class="sub">W.K. Smart Teen Health AI · พิมพ์วันที่ ${now}</div>
+<div class="sub">WatklangHealthXAI · พิมพ์วันที่ ${now}</div>
 
 <div class="section">
   <div class="section-title">ข้อมูลส่วนตัว</div>
@@ -250,7 +250,7 @@ function exportParticipantPDF(p) {
   <table><tbody>${consentRows}</tbody></table>
 </div>
 
-<div class="footer">W.K. Smart Teen Health AI · ข้อมูลเพื่อการวิจัยเท่านั้น · ห้ามเผยแพร่โดยไม่ได้รับอนุญาต</div>
+<div class="footer">WatklangHealthXAI · ข้อมูลเพื่อการวิจัยเท่านั้น · ห้ามเผยแพร่โดยไม่ได้รับอนุญาต</div>
 </body></html>`
   const win = window.open('', '_blank')
   win.document.write(html)
@@ -314,7 +314,7 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">🔬 ผู้เข้าร่วมวิจัย</h2>
-          <p className="text-sm text-slate-500 mt-0.5">W.K. Smart Teen Health AI</p>
+          <p className="text-sm text-slate-500 mt-0.5">WatklangHealthXAI</p>
         </div>
         <div className="flex gap-2">
           <button onClick={onRefresh} disabled={loading}
@@ -433,7 +433,7 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
                 <h2 className="font-extrabold text-slate-800 text-lg leading-none">
                   {selectedParticipant.firstName} {selectedParticipant.lastName}
                 </h2>
-                <p className="text-xs text-purple-500 mt-1 font-semibold">ผู้เข้าร่วมวิจัย · W.K. Smart Teen Health AI</p>
+                <p className="text-xs text-purple-500 mt-1 font-semibold">ผู้เข้าร่วมวิจัย · WatklangHealthXAI</p>
               </div>
               <button onClick={() => setSelectedParticipant(null)}
                 className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors font-bold text-base">

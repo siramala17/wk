@@ -321,7 +321,7 @@ export default function SchoolDashboard() {
           <div style={{ width:34, height:34, background:'linear-gradient(135deg,#f59e0b,#fbbf24)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>🏥</div>
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <div style={{ fontSize:17, fontWeight:800, color:'#f1f5f9' }}>W.K. School Dashboard</div>
+              <div style={{ fontSize:17, fontWeight:800, color:'#f1f5f9' }}>WatklangHealthXAI Dashboard</div>
               <div style={{ display:'flex', alignItems:'center', gap:5, padding:'3px 9px', background:'rgba(16,185,129,.14)', borderRadius:6, border:'1px solid rgba(16,185,129,.25)' }}>
                 <div style={{ width:6, height:6, borderRadius:'50%', background:'#34d399', animation:'livePulse 2s ease-in-out infinite' }} />
                 <span style={{ fontSize:10, color:'#34d399', fontWeight:800, letterSpacing:.5 }}>LIVE</span>

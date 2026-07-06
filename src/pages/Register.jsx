@@ -49,10 +49,10 @@ const LANG = {
     consentAcceptBtn: 'ยืนยันและดำเนินการต่อ',
     consentDeclineBtn: 'ปฏิเสธ / กลับหน้าเข้าสู่ระบบ',
     consentNote: '* ต้องยินยอมทุกข้อเพื่อดำเนินการต่อ',
-    consentHeaderSub: 'W.K. Health — กรุณาอ่านก่อนสมัครสมาชิก',
+    consentHeaderSub: 'WatklangHealthXAI — กรุณาอ่านก่อนสมัครสมาชิก',
     consentCloseBtn: 'ปิด',
     consentDoc1Title: 'วัตถุประสงค์ของการเก็บข้อมูล',
-    consentDoc1Body: 'ระบบ W.K. Health เก็บข้อมูลเพื่อประเมินและติดตามสุขภาพของผู้ใช้ นำเสนอคำแนะนำสุขภาพที่เหมาะสมเฉพาะบุคคล และวิเคราะห์แนวโน้มสุขภาพเพื่อการวิจัยและพัฒนาระบบ',
+    consentDoc1Body: 'ระบบ WatklangHealthXAI เก็บข้อมูลเพื่อประเมินและติดตามสุขภาพของผู้ใช้ นำเสนอคำแนะนำสุขภาพที่เหมาะสมเฉพาะบุคคล และวิเคราะห์แนวโน้มสุขภาพเพื่อการวิจัยและพัฒนาระบบ',
     consentDoc2Title: 'ข้อมูลที่ระบบเก็บรวบรวม',
     consentDoc2PersonalTitle: '👤 ข้อมูลส่วนตัว',
     consentDoc2PersonalItems: ['ชื่อ-นามสกุล, อายุ, เพศ, บทบาท และระดับชั้น', 'รูปภาพใบหน้า (สำหรับยืนยันตัวตน)', 'รหัส PIN สำหรับเข้าสู่ระบบ'],
@@ -112,10 +112,10 @@ const LANG = {
     consentAcceptBtn: 'Confirm & Continue',
     consentDeclineBtn: 'Decline / Back to Login',
     consentNote: '* All consents are required to proceed',
-    consentHeaderSub: 'W.K. Health — Please read before registering',
+    consentHeaderSub: 'WatklangHealthXAI — Please read before registering',
     consentCloseBtn: 'Close',
     consentDoc1Title: 'Purpose of Data Collection',
-    consentDoc1Body: "W.K. Health collects data to assess and monitor users' health, provide personalized health recommendations, and analyze health trends for research and system development.",
+    consentDoc1Body: "WatklangHealthXAI collects data to assess and monitor users' health, provide personalized health recommendations, and analyze health trends for research and system development.",
     consentDoc2Title: 'Data Collected by the System',
     consentDoc2PersonalTitle: '👤 Personal Information',
     consentDoc2PersonalItems: ['Full name, age, gender, role, and grade level', 'Face photo (for identity verification)', '4-digit PIN for login'],
@@ -578,7 +578,7 @@ export default function Register() {
       {/* ── Logo top center (desktop) ── */}
       <div className="hidden lg:flex" style={{ position:'absolute', top:18, left:'50%', transform:'translateX(-50%)', alignItems:'center', gap:8, zIndex:20 }}>
         <div style={{ width:32, height:32, background:'linear-gradient(135deg,#fbbf24,#f59e0b)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🏥</div>
-        <span style={{ fontSize:15, fontWeight:800, color:'#fff', letterSpacing:'.5px', textShadow:'0 2px 8px rgba(0,0,0,.4)' }}>W.K. Health</span>
+        <span style={{ fontSize:15, fontWeight:800, color:'#fff', letterSpacing:'.5px', textShadow:'0 2px 8px rgba(0,0,0,.4)' }}>WatklangHealthXAI</span>
       </div>
 
       {/* ══ PHONE FRAME (desktop lg+) ══ */}
@@ -614,7 +614,7 @@ export default function Register() {
             {/* Notch bar */}
             <div style={{ background:'#f8fafc', padding:'8px 20px 4px', display:'flex', alignItems:'center', gap:8, borderBottom:'1px solid #f1f5f9', flexShrink:0 }}>
               <div style={{ width:28, height:28, background:'linear-gradient(135deg,#4f46e5,#4338ca)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>🏥</div>
-              <span style={{ fontSize:13, fontWeight:800, color:'#312e81' }}>W.K. Health</span>
+              <span style={{ fontSize:13, fontWeight:800, color:'#312e81' }}>WatklangHealthXAI</span>
               <div style={{ marginLeft:'auto', display:'flex', gap:3 }}>
                 <div style={{ width:8, height:8, borderRadius:'50%', background:'#fbbf24' }} />
                 <div style={{ width:8, height:8, borderRadius:'50%', background:'#34d399' }} />
@@ -638,7 +638,7 @@ export default function Register() {
         {/* Mobile top bar */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12 }}>
           <div style={{ width:28, height:28, background:'linear-gradient(135deg,#fbbf24,#f59e0b)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>🏥</div>
-          <span style={{ fontSize:14, fontWeight:800, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,.4)' }}>W.K. Health</span>
+          <span style={{ fontSize:14, fontWeight:800, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,.4)' }}>WatklangHealthXAI</span>
         </div>
         <div className="w-full bg-white rounded-3xl shadow-2xl p-6">
           {renderForm()}

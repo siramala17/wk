@@ -121,7 +121,7 @@ export default function ResearchRegister() {
             </div>
             <div>
               <div className="text-sm font-bold text-slate-800 leading-none">ลงทะเบียนผู้เข้าร่วมวิจัย</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">W.K. Smart Teen Health AI</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">WatklangHealthXAI</div>
             </div>
           </div>
           {step < 3 && (
@@ -144,7 +144,7 @@ export default function ResearchRegister() {
             <div className="bg-purple-50 border border-purple-100 rounded-2xl px-4 py-3 flex gap-3">
               <FlaskConical size={15} className="text-purple-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-purple-700 leading-relaxed">
-                โครงการวิจัย: <span className="font-semibold">W.K. Smart Teen Health AI</span><br/>
+                โครงการวิจัย: <span className="font-semibold">WatklangHealthXAI</span><br/>
                 ข้อมูลทั้งหมดจะถูกเก็บรักษาความลับและใช้เพื่อการวิจัยเท่านั้น
               </p>
             </div>
@@ -262,7 +262,7 @@ export default function ResearchRegister() {
 
             <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-2.5">
               <p className="font-bold text-slate-800 text-sm">📋 รายละเอียดโครงการวิจัย</p>
-              <p className="text-xs text-slate-600">ชื่อโครงการ: <span className="font-semibold">การพัฒนาและประเมินประสิทธิภาพระบบ W.K. Smart Teen Health AI สำหรับส่งเสริมพฤติกรรมสุขภาพวัยรุ่น</span></p>
+              <p className="text-xs text-slate-600">ชื่อโครงการ: <span className="font-semibold">การพัฒนาและประเมินประสิทธิภาพระบบ WatklangHealthXAI สำหรับส่งเสริมพฤติกรรมสุขภาพวัยรุ่น</span></p>
               <p className="text-xs text-slate-600">ผู้วิจัย: คณะวิจัย W.K. Health · ระยะเวลา: ตลอดช่วงที่ใช้งานแอปพลิเคชัน</p>
               <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 text-xs text-amber-700">
                 ⚠️ ผู้เข้าร่วมสามารถถอนตัวจากการวิจัยได้ทุกเมื่อ โดยแจ้งผู้วิจัยโดยตรง
@@ -365,7 +365,7 @@ export default function ResearchRegister() {
       {/* logo top center */}
       <div className="hidden lg:flex" style={{ position: 'absolute', top: 18, left: '50%', transform: 'translateX(-50%)', alignItems: 'center', gap: 8, zIndex: 20 }}>
         <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🔬</div>
-        <span style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '.5px', textShadow: '0 2px 8px rgba(0,0,0,.4)' }}>W.K. Health Research</span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '.5px', textShadow: '0 2px 8px rgba(0,0,0,.4)' }}>WatklangHealthXAI</span>
       </div>
 
       {/* ══ PHONE FRAME (lg+) ══ */}
@@ -393,7 +393,7 @@ export default function ResearchRegister() {
           <div style={{ background: 'white', borderRadius: 42, overflow: 'hidden', height: 680, display: 'flex', flexDirection: 'column' }}>
             <div style={{ background: '#f8fafc', padding: '8px 20px 4px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
               <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔬</div>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#4c1d95' }}>W.K. Health Research</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#4c1d95' }}>WatklangHealthXAI</span>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 3 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fbbf24' }} />
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399' }} />
@@ -414,7 +414,7 @@ export default function ResearchRegister() {
       <div className="lg:hidden w-full" style={{ position: 'relative', zIndex: 10, maxWidth: 460, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
           <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔬</div>
-          <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,.4)' }}>W.K. Health Research</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,.4)' }}>WatklangHealthXAI</span>
         </div>
         <div className="w-full bg-white rounded-3xl shadow-2xl p-6">
           {renderForm()}
