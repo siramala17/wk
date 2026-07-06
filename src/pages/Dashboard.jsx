@@ -9,6 +9,7 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import Profile from './Profile'
 import { fetchAnnouncements } from '../services/userSync'
 import { requestPermissionAndSaveToken, fcmReady } from '../services/fcm'
+import { StickerChar } from '../components/CharDecor'
 
 function getStatConfig(t) {
   return [
@@ -239,7 +240,7 @@ export default function Dashboard() {
               >
                 <div className="absolute inset-0 dot-grid opacity-40 pointer-events-none" />
                 {/* ตัวละครตกแต่ง */}
-                <img src="/char-hero.png" alt="" style={{ position:'absolute', bottom:-8, right:-16, zIndex:2, height:115, width:'auto', opacity:.95, pointerEvents:'none', userSelect:'none' }} />
+                <StickerChar name="boy4" size={0.85} style={{ position:'absolute', bottom:-8, right:-16, zIndex:2, opacity:.95 }} />
                 <div className="absolute -top-14 -right-14 w-64 h-64 rounded-full pointer-events-none"
                   style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.35), transparent 65%)' }} />
                 <div className="absolute -bottom-10 -left-8 w-52 h-52 rounded-full pointer-events-none"
@@ -427,7 +428,7 @@ export default function Dashboard() {
                   <p className="text-sm font-black text-yellow-300">{t.dashboard.tipTitle}</p>
                   <p className="text-xs text-indigo-100 mt-0.5 leading-relaxed">{todayTip}</p>
                 </div>
-                <img src="/char-yoga-girl.png" alt="" style={{ height:90, width:'auto', opacity:.9, flexShrink:0, pointerEvents:'none', userSelect:'none' }} />
+                <StickerChar name="girl2c" size={0.65} style={{ opacity:.9 }} />
               </div>
 
             </div>

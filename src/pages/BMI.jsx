@@ -4,6 +4,7 @@ import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import { calcBmiScore, getBmiCategory } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
+import { StickerChar } from '../components/CharDecor'
 
 const API_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
 
@@ -221,7 +222,7 @@ ${qRows}
       <div className="rounded-3xl p-5 text-white relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #ea580c, #dc2626)' }}>
         <div className="absolute -top-5 -right-5 w-24 h-24 rounded-full bg-white/10" />
-        <img src="/char-workout.png" alt="" style={{ position:'absolute', right:4, bottom:0, height:130, width:'auto', opacity:.9, pointerEvents:'none', userSelect:'none' }} />
+        <StickerChar name="boy1" size={0.94} style={{ position:'absolute', right:4, bottom:0, opacity:.9 }} />
         <div className="relative">
           <h2 className="font-black text-base">แบบประเมินพฤติกรรมเสี่ยงต่อภาวะอ้วน</h2>
           <p className="text-red-100 text-xs mt-0.5">อ้างอิงกรมอนามัย กระทรวงสาธารณสุข · {OB_TOTAL} ข้อ</p>

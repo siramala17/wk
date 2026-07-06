@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 /**
  * CharDecor — แสดงตัวการ์ตูนตัดจากรูปกลุ่ม
@@ -42,52 +42,138 @@ export default function CharDecor({ imgSrc, imgW, offTop, offLeft, w, h, flip, s
   )
 }
 
-/* ─── Preset characters ─────────────────────────────────────────── */
+/* ─── Sticker characters (stickers.jpg 1536×1024, 5×3 grid) ───── */
 
-const S = '/kids-sport.jpg'   // 626×445 px
-const Y = '/kids-yoga.webp'   // กว้าง ~1100px (8 ตัว 2 แถว)
+// cell size: 307.2 × 341.33 px
+// display base height: 138px → scale = 138/341.33 = 0.4044
+// imgW = 1536 * 0.4044 = 621  cellW = 307.2 * 0.4044 = 124  cellH = 138
 
-// imgW=500 → ภาพถูก scale ลงเหลือ 500/626 ≈ 0.799 ของต้นฉบับ
-// offsets คำนวณจากจุดเริ่มของแต่ละตัวละครในภาพ 500px
+const ST = '/stickers.jpg'
+const ST_SCALE = 138 / (1024 / 3)   // ≈ 0.4043
+const ST_W = Math.round(1536 * ST_SCALE)  // 621
+const ST_CW = Math.round((1536 / 5) * ST_SCALE) // 124
+const ST_CH = 138
 
-export const CHARS = {
-  /* ── sports ─────────────────────────────────── */
-  cheerleader:   { imgSrc:S, imgW:500, offTop:-5,   offLeft:0,    w:100, h:170 },
-  footballer:    { imgSrc:S, imgW:500, offTop:-5,   offLeft:-105, w:95,  h:170 },
-  hulaHoop:      { imgSrc:S, imgW:500, offTop:-5,   offLeft:-200, w:110, h:170 },
-  basketball:    { imgSrc:S, imgW:500, offTop:-5,   offLeft:-310, w:110, h:170 },
-  karate:        { imgSrc:S, imgW:500, offTop:-178, offLeft:0,    w:90,  h:175 },
-  jumpRope:      { imgSrc:S, imgW:500, offTop:-178, offLeft:-80,  w:155, h:175 },
-  ribbon:        { imgSrc:S, imgW:500, offTop:-178, offLeft:-232, w:130, h:175 },
-  americanFootball: { imgSrc:S, imgW:500, offTop:-178, offLeft:-355, w:125, h:175 },
-
-  /* ── yoga (ภาพ ~1100px กว้าง, 2 แถว × 5 ตัว) ─ */
-  yoga1: { imgSrc:Y, imgW:880, offTop:-10,  offLeft:0,    w:130, h:180 }, // stretch side
-  yoga2: { imgSrc:Y, imgW:880, offTop:-10,  offLeft:-148, w:115, h:180 }, // forward bend
-  yoga3: { imgSrc:Y, imgW:880, offTop:-10,  offLeft:-275, w:120, h:180 }, // backroll
-  yoga4: { imgSrc:Y, imgW:880, offTop:-10,  offLeft:-398, w:120, h:180 }, // star pose
-  yoga5: { imgSrc:Y, imgW:880, offTop:-10,  offLeft:-525, w:110, h:180 }, // shoulder stand
-  yoga6: { imgSrc:Y, imgW:880, offTop:-190, offLeft:0,    w:130, h:180 }, // lunge
-  yoga7: { imgSrc:Y, imgW:880, offTop:-190, offLeft:-138, w:120, h:180 }, // forward lean
-  yoga8: { imgSrc:Y, imgW:880, offTop:-190, offLeft:-265, w:90,  h:180 }, // standing
-  yoga9: { imgSrc:Y, imgW:880, offTop:-190, offLeft:-360, w:115, h:180 }, // crawl
-  yoga10:{ imgSrc:Y, imgW:880, offTop:-190, offLeft:-478, w:110, h:180 }, // seated
+function _s(row, col) {
+  return {
+    imgSrc: ST,
+    imgW:   ST_W,
+    offTop: -row * ST_CH,
+    offLeft:-col * ST_CW,
+    w:      ST_CW,
+    h:      ST_CH,
+  }
 }
 
-/** Helper shorthand — ใช้ preset name โดยตรง */
-export function Char({ name, size = 1, flip, style }) {
-  const p = CHARS[name]
+export const STICKERS = {
+  // Row 0 – Boy
+  boy1: _s(0, 0),  // แข็งแรงวันนี้ ดีกว่าเมื่อวาน
+  boy2: _s(0, 1),  // ไม่หยุดแค่ขยับ ชีวิตก็เปลี่ยน!
+  boy3: _s(0, 2),  // ออกกำลังกายไม่ใช่การลงโทษ
+  boy4: _s(0, 3),  // เหนื่อวันนี้ สู้หน่อยดีในวันหน้า
+  boy5: _s(0, 4),  // สุขภาพดีเริ่มที่เรา
+  // Row 1 – Girl (hair clip)
+  girl1a: _s(1, 0), // ดื่มน้ำให้พอ
+  girl1b: _s(1, 1), // ออกกำลังง่ายๆ
+  girl1c: _s(1, 2), // เริ่มต้นที่ใจ
+  girl1d: _s(1, 3), // พุ่นดีไม่ใช่เรื่องบังเอิญ
+  girl1e: _s(1, 4), // สู้ๆนะ!
+  // Row 2 – Girl (short hair)
+  girl2a: _s(2, 0), // ออกกำลังกาย ไม่ยากอย่างที่คิด
+  girl2b: _s(2, 1), // เหนื่อยแค่ไหน ก็สู้เพื่อสุขภาพดี
+  girl2c: _s(2, 2), // Love Yourself
+  girl2d: _s(2, 3), // ขยับกาย สบายใจ ห่างไกลโรค
+  girl2e: _s(2, 4), // สุขภาพดีคือของขวัญที่ดีที่สุด
+}
+
+// module-level cache: cacheKey → data URL (processed transparent PNG)
+const _cache = new Map()
+
+function _removeBg(ctx, w, h) {
+  // Sample background color from near top-left corner
+  const corner = ctx.getImageData(3, 3, 1, 1).data
+  const bgR = corner[0], bgG = corner[1], bgB = corner[2]
+
+  const id = ctx.getImageData(0, 0, w, h)
+  const d = id.data
+
+  // Flood-fill from all 4 corners — only connected background pixels are removed
+  const vis = new Uint8Array(w * h)
+  const q = []
+  let qi = 0
+  const THR = 70  // sum-of-channel tolerance
+
+  const enq = (x, y) => {
+    const i = y * w + x
+    if (!vis[i]) { vis[i] = 1; q.push(x, y) }
+  }
+  enq(0, 0); enq(w - 1, 0); enq(0, h - 1); enq(w - 1, h - 1)
+
+  while (qi < q.length) {
+    const x = q[qi++], y = q[qi++]
+    const pi = (y * w + x) * 4
+    const dist = Math.abs(d[pi] - bgR) + Math.abs(d[pi + 1] - bgG) + Math.abs(d[pi + 2] - bgB)
+    if (dist <= THR) {
+      d[pi + 3] = 0
+      if (x > 0)     enq(x - 1, y)
+      if (x < w - 1) enq(x + 1, y)
+      if (y > 0)     enq(x, y - 1)
+      if (y < h - 1) enq(x, y + 1)
+    }
+  }
+  ctx.putImageData(id, 0, 0)
+}
+
+/** StickerChar — crop + remove gray background via canvas flood-fill */
+export function StickerChar({ name, size = 1, flip, style = {} }) {
+  const p = STICKERS[name]
+  const cacheKey = `${name}_${size}_${flip ? 1 : 0}`
+  const [url, setUrl] = useState(() => _cache.get(cacheKey) || null)
+
+  useEffect(() => {
+    if (!p || _cache.has(cacheKey)) return
+    const img = new Image()
+    img.onload = () => {
+      // Source rectangle in original 1536×1024 image
+      const scale = p.imgW / 1536
+      const sx = Math.round(-p.offLeft / scale)
+      const sy = Math.round(-p.offTop / scale)
+      const sw = Math.round(p.w / scale)
+      const sh = Math.round(p.h / scale)
+
+      const cw = Math.round(p.w * size)
+      const ch = Math.round(p.h * size)
+
+      const canvas = document.createElement('canvas')
+      canvas.width = cw
+      canvas.height = ch
+      const ctx = canvas.getContext('2d')
+
+      if (flip) { ctx.save(); ctx.translate(cw, 0); ctx.scale(-1, 1) }
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch)
+      if (flip) ctx.restore()
+
+      _removeBg(ctx, cw, ch)
+
+      const dataUrl = canvas.toDataURL('image/png')
+      _cache.set(cacheKey, dataUrl)
+      setUrl(dataUrl)
+    }
+    img.src = p.imgSrc
+  }, [cacheKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!p) return null
   return (
-    <CharDecor
-      imgSrc={p.imgSrc}
-      imgW={p.imgW * size}
-      offTop={p.offTop * size}
-      offLeft={p.offLeft * size}
-      w={p.w * size}
-      h={p.h * size}
-      flip={flip}
-      style={style}
-    />
+    <div style={{
+      width: p.w * size,
+      height: p.h * size,
+      flexShrink: 0,
+      pointerEvents: 'none',
+      userSelect: 'none',
+      filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.22))',
+      ...style,
+    }}>
+      {url && <img src={url} style={{ width: '100%', height: '100%' }} alt="" draggable={false} />}
+    </div>
   )
 }
