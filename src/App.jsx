@@ -20,8 +20,7 @@ import Survey from './pages/Survey'
 import SchoolDashboard from './pages/SchoolDashboard'
 import BodyComposition from './pages/BodyComposition'
 import BodyCompositionHistory from './pages/BodyCompositionHistory'
-
-
+import ChatPage from './pages/ChatPage'
 function AppContent() {
   const { isLoggedIn, showRegister } = useHealth()
   const { pathname } = useLocation()
@@ -51,7 +50,7 @@ function AppContent() {
           <Route path="/nubcal" element={<NubCal />} />
           <Route path="/body-composition" element={<BodyComposition />} />
           <Route path="/body-composition/history" element={<BodyCompositionHistory />} />
-
+          <Route path="/chat" element={<ChatPage />} />
           <Route path="/survey" element={<Survey />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
