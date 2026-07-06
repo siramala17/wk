@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useHealth } from '../context/HealthContext'
+import { useLang } from '../context/LangContext'
 import { saveBodyComposition, fetchBodyCompositions } from '../services/userSync'
 import BMI from './BMI'
 
@@ -23,17 +24,18 @@ const LEVEL_COLOR = {
 const ICON_MAP = { muscle: Dumbbell, fat: Activity, water: Droplets, diet: Utensils, exercise: TrendingUp, heart: Heart }
 const PRIORITY_COLOR = { high: '#f43f5e', medium: '#f59e0b', low: '#6366f1' }
 
-function LevelBadge({ level }) {
+function LevelBadge({ level, levelMap }) {
   const s = LEVEL_COLOR[level] || LEVEL_COLOR['ปกติ']
+  const label = levelMap?.[level] || level
   return (
     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
       style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
-      {level}
+      {label}
     </span>
   )
 }
 
-function MetricRow({ label, value, unit, level, normal }) {
+function MetricRow({ label, value, unit, level, normal, levelMap }) {
   const s = LEVEL_COLOR[level] || {}
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
@@ -45,7 +47,7 @@ function MetricRow({ label, value, unit, level, normal }) {
         <span className="text-sm font-black" style={{ color: s.color || '#334155' }}>
           {value} <span className="font-normal text-xs text-slate-400">{unit}</span>
         </span>
-        {level && <LevelBadge level={level} />}
+        {level && <LevelBadge level={level} levelMap={levelMap} />}
       </div>
     </div>
   )
@@ -139,6 +141,8 @@ function nowTimeStr() { return new Date().toTimeString().slice(0, 5) }
 
 export default function BodyComposition() {
   const { user } = useHealth()
+  const { t } = useLang()
+  const bc = t.bodyComp
   const navigate = useNavigate()
   const location = useLocation()
   const [filePreview, setFilePreview]   = useState(null)
@@ -292,7 +296,7 @@ export default function BodyComposition() {
             }`}
           >
             <Activity size={15} />
-            วิเคราะห์ร่างกาย
+            {bc.tabBody}
           </button>
           <button
             onClick={() => setActiveTab('bmi')}
@@ -301,7 +305,7 @@ export default function BodyComposition() {
             }`}
           >
             <Scale size={15} />
-            คำนวณ BMI
+            {bc.tabBmi}
           </button>
         </div>
       </div>
@@ -322,7 +326,7 @@ export default function BodyComposition() {
             </div>
             <div>
               <h1 className="text-lg font-black">Body Composition</h1>
-              <p className="text-cyan-100 text-xs">วิเคราะห์องค์ประกอบร่างกาย + คำแนะนำ AI</p>
+              <p className="text-cyan-100 text-xs">{bc.subtitle}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -330,14 +334,14 @@ export default function BodyComposition() {
               onClick={() => navigate('/body-composition/history')}
               className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl transition-all"
             >
-              <History size={12} /> ประวัติ
+              <History size={12} /> {bc.historyBtn}
             </button>
             {result && (
               <button
                 onClick={reset}
                 className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl transition-all"
               >
-                <Upload size={12} /> อัปโหลดใหม่
+                <Upload size={12} /> {bc.uploadNewBtn}
               </button>
             )}
           </div>
@@ -364,9 +368,9 @@ export default function BodyComposition() {
               <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center">
                 <Upload size={24} className="text-indigo-400" />
               </div>
-              <p className="font-bold text-slate-600">อัปโหลดรายงาน Body Composition</p>
-              <p className="text-xs text-slate-400 text-center">ถ่ายรูปหรือเลือกไฟล์จากเครื่องชั่งวิเคราะห์ร่างกาย<br />รองรับ JPG, PNG, WEBP และ PDF</p>
-              <span className="text-xs text-cyan-600 font-semibold border border-cyan-300 px-3 py-1 rounded-full">เลือกไฟล์</span>
+              <p className="font-bold text-slate-600">{bc.uploadTitle}</p>
+              <p className="text-xs text-slate-400 text-center">{bc.uploadDesc}<br />{bc.uploadFormats}</p>
+              <span className="text-xs text-cyan-600 font-semibold border border-cyan-300 px-3 py-1 rounded-full">{bc.uploadBtn}</span>
             </label>
           ) : filePreview.type === 'image' ? (
             <div className="rounded-2xl overflow-hidden relative shadow-sm border border-slate-100">
@@ -396,14 +400,14 @@ export default function BodyComposition() {
             <button onClick={analyze}
               className="w-full mt-4 py-3.5 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg"
               style={{ background: 'linear-gradient(135deg, #0e7490, #22d3ee)', boxShadow: '0 4px 16px rgba(6,182,212,0.4)' }}>
-              <Zap size={18} /> วิเคราะห์ด้วย AI
+              <Zap size={18} /> {bc.analyzeBtn}
             </button>
           )}
 
           {loading && (
             <div className="flex flex-col items-center gap-3 py-8">
               <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-slate-500 font-medium">AI กำลังอ่านผลและสร้างคำแนะนำ...</p>
+              <p className="text-sm text-slate-500 font-medium">{bc.analyzing}</p>
             </div>
           )}
 
@@ -427,7 +431,7 @@ export default function BodyComposition() {
               <div>
                 <p className="text-cyan-100 text-xs">{result.info?.name || 'ผู้รับการทดสอบ'}</p>
                 <p className="text-[11px] text-cyan-200">
-                  อายุ {result.info?.age} ปี · {result.info?.gender} · {result.info?.height} cm
+                  {bc.ageUnit.replace('{age}', result.info?.age)} · {result.info?.gender} · {result.info?.height} cm
                 </p>
               </div>
               {result.data?.bodyScore > 0 && (
@@ -443,11 +447,11 @@ export default function BodyComposition() {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
             <div className="flex items-center gap-1.5 mb-3">
               <Save size={13} className="text-cyan-600" />
-              <p className="text-xs font-bold text-slate-600">บันทึกข้อมูล</p>
+              <p className="text-xs font-bold text-slate-600">{bc.savePanelTitle}</p>
             </div>
             <div className="flex gap-2 mb-3">
               <div className="flex-1">
-                <label className="text-[10px] text-slate-400 font-semibold block mb-1">วันที่</label>
+                <label className="text-[10px] text-slate-400 font-semibold block mb-1">{bc.dateLabel}</label>
                 <input
                   type="date"
                   value={saveDate}
@@ -456,7 +460,7 @@ export default function BodyComposition() {
                 />
               </div>
               <div className="flex-1">
-                <label className="text-[10px] text-slate-400 font-semibold block mb-1">เวลา</label>
+                <label className="text-[10px] text-slate-400 font-semibold block mb-1">{bc.timeLabel}</label>
                 <div className="relative">
                   <Clock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
                   <input
@@ -472,7 +476,7 @@ export default function BodyComposition() {
             {isUpdate && saveStatus !== 'saved' && (
               <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">
                 <AlertCircle size={13} className="text-amber-500 flex-shrink-0" />
-                <p className="text-[11px] text-amber-600">มีข้อมูลของวันนี้แล้ว — กดเพื่ออัปเดต</p>
+                <p className="text-[11px] text-amber-600">{bc.updateWarning}</p>
               </div>
             )}
 
@@ -493,11 +497,11 @@ export default function BodyComposition() {
               }}
             >
               {saveStatus === 'saving' ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> กำลังบันทึก...</>
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {bc.savingBtn}</>
               ) : saveStatus === 'saved' ? (
-                <><CheckCircle size={15} /> บันทึกแล้ว</>
+                <><CheckCircle size={15} /> {bc.savedBtn}</>
               ) : (
-                <><Save size={15} /> {isUpdate ? 'อัปเดตข้อมูล' : 'บันทึกข้อมูล'}</>
+                <><Save size={15} /> {isUpdate ? bc.updateBtn : bc.saveBtn}</>
               )}
             </button>
           </div>
@@ -505,13 +509,13 @@ export default function BodyComposition() {
           {/* Weight control */}
           {result.weightControl?.targetWeight > 0 && (
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-              <p className="text-xs font-bold text-slate-500 mb-3">การควบคุมน้ำหนัก</p>
+              <p className="text-xs font-bold text-slate-500 mb-3">{bc.weightCtrl}</p>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label: 'น้ำหนักเป้าหมาย', value: result.weightControl.targetWeight, unit: 'kg' },
-                  { label: 'ปรับน้ำหนัก', value: (result.weightControl.adjustWeight > 0 ? '+' : '') + result.weightControl.adjustWeight, unit: 'kg' },
-                  { label: 'ปรับไขมัน', value: (result.weightControl.adjustFat > 0 ? '+' : '') + result.weightControl.adjustFat, unit: 'kg' },
-                  { label: 'ปรับกล้ามเนื้อ', value: (result.weightControl.adjustMuscle > 0 ? '+' : '') + result.weightControl.adjustMuscle, unit: 'kg' },
+                  { label: bc.targetWeight, value: result.weightControl.targetWeight, unit: 'kg' },
+                  { label: bc.adjWeight, value: (result.weightControl.adjustWeight > 0 ? '+' : '') + result.weightControl.adjustWeight, unit: 'kg' },
+                  { label: bc.adjFat, value: (result.weightControl.adjustFat > 0 ? '+' : '') + result.weightControl.adjustFat, unit: 'kg' },
+                  { label: bc.adjMuscle, value: (result.weightControl.adjustMuscle > 0 ? '+' : '') + result.weightControl.adjustMuscle, unit: 'kg' },
                 ].map(({ label, value, unit }) => (
                   <div key={label} className="bg-slate-50 rounded-xl px-3 py-2">
                     <p className="text-[10px] text-slate-400">{label}</p>
@@ -524,44 +528,44 @@ export default function BodyComposition() {
 
           {/* Body composition table */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-            <p className="text-xs font-bold text-slate-500 mb-2">การวิเคราะห์องค์ประกอบร่างกาย</p>
+            <p className="text-xs font-bold text-slate-500 mb-2">{bc.compTitle}</p>
             {[
-              { label: 'น้ำหนัก',          value: result.data?.weight,         unit: 'kg', level: result.data?.weightLevel },
-              { label: 'ไขมันในร่างกาย',   value: `${result.data?.bodyFatKg} (${result.data?.bodyFatPct}%)`, unit: 'kg', level: result.data?.bodyFatLevel },
-              { label: 'โปรตีน',           value: result.data?.protein,        unit: 'kg', level: result.data?.proteinLevel },
-              { label: 'น้ำในร่างกาย',     value: `${result.data?.waterKg} (${result.data?.waterPct}%)`, unit: 'kg', level: result.data?.waterLevel },
-              { label: 'กล้ามเนื้อ',       value: result.data?.muscleMassKg,   unit: 'kg', level: result.data?.muscleMassLevel },
-              { label: 'กล้ามเนื้อโครงร่าง', value: result.data?.skeletalMuscleKg, unit: 'kg', level: result.data?.skeletalMuscleLevel },
+              { label: bc.metrics.weight,     value: result.data?.weight,         unit: 'kg', level: result.data?.weightLevel },
+              { label: bc.metrics.bodyFat,    value: `${result.data?.bodyFatKg} (${result.data?.bodyFatPct}%)`, unit: 'kg', level: result.data?.bodyFatLevel },
+              { label: bc.metrics.protein,    value: result.data?.protein,        unit: 'kg', level: result.data?.proteinLevel },
+              { label: bc.metrics.water,      value: `${result.data?.waterKg} (${result.data?.waterPct}%)`, unit: 'kg', level: result.data?.waterLevel },
+              { label: bc.metrics.muscle,     value: result.data?.muscleMassKg,   unit: 'kg', level: result.data?.muscleMassLevel },
+              { label: bc.metrics.skelMuscle, value: result.data?.skeletalMuscleKg, unit: 'kg', level: result.data?.skeletalMuscleLevel },
             ].filter(r => r.value).map(row => (
-              <MetricRow key={row.label} {...row} />
+              <MetricRow key={row.label} {...row} levelMap={bc.levels} />
             ))}
           </div>
 
           {/* Obesity + BMI */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-            <p className="text-xs font-bold text-slate-500 mb-2">การประเมินโรคอ้วน</p>
+            <p className="text-xs font-bold text-slate-500 mb-2">{bc.obesityTitle}</p>
             {[
               { label: 'BMI',    value: result.data?.bmi,        unit: 'kg/m²', level: result.data?.bmiLevel },
               { label: '%ไขมัน', value: result.data?.bodyFatPct, unit: '%',     level: result.data?.bodyFatLevel },
               { label: 'โรคอ้วน', value: result.data?.obesityPct, unit: '%',    level: result.data?.obesityLevel },
             ].filter(r => r.value).map(row => (
-              <MetricRow key={row.label} {...row} />
+              <MetricRow key={row.label} {...row} levelMap={bc.levels} />
             ))}
           </div>
 
           {/* Other indicators */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-            <p className="text-xs font-bold text-slate-500 mb-2">ตัวชี้วัดอื่นๆ</p>
+            <p className="text-xs font-bold text-slate-500 mb-2">{bc.otherTitle}</p>
             {[
-              { label: 'ระดับไขมันช่องท้อง', value: result.data?.visceralFatLevel, unit: '' },
-              { label: 'อัตราเผาผลาญ (BMR)',  value: result.data?.bmr,             unit: 'kcal' },
-              { label: 'น้ำหนักที่ไม่รวมไขมัน', value: result.data?.leanBodyMass,  unit: 'kg' },
-              { label: 'ไขมันใต้ผิวหนัง',     value: result.data?.subcutaneousFatPct, unit: '%' },
-              { label: 'ดัชนีกล้ามเนื้อโครงร่าง (SMI)', value: result.data?.smi,  unit: 'kg/m²' },
-              { label: 'อายุร่างกาย',          value: result.data?.bodyAge,         unit: 'ปี' },
-              { label: 'รอบเอว/สะโพก (WHR)',   value: result.data?.whr,             unit: '' },
+              { label: bc.metrics.visceralFat, value: result.data?.visceralFatLevel, unit: '' },
+              { label: bc.metrics.bmr,         value: result.data?.bmr,              unit: 'kcal' },
+              { label: bc.metrics.leanMass,    value: result.data?.leanBodyMass,     unit: 'kg' },
+              { label: bc.metrics.subFat,      value: result.data?.subcutaneousFatPct, unit: '%' },
+              { label: bc.metrics.smi,         value: result.data?.smi,              unit: 'kg/m²' },
+              { label: bc.metrics.bodyAge,     value: result.data?.bodyAge,          unit: '' },
+              { label: bc.metrics.whr,         value: result.data?.whr,              unit: '' },
             ].filter(r => r.value).map(row => (
-              <MetricRow key={row.label} {...row} />
+              <MetricRow key={row.label} {...row} levelMap={bc.levels} />
             ))}
           </div>
 
@@ -572,23 +576,23 @@ export default function BodyComposition() {
                 onClick={() => setShowSegment(v => !v)}
                 className="w-full flex items-center justify-between px-4 py-3"
               >
-                <p className="text-xs font-bold text-slate-500">การวิเคราะห์เฉพาะส่วน</p>
+                <p className="text-xs font-bold text-slate-500">{bc.segTitle}</p>
                 {showSegment ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
               </button>
               {showSegment && (
                 <div className="px-4 pb-4 space-y-3">
                   <div>
-                    <p className="text-[11px] font-bold text-slate-400 mb-1">ไขมันเฉพาะส่วน</p>
+                    <p className="text-[11px] font-bold text-slate-400 mb-1">{bc.segFat}</p>
                     {Object.entries(result.segmentFat).map(([part, val]) => {
-                      const labels = { leftArm:'แขนซ้าย', rightArm:'แขนขวา', trunk:'ลำตัว', leftLeg:'ขาซ้าย', rightLeg:'ขาขวา' }
-                      return <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} />
+                      const labels = bc.segments
+                      return <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} levelMap={bc.levels} />
                     })}
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-slate-400 mb-1">กล้ามเนื้อเฉพาะส่วน</p>
+                    <p className="text-[11px] font-bold text-slate-400 mb-1">{bc.segMuscle}</p>
                     {Object.entries(result.segmentMuscle).map(([part, val]) => {
-                      const labels = { leftArm:'แขนซ้าย', rightArm:'แขนขวา', trunk:'ลำตัว', leftLeg:'ขาซ้าย', rightLeg:'ขาขวา' }
-                      return <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} />
+                      const labels = bc.segments
+                      return <MetricRow key={part} label={labels[part]} value={`${val.kg} kg (${val.pct}%)`} unit="" level={val.level} levelMap={bc.levels} />
                     })}
                   </div>
                 </div>
@@ -603,7 +607,7 @@ export default function BodyComposition() {
                 onClick={() => setShowExercise(v => !v)}
                 className="w-full flex items-center justify-between px-4 py-3"
               >
-                <p className="text-xs font-bold text-slate-500">พลังงานที่ใช้จากการออกกำลังกาย (30 นาที)</p>
+                <p className="text-xs font-bold text-slate-500">{bc.exerciseTitle}</p>
                 {showExercise ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
               </button>
               {showExercise && (
@@ -622,7 +626,7 @@ export default function BodyComposition() {
           {/* Recommendations */}
           {result.recommendations?.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-slate-500 mb-3 px-1">คำแนะนำตามหลักสากล</p>
+              <p className="text-xs font-bold text-slate-500 mb-3 px-1">{bc.recsTitle}</p>
               <div className="space-y-3">
                 {result.recommendations.map((rec, i) => {
                   const Icon = ICON_MAP[rec.icon] || CheckCircle
@@ -648,9 +652,7 @@ export default function BodyComposition() {
             </div>
           )}
 
-          <p className="text-center text-[10px] text-slate-400 pb-2">
-            * วิเคราะห์โดย AI อ้างอิงมาตรฐาน WHO / ACSM / ISSN — ไม่ใช่คำวินิจฉัยทางการแพทย์
-          </p>
+          <p className="text-center text-[10px] text-slate-400 pb-2">{bc.footer}</p>
         </div>
       )}
         </div>
