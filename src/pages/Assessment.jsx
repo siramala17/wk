@@ -5,7 +5,6 @@ import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
 import Survey from './Survey'
-import { StickerChar } from '../components/CharDecor'
 
 // ── Static config: no user-facing text ────────────────────────────────────────
 const DIMS_META = [
@@ -268,8 +267,6 @@ function GuideScreen({ onStart }) {
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 md:pb-8 space-y-5">
       <div className="relative text-center">
         {/* ตัวการ์ตูนซ้าย-ขวา */}
-        <StickerChar name="boy5" size={0.85} style={{ position:'absolute', left:-8, bottom:0, opacity:.9 }} />
-        <StickerChar name="girl1c" size={0.85} flip style={{ position:'absolute', right:-8, bottom:0, opacity:.9 }} />
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
           <span className="text-3xl">📋</span>
         </div>

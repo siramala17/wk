@@ -42,48 +42,46 @@ export default function CharDecor({ imgSrc, imgW, offTop, offLeft, w, h, flip, s
   )
 }
 
-/* ─── Sticker characters (stickers.jpg 1536×1024, 5×3 grid) ───── */
+/* ─── Sticker characters (stickers2.jpg 1076×1522, 3 cols × 5 rows) ─────────
+   NOTE: Each sticker in the file is rotated 90° CCW.
+   Canvas draws them with a 90° CW correction so they appear upright.
+   After rotation: upright sticker ≈ 110 × 130 px at size=1.
 
-// cell size: 307.2 × 341.33 px
-// display base height: 138px → scale = 138/341.33 = 0.4044
-// imgW = 1536 * 0.4044 = 621  cellW = 307.2 * 0.4044 = 124  cellH = 138
-
-const ST = '/stickers.jpg'
-const ST_SCALE = 138 / (1024 / 3)   // ≈ 0.4043
-const ST_W = Math.round(1536 * ST_SCALE)  // 621
-const ST_CW = Math.round((1536 / 5) * ST_SCALE) // 124
-const ST_CH = 138
-
-function _s(row, col) {
-  return {
-    imgSrc: ST,
-    imgW:   ST_W,
-    offTop: -row * ST_CH,
-    offLeft:-col * ST_CW,
-    w:      ST_CW,
-    h:      ST_CH,
-  }
-}
+   Grid layout (portrait file):
+     col 0 = Girl short hair  col 1 = Girl clip  col 2 = Boy
+     row 0 = originally col 0 of the original landscape sheet (etc.)
+─────────────────────────────────────────────────────────────────────────── */
+const ST2_SRC  = '/stickers2.jpg'
+const ST2_IW   = 1076          // image width
+const ST2_IH   = 1522          // image height
+const ST2_COLS = 3
+const ST2_ROWS = 5
+const ST2_CW   = ST2_IW / ST2_COLS  // 358.67 — cell width in file (= sticker height when upright)
+const ST2_CH   = ST2_IH / ST2_ROWS  // 304.4  — cell height in file (= sticker width when upright)
+// Base display: upright height = 130 px
+const ST2_SCALE  = 130 / ST2_CW                     // ≈ 0.3624
+const ST2_OUT_W  = Math.round(ST2_CH * ST2_SCALE)   // ≈ 110
+const ST2_OUT_H  = 130
 
 export const STICKERS = {
-  // Row 0 – Boy
-  boy1: _s(0, 0),  // แข็งแรงวันนี้ ดีกว่าเมื่อวาน
-  boy2: _s(0, 1),  // ไม่หยุดแค่ขยับ ชีวิตก็เปลี่ยน!
-  boy3: _s(0, 2),  // ออกกำลังกายไม่ใช่การลงโทษ
-  boy4: _s(0, 3),  // เหนื่อวันนี้ สู้หน่อยดีในวันหน้า
-  boy5: _s(0, 4),  // สุขภาพดีเริ่มที่เรา
-  // Row 1 – Girl (hair clip)
-  girl1a: _s(1, 0), // ดื่มน้ำให้พอ
-  girl1b: _s(1, 1), // ออกกำลังง่ายๆ
-  girl1c: _s(1, 2), // เริ่มต้นที่ใจ
-  girl1d: _s(1, 3), // พุ่นดีไม่ใช่เรื่องบังเอิญ
-  girl1e: _s(1, 4), // สู้ๆนะ!
-  // Row 2 – Girl (short hair)
-  girl2a: _s(2, 0), // ออกกำลังกาย ไม่ยากอย่างที่คิด
-  girl2b: _s(2, 1), // เหนื่อยแค่ไหน ก็สู้เพื่อสุขภาพดี
-  girl2c: _s(2, 2), // Love Yourself
-  girl2d: _s(2, 3), // ขยับกาย สบายใจ ห่างไกลโรค
-  girl2e: _s(2, 4), // สุขภาพดีคือของขวัญที่ดีที่สุด
+  // Boy — right column (col 2), rows 0-4
+  boy1: { row: 0, col: 2 },  // แข็งแรงวันนี้ ดีกว่าเมื่อวาน
+  boy2: { row: 1, col: 2 },  // ไม่หยุดแค่ขยับ ชีวิตก็เปลี่ยน!
+  boy3: { row: 2, col: 2 },  // ออกกำลังกายไม่ใช่การลงโทษ
+  boy4: { row: 3, col: 2 },  // เหนื่อวันนี้ สู้หุ่นดีในวันหน้า
+  boy5: { row: 4, col: 2 },  // สุขภาพดีเริ่มที่เรา
+  // Girl clip — middle column (col 1)
+  girl1a: { row: 0, col: 1 }, // ดื่มน้ำให้พอ
+  girl1b: { row: 1, col: 1 }, // ออกกำลังง่ายๆ
+  girl1c: { row: 2, col: 1 }, // เริ่มต้นที่ใจ
+  girl1d: { row: 3, col: 1 }, // หุ่นดีไม่ใช่เรื่องบังเอิญ
+  girl1e: { row: 4, col: 1 }, // สู้ๆ นะ!
+  // Girl short hair — left column (col 0)
+  girl2a: { row: 0, col: 0 }, // ออกกำลังกาย ไม่ยากอย่างที่คิด
+  girl2b: { row: 1, col: 0 }, // เหนื่อยแค่ไหน ก็สู้เพื่อสุขภาพดี
+  girl2c: { row: 2, col: 0 }, // Love Yourself
+  girl2d: { row: 3, col: 0 }, // ขยับกาย สบายใจ ห่างไกลโรค
+  girl2e: { row: 4, col: 0 }, // สุขภาพดีคือของขวัญที่ดีที่สุด
 }
 
 // module-level cache: cacheKey → data URL (processed transparent PNG)
@@ -124,34 +122,39 @@ function _removeBg(ctx, w, h) {
   ctx.putImageData(id, 0, 0)
 }
 
-/** StickerChar — crop + remove gray background via canvas flood-fill */
+/** StickerChar — crop sticker2.jpg, rotate 90° CW, remove white bg via flood-fill */
 export function StickerChar({ name, size = 1, flip, style = {} }) {
   const p = STICKERS[name]
-  const cacheKey = `${name}_${size}_${flip ? 1 : 0}`
+  // flip is CSS-only (no cache variant needed)
+  const cacheKey = `${name}_${size}`
   const [url, setUrl] = useState(() => _cache.get(cacheKey) || null)
 
   useEffect(() => {
     if (!p || _cache.has(cacheKey)) return
+
     const img = new Image()
     img.onload = () => {
-      // Source rectangle in original 1536×1024 image
-      const scale = p.imgW / 1536
-      const sx = Math.round(-p.offLeft / scale)
-      const sy = Math.round(-p.offTop / scale)
-      const sw = Math.round(p.w / scale)
-      const sh = Math.round(p.h / scale)
+      // Source cell in the file (sticker is 90° CCW in the file)
+      const sx = Math.round(p.col * ST2_CW)
+      const sy = Math.round(p.row * ST2_CH)
+      const sw = Math.round(ST2_CW)
+      const sh = Math.round(ST2_CH)
 
-      const cw = Math.round(p.w * size)
-      const ch = Math.round(p.h * size)
+      // Output canvas: upright sticker (rotate 90° CW → width/height swap)
+      const cw = Math.round(ST2_OUT_W * size)  // ≈ 110 * size
+      const ch = Math.round(ST2_OUT_H * size)  // = 130 * size
 
       const canvas = document.createElement('canvas')
       canvas.width = cw
       canvas.height = ch
       const ctx = canvas.getContext('2d')
 
-      if (flip) { ctx.save(); ctx.translate(cw, 0); ctx.scale(-1, 1) }
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch)
-      if (flip) ctx.restore()
+      // 90° CW rotation: translate to right edge, rotate +PI/2
+      // In rotated space, draw destination is (0,0,ch,cw)
+      ctx.translate(cw, 0)
+      ctx.rotate(Math.PI / 2)
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, ch, cw)
+      ctx.setTransform(1, 0, 0, 1, 0, 0)
 
       _removeBg(ctx, cw, ch)
 
@@ -159,18 +162,19 @@ export function StickerChar({ name, size = 1, flip, style = {} }) {
       _cache.set(cacheKey, dataUrl)
       setUrl(dataUrl)
     }
-    img.src = p.imgSrc
+    img.src = ST2_SRC
   }, [cacheKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!p) return null
   return (
     <div style={{
-      width: p.w * size,
-      height: p.h * size,
+      width: ST2_OUT_W * size,
+      height: ST2_OUT_H * size,
       flexShrink: 0,
       pointerEvents: 'none',
       userSelect: 'none',
       filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.22))',
+      transform: flip ? 'scaleX(-1)' : undefined,
       ...style,
     }}>
       {url && <img src={url} style={{ width: '100%', height: '100%' }} alt="" draggable={false} />}

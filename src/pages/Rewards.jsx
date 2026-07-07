@@ -6,7 +6,6 @@ import {
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import { getUserLevel, getBadges } from '../utils/healthScore'
-import { StickerChar } from '../components/CharDecor'
 import ScoreRing from '../components/ScoreRing'
 import { fetchRedemptions, fetchRewardCatalog, addSubmission } from '../services/userSync'
 import ActivitySubmit from './ActivitySubmit'
@@ -106,8 +105,6 @@ function WorkoutChallenge({ user }) {
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-10" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-6" />
 
-        <StickerChar name="boy2" size={0.92} style={{ position:'absolute', left:0, bottom:0 }} />
-        <StickerChar name="girl1e" size={0.92} flip style={{ position:'absolute', right:0, bottom:0 }} />
 
         <div className="relative flex flex-col items-center justify-center py-5 px-28 text-center">
           <div className="text-2xl font-black tracking-wide drop-shadow">Let's Workout! 🔥</div>
