@@ -662,6 +662,7 @@ export default function Admin() {
   const [submissions, setSubmissions] = useState([])
   const [subLoading, setSubLoading] = useState(false)
   const [noteInputs, setNoteInputs] = useState({})
+  const [pointsInputs, setPointsInputs] = useState({})
   const [reviewingId, setReviewingId] = useState(null)
   const [expandedSub, setExpandedSub] = useState(null)
   const [filterStatus, setFilterStatus] = useState('all')
@@ -805,9 +806,9 @@ export default function Admin() {
     }
   }
 
-  async function handleReview(id, status) {
+  async function handleReview(id, status, customPoints) {
     setReviewingId(id)
-    try { await updateSubmissionStatus(id, status, noteInputs[id] || ''); await loadSubmissions() }
+    try { await updateSubmissionStatus(id, status, noteInputs[id] || '', customPoints ?? null); await loadSubmissions() }
     catch { /* silent */ }
     finally { setReviewingId(null) }
   }
@@ -1414,14 +1415,23 @@ export default function Admin() {
                             rows={2}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none bg-white"
                           />
-                          <p className="text-xs text-green-600 font-medium flex items-center gap-1 mb-1">
-                            ⭐ อนุมัติ = ผู้ส่งได้รับ {s.pointsValue || 5} แต้มอัตโนมัติ
-                          </p>
+                          <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+                            <span className="text-green-600 text-xs font-semibold flex-shrink-0">⭐ แต้มที่จะให้</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="9999"
+                              value={pointsInputs[s.id] ?? (s.pointsValue || 50)}
+                              onChange={e => setPointsInputs(p => ({ ...p, [s.id]: Number(e.target.value) }))}
+                              className="w-20 text-center px-2 py-1 rounded-lg border border-green-300 text-green-800 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
+                            />
+                            <span className="text-green-600 text-xs font-semibold">แต้ม</span>
+                          </div>
                           <div className="flex gap-2">
-                            <button onClick={() => handleReview(s.id, 'approved')}
+                            <button onClick={() => handleReview(s.id, 'approved', pointsInputs[s.id] ?? (s.pointsValue || 50))}
                               disabled={reviewingId === s.id}
                               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50">
-                              {reviewingId === s.id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Check size={15} /> อนุมัติ (+{s.pointsValue || 5} แต้ม)</>}
+                              {reviewingId === s.id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Check size={15} /> อนุมัติ (+{pointsInputs[s.id] ?? (s.pointsValue || 50)} แต้ม)</>}
                             </button>
                             <button onClick={() => handleReview(s.id, 'rejected')}
                               disabled={reviewingId === s.id}

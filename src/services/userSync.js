@@ -202,13 +202,16 @@ export async function addSubmission(submission) {
   return newEntry
 }
 
-export async function updateSubmissionStatus(id, status, adminNote = '') {
+export async function updateSubmissionStatus(id, status, adminNote = '', customPoints = null) {
   if (!db) return
   await updateDoc(doc(db, 'submissions', String(id)), {
     status,
     adminNote,
     reviewedAt: new Date().toISOString(),
-    ...(status === 'approved' ? { pointsClaimed: false } : {}),
+    ...(status === 'approved' ? {
+      pointsClaimed: false,
+      ...(customPoints != null ? { pointsValue: Number(customPoints) } : {}),
+    } : {}),
   })
 }
 
