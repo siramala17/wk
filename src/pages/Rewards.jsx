@@ -241,7 +241,7 @@ function WorkoutChallenge({ user }) {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 {wt.proofModalTitle} <span className="text-red-400">*</span>
               </label>
-              <input ref={fileRef} type="file" accept="image/*" capture="environment"
+              <input ref={fileRef} type="file" accept="image/*"
                 onChange={handleFile} className="hidden" />
               {photo ? (
                 <div className="relative rounded-2xl overflow-hidden">
