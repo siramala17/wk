@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react'
 import { Shield, Eye, EyeOff, Users, LogOut, User, Calendar, Hash, ChevronDown, ChevronUp, ArrowLeft, RefreshCw, Check, X, Trash2, AlertTriangle, ExternalLink, Clock, FileDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, fetchAllAssessments, fetchResearchParticipants, deleteResearchParticipant, fetchBodyCompositions } from '../services/userSync'
+import { fetchCloudUsers, fetchSubmissions, updateSubmissionStatus, deleteSubmission, deleteCloudUser, deleteUserSubmissions, fetchSurveys, deleteSurvey, fetchRedemptions, updateRedemptionStatus, fetchRewardCatalog, addReward, updateReward, deleteReward, testFirestoreAccess, fetchAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, fetchAllAssessments, fetchResearchParticipants, deleteResearchParticipant, fetchBodyCompositions } from '../services/userSync'
 import { exportImprovementPDF, exportComparisonPDF } from '../utils/exportPdf'
 import { sendPushToAll, fcmReady } from '../services/fcm'
 import { useHealth } from '../context/HealthContext'
@@ -812,6 +812,14 @@ export default function Admin() {
     finally { setReviewingId(null) }
   }
 
+  const [deletingSubId, setDeletingSubId] = useState(null)
+  async function handleDeleteSubmission(id) {
+    setDeletingSubId(id)
+    try { await deleteSubmission(id); setSubmissions(prev => prev.filter(s => s.id !== id)) }
+    catch { /* silent */ }
+    finally { setDeletingSubId(null) }
+  }
+
   async function handleSaveReward(form) {
     setCatalogSaving(true)
     try {
@@ -1317,11 +1325,16 @@ export default function Admin() {
         {adminTab === 'submissions' && (
           <>
             {/* filter */}
-            <div className="flex gap-2 mb-4">
-              {[['all','ทั้งหมด'],['pending','รอตรวจ'],['approved','อนุมัติ'],['rejected','ไม่ผ่าน']].map(([v, l]) => (
+            <div className="flex gap-2 mb-4 flex-wrap">
+              {[
+                ['all',      'ทั้งหมด',   submissions.length],
+                ['pending',  'รอตรวจสอบ', submissions.filter(s => s.status === 'pending').length],
+                ['approved', 'ผ่าน',      submissions.filter(s => s.status === 'approved').length],
+                ['rejected', 'ไม่ผ่าน',   submissions.filter(s => s.status === 'rejected').length],
+              ].map(([v, l, count]) => (
                 <button key={v} onClick={() => setFilterStatus(v)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${filterStatus === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'}`}>
-                  {l} {v !== 'all' && <span className="ml-0.5 opacity-70">({submissions.filter(s => s.status === v).length})</span>}
+                  {l} <span className="ml-0.5 opacity-70">({count})</span>
                 </button>
               ))}
             </div>
@@ -1402,13 +1415,13 @@ export default function Admin() {
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none bg-white"
                           />
                           <p className="text-xs text-green-600 font-medium flex items-center gap-1 mb-1">
-                            ⭐ อนุมัติ = ผู้ส่งได้รับ 5 แต้มอัตโนมัติ
+                            ⭐ อนุมัติ = ผู้ส่งได้รับ {s.pointsValue || 5} แต้มอัตโนมัติ
                           </p>
                           <div className="flex gap-2">
                             <button onClick={() => handleReview(s.id, 'approved')}
                               disabled={reviewingId === s.id}
                               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50">
-                              {reviewingId === s.id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Check size={15} /> อนุมัติ (+5 แต้ม)</>}
+                              {reviewingId === s.id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Check size={15} /> อนุมัติ (+{s.pointsValue || 5} แต้ม)</>}
                             </button>
                             <button onClick={() => handleReview(s.id, 'rejected')}
                               disabled={reviewingId === s.id}
@@ -1426,6 +1439,18 @@ export default function Admin() {
                           <p className="text-sm text-slate-700">{s.adminNote}</p>
                           <p className="text-xs text-slate-400 mt-1">ตรวจสอบเมื่อ {formatDate(s.reviewedAt)}</p>
                         </div>
+                      )}
+
+                      {/* ปุ่มลบ (เฉพาะที่ตรวจแล้ว) */}
+                      {s.status !== 'pending' && (
+                        <button
+                          onClick={() => handleDeleteSubmission(s.id)}
+                          disabled={deletingSubId === s.id}
+                          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-red-200 text-red-500 text-xs font-semibold hover:bg-red-50 transition-colors disabled:opacity-50">
+                          {deletingSubId === s.id
+                            ? <div className="w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                            : <><Trash2 size={13} /> ลบรายการนี้</>}
+                        </button>
                       )}
                     </div>
                   )}

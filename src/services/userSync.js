@@ -208,8 +208,13 @@ export async function updateSubmissionStatus(id, status, adminNote = '') {
     status,
     adminNote,
     reviewedAt: new Date().toISOString(),
-    ...(status === 'approved' ? { pointsValue: 5, pointsClaimed: false } : {}),
+    ...(status === 'approved' ? { pointsClaimed: false } : {}),
   })
+}
+
+export async function deleteSubmission(id) {
+  if (!db) return
+  await deleteDoc(doc(db, 'submissions', id))
 }
 
 export async function deleteUserSubmissions(userId) {
