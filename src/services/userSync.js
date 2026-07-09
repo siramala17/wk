@@ -1,6 +1,6 @@
 import {
   collection, doc, getDocs, setDoc, deleteDoc, updateDoc,
-  query, where, getDoc, onSnapshot,
+  query, where, getDoc, onSnapshot, increment,
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
@@ -204,15 +204,28 @@ export async function addSubmission(submission) {
 
 export async function updateSubmissionStatus(id, status, adminNote = '', customPoints = null) {
   if (!db) return
-  await updateDoc(doc(db, 'submissions', String(id)), {
+  const subRef = doc(db, 'submissions', String(id))
+  const subSnap = await getDoc(subRef)
+  const subData = subSnap.exists() ? subSnap.data() : {}
+
+  const pts = customPoints != null ? Number(customPoints) : (subData.pointsValue || 0)
+
+  await updateDoc(subRef, {
     status,
     adminNote,
     reviewedAt: new Date().toISOString(),
     ...(status === 'approved' ? {
-      pointsClaimed: false,
-      ...(customPoints != null ? { pointsValue: Number(customPoints) } : {}),
+      pointsClaimed: true,
+      pointsClaimedAt: new Date().toISOString(),
+      ...(customPoints != null ? { pointsValue: pts } : {}),
     } : {}),
   })
+
+  if (status === 'approved' && pts > 0 && subData.userId) {
+    try {
+      await updateDoc(doc(db, 'users', String(subData.userId)), { points: increment(pts) })
+    } catch { /* silent — offline or user not found */ }
+  }
 }
 
 export async function deleteSubmission(id) {
