@@ -254,6 +254,37 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
       <button onClick={onShare} className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-semibold rounded-xl py-3 transition-colors">
         {t3o.result.shareBtn}
       </button>
+
+      {/* คำเตือนสุขภาพ */}
+      <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+        <div className="flex items-start gap-3 mb-3">
+          <span className="text-xl flex-shrink-0">🚨</span>
+          <div>
+            <p className="text-sm font-bold text-red-700">หากพบอาการผิดปกติ ควรพบแพทย์โดยด่วน</p>
+            <p className="text-[11px] text-red-500 mt-0.5">อย่าปล่อยทิ้งไว้หรือรักษาเองโดยไม่ปรึกษาแพทย์</p>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          {[
+            { emoji: '⚖️', text: 'น้ำหนักลดหรือเพิ่มผิดปกติโดยไม่มีสาเหตุ' },
+            { emoji: '😔', text: 'รู้สึกเศร้า หดหู่ หรือสิ้นหวังนานเกิน 2 สัปดาห์' },
+            { emoji: '😰', text: 'วิตกกังวล ตื่นตระหนก หรือนอนไม่หลับเรื้อรัง' },
+            { emoji: '🍽️', text: 'เบื่ออาหารหรือกินมากผิดปกติ ควบคุมไม่ได้' },
+            { emoji: '💪', text: 'อ่อนเพลีย เหนื่อยง่ายผิดปกติ แม้พักผ่อนเพียงพอ' },
+            { emoji: '🤕', text: 'ปวดศีรษะ ปวดท้อง หรืออาการทางร่างกายบ่อยๆ' },
+          ].map(({ emoji, text }) => (
+            <div key={text} className="flex items-start gap-2">
+              <span className="text-sm flex-shrink-0">{emoji}</span>
+              <p className="text-xs text-red-700 leading-relaxed">{text}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 pt-3 border-t border-red-200 flex items-center gap-2">
+          <span className="text-sm">📞</span>
+          <p className="text-[11px] text-red-600 font-semibold">สายด่วนกรมสุขภาพจิต <span className="text-red-700 font-black">1323</span> · ตลอด 24 ชั่วโมง</p>
+        </div>
+        <p className="text-[10px] text-red-400 mt-2">* แบบประเมินนี้ใช้เพื่อการคัดกรองเบื้องต้นเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์</p>
+      </div>
     </div>
   )
 }
