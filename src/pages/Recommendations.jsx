@@ -4,15 +4,25 @@ import { Lightbulb, CheckCircle2, Circle, ChevronDown, ChevronUp, Sparkles, Brai
 import { useHealth } from '../context/HealthContext'
 import { generateRecommendations, getHealthLevel } from '../utils/healthScore'
 
+const DIMS_INFO = [
+  { key: 'nutritionScore', label: 'โภชนาการ',         emoji: '🍱', ref: 'กรมอนามัย' },
+  { key: 'exerciseScore',  label: 'การออกกำลังกาย',   emoji: '🏃', ref: 'WHO + กรมอนามัย' },
+  { key: 'stressScore',    label: 'สุขภาพจิต-อารมณ์', emoji: '🧘', ref: 'กรมสุขภาพจิต' },
+]
+
+const MOPH_THRESHOLD = 70  // เกณฑ์ "ดี" ตามมาตรฐานกระทรวงสาธารณสุขไทย
+
+function getDimSummary(score) {
+  if (score >= 80) return { label: 'ดีเยี่ยม', color: 'text-emerald-300' }
+  if (score >= MOPH_THRESHOLD) return { label: 'ดี', color: 'text-teal-300' }
+  if (score >= 50) return { label: 'ควรปรับปรุง', color: 'text-yellow-300' }
+  return { label: 'ต้องดูแล', color: 'text-red-300' }
+}
+
 function AiInsightBanner({ assessment }) {
   const level = getHealthLevel(assessment.overallScore)
-  const weakAreas = [
-    assessment.sleepScore     < 65 && 'การนอนหลับ',
-    assessment.digitalScore   < 65 && 'เวลาหน้าจอ',
-    assessment.stressScore    < 65 && 'ความเครียด',
-    assessment.exerciseScore  < 65 && 'การออกกำลังกาย',
-    assessment.nutritionScore < 65 && 'โภชนาการ',
-  ].filter(Boolean)
+  const weakAreas = DIMS_INFO.filter(d => (assessment[d.key] ?? 0) < MOPH_THRESHOLD)
+  const goodAreas = DIMS_INFO.filter(d => (assessment[d.key] ?? 0) >= MOPH_THRESHOLD)
 
   return (
     <div className="bg-gradient-to-br from-indigo-700 to-indigo-900 rounded-3xl p-5 text-white relative overflow-hidden">
@@ -23,23 +33,42 @@ function AiInsightBanner({ assessment }) {
             <Sparkles size={16} className="text-yellow-900" />
           </div>
           <div>
-            <p className="text-indigo-200 text-xs">AI Health Analysis</p>
-            <p className="font-bold text-sm">วิเคราะห์สุขภาพอัจฉริยะ</p>
+            <p className="text-indigo-200 text-xs">AI Health Analysis · มาตรฐาน สธ.</p>
+            <p className="font-bold text-sm">วิเคราะห์สุขภาพ 3 มิติ (3อ.)</p>
           </div>
         </div>
-        <p className="text-indigo-100 text-sm leading-relaxed">
-          {level.emoji} สุขภาพโดยรวมของคุณอยู่ในระดับ <strong className="text-white">{level.label}</strong>
-          {weakAreas.length > 0 && (
-            <> จุดที่ต้องปรับปรุงคือ <strong className="text-yellow-300">{weakAreas.join(', ')}</strong></>
-          )}
-          {weakAreas.length === 0 && <> ทุกด้านอยู่ในเกณฑ์ดี รักษาต่อไปนะ!</>}
+
+        <p className="text-indigo-100 text-sm leading-relaxed mb-3">
+          {level.emoji} สุขภาพโดยรวมอยู่ระดับ <strong className="text-white">{level.label}</strong>
+          {weakAreas.length > 0
+            ? <> · ควรปรับปรุง <strong className="text-yellow-300">{weakAreas.map(d => d.label).join(', ')}</strong></>
+            : <> · ทุกมิติผ่านเกณฑ์กระทรวงสาธารณสุข 🎉</>}
         </p>
-        <div className="mt-3 flex items-center gap-2">
+
+        {/* สรุปราย 3 มิติ */}
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {DIMS_INFO.map(d => {
+            const score = assessment[d.key] ?? 0
+            const dim = getDimSummary(score)
+            const belowThreshold = score < MOPH_THRESHOLD
+            return (
+              <div key={d.key} className={`rounded-xl p-2 text-center ${belowThreshold ? 'bg-white/15 ring-1 ring-yellow-400/60' : 'bg-white/10'}`}>
+                <p className="text-base">{d.emoji}</p>
+                <p className="text-[10px] text-indigo-200 leading-tight">{d.label}</p>
+                <p className={`text-base font-black mt-0.5 ${dim.color}`}>{score}</p>
+                <p className={`text-[9px] font-semibold ${dim.color}`}>{dim.label}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="flex items-center gap-2">
           <div className="flex-1 bg-white/20 rounded-full h-2">
             <div className="bg-yellow-400 h-full rounded-full" style={{ width: `${assessment.overallScore}%` }} />
           </div>
           <span className="text-sm font-bold text-yellow-300">{assessment.overallScore}/100</span>
         </div>
+        <p className="text-[10px] text-indigo-300 mt-1.5">เกณฑ์ผ่าน ≥{MOPH_THRESHOLD} คะแนน · อ้างอิงกระทรวงสาธารณสุขไทย</p>
       </div>
     </div>
   )
@@ -174,15 +203,18 @@ export default function Recommendations() {
         </div>
       )}
 
-      {/* General Tips */}
+      {/* General Tips — มาตรฐานกระทรวงสาธารณสุขไทย */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
-        <p className="text-sm font-bold text-yellow-800 mb-3">🌟 เคล็ดลับทั่วไปสำหรับวัยรุ่น</p>
+        <p className="text-sm font-bold text-yellow-800 mb-1">🌟 คำแนะนำสุขภาพวัยรุ่น (สธ.)</p>
+        <p className="text-[10px] text-yellow-600 mb-3">อ้างอิง: กรมอนามัย · กรมสุขภาพจิต · WHO 2020</p>
         <div className="space-y-2">
           {[
-            '😊 ใช้เวลากับคนที่รัก ลดความเครียดได้ดีที่สุด',
-            '🌅 ออกไปรับแสงแดดตอนเช้า กระตุ้น Serotonin',
-            '🎵 ฟังเพลงที่ชอบขณะออกกำลังกาย เพิ่มแรงบันดาลใจ',
-            '📵 ลอง Digital Detox 1 ชั่วโมงก่อนนอน',
+            '🍱 กินอาหารครบ 5 หมู่ ผัก ≥5 ส่วน/วัน ดื่มนม 2–3 แก้ว/วัน (กรมอนามัย)',
+            '🏃 ออกกำลังกาย ≥60 นาที/วัน ทุกวัน เสริมกล้ามเนื้อ ≥3 วัน/สัปดาห์ (WHO 2020)',
+            '😴 นอนหลับ 8–10 ชั่วโมง/คืน สม่ำเสมอทุกวัน (กรมสุขภาพจิต)',
+            '🌅 รับแสงแดดช่วงเช้า กระตุ้น Serotonin ช่วยอารมณ์ดีและนอนหลับได้ดีขึ้น',
+            '📵 วางโทรศัพท์ ≥1 ชั่วโมงก่อนนอน ลดผลกระทบต่อสุขภาพจิตและคุณภาพการนอน',
+            '🤝 พูดคุยกับผู้ปกครองหรือครูแนะแนวเมื่อรู้สึกเครียด · สายด่วน 1323',
           ].map(tip => (
             <p key={tip} className="text-xs text-yellow-700 leading-relaxed">{tip}</p>
           ))}
