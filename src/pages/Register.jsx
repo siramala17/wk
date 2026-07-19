@@ -17,7 +17,7 @@ const LANG = {
     gradeLevel: 'ระดับชั้น',
     gMale: 'ชาย', gFemale: 'หญิง',
     rStudent: 'นักเรียน', rTeacher: 'ครู', rGeneral: 'บุคคลทั่วไป',
-    grpElem: 'ประถมศึกษา', grpJunior: 'มัธยมศึกษาตอนต้น',
+    grpJunior: 'มัธยมศึกษาตอนต้น',
     grpSenior: 'มัธยมศึกษาตอนปลาย', grpVoc: 'อาชีวศึกษา',
     pin: 'ตั้ง PIN 4 หลัก (สำหรับเข้าสู่ระบบ)', confirmPin: 'ยืนยัน PIN',
     next: 'ถัดไป',
@@ -80,7 +80,7 @@ const LANG = {
     gradeLevel: 'Grade Level',
     gMale: 'Male', gFemale: 'Female',
     rStudent: 'Student', rTeacher: 'Teacher', rGeneral: 'General',
-    grpElem: 'Elementary', grpJunior: 'Junior Secondary',
+    grpJunior: 'Junior Secondary',
     grpSenior: 'Senior Secondary', grpVoc: 'Vocational',
     pin: 'Set 4-digit PIN (for login)', confirmPin: 'Confirm PIN',
     next: 'Next',
@@ -398,7 +398,6 @@ export default function Register() {
                 <label className="block text-sm font-semibold text-slate-700 mb-2">{t.gradeLevel}</label>
                 <div className="space-y-2">
                   {[
-                    { group:t.grpElem,   grades:['ป.1','ป.2','ป.3','ป.4','ป.5','ป.6'] },
                     { group:t.grpJunior, grades:['ม.1','ม.2','ม.3'] },
                     { group:t.grpSenior, grades:['ม.4','ม.5','ม.6'] },
                     { group:t.grpVoc,    grades:['ปวช.1','ปวช.2','ปวช.3','ปวส.1','ปวส.2'] },
