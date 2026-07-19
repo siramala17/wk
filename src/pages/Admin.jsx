@@ -814,6 +814,7 @@ export default function Admin() {
   }
 
   const [deletingSubId, setDeletingSubId] = useState(null)
+  const [lightboxPhoto, setLightboxPhoto] = useState(null)
   async function handleDeleteSubmission(id) {
     setDeletingSubId(id)
     try { await deleteSubmission(id); setSubmissions(prev => prev.filter(s => s.id !== id)) }
@@ -1362,7 +1363,8 @@ export default function Admin() {
                     className="w-full flex items-center gap-3 p-4 text-left">
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 flex-shrink-0">
                       {s.photo
-                        ? <img src={s.photo} alt="activity" className="w-full h-full object-cover" />
+                        ? <img src={s.photo} alt="activity" className="w-full h-full object-cover cursor-zoom-in"
+                            onClick={e => { e.stopPropagation(); setLightboxPhoto(s.photo) }} />
                         : <span className="w-full h-full flex items-center justify-center text-2xl">{cat.emoji}</span>}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1381,9 +1383,16 @@ export default function Admin() {
                   {/* expanded detail */}
                   {isOpen && (
                     <div className="px-4 pb-4 space-y-3">
-                      {/* ภาพขนาดใหญ่ */}
+                      {/* ภาพขนาดใหญ่ — กดเพื่อดูเต็มจอ */}
                       {s.photo && (
-                        <img src={s.photo} alt="activity" className="w-full max-h-72 object-cover rounded-xl" />
+                        <div className="relative group cursor-zoom-in" onClick={() => setLightboxPhoto(s.photo)}>
+                          <img src={s.photo} alt="activity" className="w-full max-h-72 object-cover rounded-xl" />
+                          <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                            <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                              🔍 แตะเพื่อดูรูปเต็ม
+                            </span>
+                          </div>
+                        </div>
                       )}
 
                       {/* คำอธิบาย */}
@@ -1542,6 +1551,34 @@ export default function Admin() {
           </div>{/* closes md:flex-1 content div */}
         </div>{/* closes md:flex wrapper */}
       </div>
+
+      {/* ── Lightbox Modal ── */}
+      {lightboxPhoto && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(6px)' }}
+          onClick={() => setLightboxPhoto(null)}>
+          <button
+            onClick={() => setLightboxPhoto(null)}
+            className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white text-lg font-bold transition-colors z-10">
+            ✕
+          </button>
+          <img
+            src={lightboxPhoto}
+            alt="หลักฐาน"
+            className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain"
+            onClick={e => e.stopPropagation()}
+          />
+          <a
+            href={lightboxPhoto}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+            className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
+            <ExternalLink size={13} /> เปิดในแท็บใหม่
+          </a>
+        </div>
+      )}
 
       {/* ── Delete confirmation modal ── */}
       {deleteTarget && (
