@@ -978,13 +978,15 @@ export default function Admin() {
   const male      = cloudUsers.filter(u => u.gender === 'ชาย').length
   const female    = cloudUsers.filter(u => u.gender === 'หญิง').length
   const lgbt      = cloudUsers.filter(u => u.gender === 'LGBTQ+').length
-  const students  = cloudUsers.filter(u => u.role === 'นักเรียน').length
+  const ELEM_GRADES = new Set(['ป.1','ป.2','ป.3','ป.4','ป.5','ป.6'])
+  const students  = cloudUsers.filter(u => u.role === 'นักเรียน' && !ELEM_GRADES.has(u.gradeLevel)).length
   const teachers  = cloudUsers.filter(u => u.role === 'ครู').length
   const general   = cloudUsers.filter(u => u.role === 'บุคคลทั่วไป').length
   const studentGrades = [...new Set(
-    cloudUsers.filter(u => u.role === 'นักเรียน' && u.gradeLevel).map(u => u.gradeLevel)
+    cloudUsers.filter(u => u.role === 'นักเรียน' && u.gradeLevel && !ELEM_GRADES.has(u.gradeLevel)).map(u => u.gradeLevel)
   )].sort()
   const filteredCloudUsers = cloudUsers
+    .filter(u => !(u.role === 'นักเรียน' && ELEM_GRADES.has(u.gradeLevel)))
     .filter(u => filterRole === 'all' || u.role === filterRole)
     .filter(u => filterGrade === 'all' || u.gradeLevel === filterGrade)
   const pendingCount = submissions.filter(s => s.status === 'pending').length
