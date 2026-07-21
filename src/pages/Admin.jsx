@@ -104,7 +104,7 @@ service cloud.firestore {
 }
 
 // ── Research Participants Export ─────────────────────────────────────────────
-function exportResearchPDF(participants, assessments) {
+function exportResearchPDF(participants, assessments, cloudUsers) {
   const now = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
   const total = participants.length
   const maleCount   = participants.filter(p => p.gender === 'ชาย').length
@@ -135,6 +135,18 @@ function exportResearchPDF(participants, assessments) {
     const avg = hasAss ? (assessments.reduce((s,a) => s + (a[d.key]||0), 0) / assessments.length).toFixed(1) : '-'
     return `<tr><td>${d.label}</td><td style="text-align:center">${avg}</td></tr>`
   }).join('')
+
+  // per-individual average — match participant → cloudUser (by name) → their own assessments
+  const participantStats = participants.map(p => {
+    const matched = (cloudUsers || []).find(u =>
+      u.firstName?.trim().toLowerCase() === p.firstName?.trim().toLowerCase() &&
+      u.lastName?.trim().toLowerCase()  === p.lastName?.trim().toLowerCase()
+    )
+    const uid = matched?.id ? String(matched.id) : null
+    const own = uid ? assessments.filter(a => String(a.userId) === uid) : []
+    const ownAvg = own.length ? (own.reduce((s,a) => s + (a.overallScore||0), 0) / own.length).toFixed(1) : null
+    return { ...p, assessCount: own.length, avgScore: ownAvg }
+  })
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <style>
@@ -175,15 +187,17 @@ ${hasAss ? `<h2>📈 ภาพรวมสุขภาพ (จาก ${assessmen
 <h2>📋 คะแนนรายสมรรถนะ (เฉลี่ย)</h2>
 <table><thead><tr><th>ด้าน</th><th>คะแนนเฉลี่ย</th></tr></thead><tbody>${dimRows}</tbody></table>` : ''}
 
-<h2>📋 รายชื่อผู้เข้าร่วมทั้งหมด</h2>
-<table><thead><tr><th>#</th><th>ชื่อ-นามสกุล</th><th>อายุ</th><th>เพศ</th><th>โรงเรียน</th><th>ระดับชั้น</th><th>วันที่ลงทะเบียน</th></tr></thead>
-<tbody>${participants.map((p,i) => `<tr>
+<h2>📋 รายชื่อผู้เข้าร่วมทั้งหมด (พร้อมคะแนนเฉลี่ยรายบุคคล)</h2>
+<table><thead><tr><th>#</th><th>ชื่อ-นามสกุล</th><th>อายุ</th><th>เพศ</th><th>โรงเรียน</th><th>ระดับชั้น</th><th>จำนวนครั้งที่ประเมิน</th><th>คะแนนเฉลี่ย</th><th>วันที่ลงทะเบียน</th></tr></thead>
+<tbody>${participantStats.map((p,i) => `<tr>
   <td style="text-align:center">${i+1}</td>
   <td>${p.firstName} ${p.lastName}</td>
   <td style="text-align:center">${p.age}</td>
   <td style="text-align:center">${p.gender}</td>
   <td>${p.school}</td>
   <td>${p.gradeLevel}</td>
+  <td style="text-align:center">${p.assessCount}</td>
+  <td style="text-align:center;font-weight:700">${p.avgScore ?? '-'}</td>
   <td>${new Date(p.registeredAt).toLocaleDateString('th-TH')}</td>
 </tr>`).join('')}</tbody></table>
 
@@ -321,7 +335,7 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> รีเฟรช
           </button>
-          <button onClick={() => exportResearchPDF(participants, allAssessments)} disabled={total === 0}
+          <button onClick={() => exportResearchPDF(participants, allAssessments, cloudUsers)} disabled={total === 0}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-40"
             style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>
             <FileDown size={14} /> Export PDF
