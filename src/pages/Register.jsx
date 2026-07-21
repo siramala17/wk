@@ -359,11 +359,10 @@ export default function Register() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">{t.gender}</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {[
                   { value:'ชาย',   label:t.gMale,   emoji:'♂',        bg:'bg-indigo-50',   border:'border-indigo-400',   text:'text-indigo-600',   ring:'ring-indigo-400' },
                   { value:'หญิง',  label:t.gFemale, emoji:'♀',        bg:'bg-pink-50',   border:'border-pink-400',   text:'text-pink-600',   ring:'ring-pink-400' },
-                  { value:'LGBTQ+',label:'LGBTQ+',  emoji:'🏳️‍🌈',  bg:'bg-purple-50', border:'border-purple-400', text:'text-purple-600', ring:'ring-purple-400' },
                 ].map(({ value, label, emoji, bg, border, text, ring }) => (
                   <button key={value} type="button" onClick={() => { setForm(p => ({ ...p, gender: value })); setErrors(p => ({ ...p, gender: undefined })) }}
                     className={`flex flex-col items-center gap-1 py-3 px-2 rounded-xl border-2 font-semibold text-sm transition-all active:scale-95 ${form.gender === value ? `${bg} ${border} ${text} ring-2 ${ring} ring-offset-1` : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}>

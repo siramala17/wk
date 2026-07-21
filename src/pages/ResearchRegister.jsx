@@ -167,11 +167,10 @@ export default function ResearchRegister() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">เพศ <span className="text-red-400">*</span></label>
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-1.5">
                   {[
                     { v: 'ชาย',    e: '♂',        cls: 'bg-indigo-50 border-indigo-400 text-indigo-700' },
                     { v: 'หญิง',   e: '♀',        cls: 'bg-pink-50 border-pink-400 text-pink-700' },
-                    { v: 'อื่น ๆ', e: '🏳️‍🌈',  cls: 'bg-purple-50 border-purple-400 text-purple-700' },
                   ].map(({ v, e, cls }) => (
                     <button key={v} type="button" onClick={() => set('gender', v)}
                       className={`flex flex-col items-center py-2 rounded-xl border-2 text-xs font-semibold transition-all active:scale-95 ${form.gender === v ? cls : 'border-slate-200 text-slate-500'}`}>
