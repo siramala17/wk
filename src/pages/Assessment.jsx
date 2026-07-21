@@ -5,6 +5,7 @@ import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import ScoreRing from '../components/ScoreRing'
 import Survey from './Survey'
+import { NUTRITION_ADVICE, EXERCISE_ADVICE, STRESS_ADVICE, pickAdvice } from '../utils/healthAdvice'
 
 // ── Static config: no user-facing text ────────────────────────────────────────
 const DIMS_META = [
@@ -248,6 +249,40 @@ function ResultScreen({ answers, pointsEarned, alreadyToday, onShare, currentRes
           ))}
         </div>
       </div>
+
+      {/* Personalized recommendations */}
+      {(() => {
+        const ADVICE_MAP = {
+          food:     { library: NUTRITION_ADVICE, title: '🥗 คำแนะนำเฉพาะบุคคล: โภชนาการ',    bg: 'bg-blue-50',   border: 'border-blue-200',   text: 'text-blue-800' },
+          exercise: { library: EXERCISE_ADVICE,  title: '🏃 คำแนะนำเฉพาะบุคคล: ออกกำลังกาย', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800' },
+          emotion:  { library: STRESS_ADVICE,    title: '🧘 คำแนะนำเฉพาะบุคคล: อารมณ์',       bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800' },
+        }
+        const cards = dimResults
+          .filter(d => d.pct < 65 && ADVICE_MAP[d.id])
+          .map(d => {
+            const cfg = ADVICE_MAP[d.id]
+            const tips = pickAdvice(cfg.library, d.pct)
+            return (
+              <div key={d.id} className={`${cfg.bg} border ${cfg.border} rounded-2xl p-4`}>
+                <p className={`text-sm font-bold ${cfg.text} mb-2`}>{cfg.title}</p>
+                <ul className="space-y-1.5">
+                  {tips.map((tip, i) => (
+                    <li key={i} className="text-xs text-slate-700 leading-relaxed flex gap-2">
+                      <span className="flex-shrink-0">•</span><span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })
+        if (cards.length === 0) return null
+        return (
+          <div className="space-y-2">
+            <h3 className="font-bold text-slate-700 text-sm">คำแนะนำเฉพาะบุคคลสำหรับคุณ</h3>
+            <div className="space-y-2">{cards}</div>
+          </div>
+        )
+      })()}
 
       <HistorySection history={history} />
 
