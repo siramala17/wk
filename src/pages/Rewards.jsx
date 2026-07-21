@@ -1,11 +1,11 @@
 ﻿import React, { useState, useEffect, useRef } from 'react'
 import {
-  Award, Star, Zap, Share2, Flame, Trophy,
+  Award, Star, Zap, Share2, Flame,
   Lock, Gift, Check, X, Clock, RefreshCw, AlertCircle, Camera, XCircle, Image,
 } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
-import { getUserLevel, getBadges } from '../utils/healthScore'
+import { getUserLevel } from '../utils/healthScore'
 import ScoreRing from '../components/ScoreRing'
 import { fetchRedemptions, fetchRewardCatalog, addSubmission } from '../services/userSync'
 import ActivitySubmit from './ActivitySubmit'
@@ -293,9 +293,6 @@ function shuffle(arr) {
   return a
 }
 
-const STREAK_REQ = 7
-const POINTS_REQ = 500
-
 function getRedeemStatus(r) {
   return {
     pending:  { label: r.statusPending,  emoji: '⏳', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
@@ -339,38 +336,7 @@ function PointsCard({ points, level, progress, nextLevel, streak, r }) {
             <Flame size={16} className="text-red-600" />
             <span className="text-sm font-bold">Streak {streak} {r.streakUnit}</span>
           </div>
-          <div className={`flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
-            streak >= STREAK_REQ ? 'bg-green-500/20 text-green-800' : 'bg-red-500/20 text-red-800'
-          }`}>
-            {streak >= STREAK_REQ ? '✅' : '🔒'} Streak {streak}/{STREAK_REQ}
-          </div>
-          <div className={`flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
-            points >= POINTS_REQ ? 'bg-green-500/20 text-green-800' : 'bg-red-500/20 text-red-800'
-          }`}>
-            {points >= POINTS_REQ ? '✅' : '🔒'} {points}/{POINTS_REQ} {r.ptsUnit}
-          </div>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function BadgeGrid({ badges, r }) {
-  return (
-    <div>
-      <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
-        <Trophy size={18} className="text-yellow-500" /> {r.achievements}
-      </h2>
-      <div className="grid grid-cols-4 gap-3">
-        {badges.map(b => (
-          <div key={b.id} className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all ${
-            b.earned ? 'bg-yellow-50 border-yellow-300 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-50'
-          }`}>
-            <span className={`text-2xl mb-1 ${!b.earned ? 'grayscale' : ''}`}>{b.emoji}</span>
-            <p className="text-xs font-semibold text-center text-slate-700 leading-tight">{b.name}</p>
-            {!b.earned && <p className="text-[10px] text-slate-400 text-center mt-0.5 leading-tight">{b.desc}</p>}
-          </div>
-        ))}
       </div>
     </div>
   )
@@ -404,7 +370,7 @@ function HowToEarn({ r, isEn }) {
   ] : [
     { emoji: '📋', action: 'ทำแบบประเมินสุขภาพ',              pts: '10–50', freq: 'ต่อวัน' },
     { emoji: '📏', action: 'วัดค่า BMI',                       pts: '15',    freq: 'ต่อเดือน' },
-    { emoji: '🔥', action: `Streak 7 ${r.streakUnit} (ปลดล็อคแลกรางวัล)`, pts: '100', freq: 'โบนัส' },
+    { emoji: '🔥', action: `Streak 7 ${r.streakUnit}`, pts: '100', freq: 'โบนัส' },
     { emoji: '📸', action: `${r.sendPhoto} (Admin อนุมัติ)`,  pts: '5',     freq: 'ต่อครั้ง' },
   ]
   return (
@@ -429,8 +395,6 @@ function HowToEarn({ r, isEn }) {
 }
 
 function RewardCatalog({ user, onRedeem, r }) {
-  const qualified = user.streak >= STREAK_REQ && user.points >= POINTS_REQ
-
   const [catalog, setCatalog]       = useState([])
   const [catalogLoading, setCatalogLoading] = useState(true)
   const [catalogError, setCatalogError]     = useState(false)
@@ -475,28 +439,6 @@ function RewardCatalog({ user, onRedeem, r }) {
         </button>
       </div>
 
-      <div className="flex gap-2 mb-3">
-        {[
-          { ok: user.streak >= STREAK_REQ, label: `Streak ${user.streak}/${STREAK_REQ} ${r.streakUnit}` },
-          { ok: user.points >= POINTS_REQ, label: `${user.points}/${POINTS_REQ} ${r.ptsUnit}` },
-        ].map(({ ok, label }) => (
-          <div key={label} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border ${
-            ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-600'
-          }`}>
-            {ok ? <Check size={13} /> : <Lock size={13} />} {label}
-          </div>
-        ))}
-      </div>
-
-      {!qualified && (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 mb-3 flex items-start gap-3">
-          <Lock size={17} className="text-slate-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-slate-500 leading-relaxed">
-            {r.lockMsg.replace('{streak}', STREAK_REQ).replace('{pts}', POINTS_REQ)}
-          </p>
-        </div>
-      )}
-
       {justRedeemed && (
         <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 mb-3 flex items-center gap-2 text-green-700 text-sm font-medium">
           <Check size={16} /> {r.redeemed.replace('{name}', justRedeemed)}
@@ -522,29 +464,28 @@ function RewardCatalog({ user, onRedeem, r }) {
         <div className="grid grid-cols-2 gap-3">
           {catalog.map(item => {
             const canAfford = user.points >= item.cost
-            const canRedeem = qualified && canAfford
             return (
               <div key={item.id} className={`bg-white rounded-2xl border-2 p-3.5 transition-all ${
-                canRedeem ? 'border-yellow-200 shadow-sm' : 'border-slate-100 opacity-70'
+                canAfford ? 'border-green-200 shadow-sm' : 'border-slate-100'
               }`}>
                 <div className="text-3xl mb-2">{item.emoji}</div>
                 <p className="font-bold text-slate-800 text-sm leading-tight">{item.name}</p>
                 <p className="text-xs text-slate-400 mt-0.5 mb-2 leading-tight line-clamp-2">{item.desc}</p>
                 <div className="flex items-center justify-between">
-                  <span className={`text-sm font-black flex items-center gap-1 ${canAfford ? 'text-yellow-600' : 'text-red-500'}`}>
-                    <Star size={12} className={canAfford ? 'fill-yellow-400 text-yellow-400' : 'text-red-400'} />
+                  <span className={`text-sm font-black flex items-center gap-1 ${canAfford ? 'text-green-600' : 'text-slate-500'}`}>
+                    <Star size={12} className={canAfford ? 'fill-green-400 text-green-400' : 'text-slate-400'} />
                     {item.cost.toLocaleString()}
                   </span>
                   <button
                     onClick={() => { setError(''); setConfirmItem(item) }}
-                    disabled={!canRedeem}
+                    disabled={!canAfford}
                     className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
-                      canRedeem
-                        ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 active:scale-95'
+                      canAfford
+                        ? 'bg-green-500 hover:bg-green-600 text-white active:scale-95'
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }`}
                   >
-                    {canRedeem ? r.redeemBtn : <Lock size={12} />}
+                    {canAfford ? r.redeemBtn : <Lock size={12} />}
                   </button>
                 </div>
               </div>
@@ -708,7 +649,6 @@ export default function Rewards() {
   const { t } = useLang()
   const r = t.rewards
   const { level, progress, nextLevel } = getUserLevel(user.points)
-  const badges = getBadges(user, latestAssessment, bmiData)
   const [mainTab, setMainTab] = useState('rewards')
   const [tab, setTab] = useState('rewards')
 
@@ -757,7 +697,6 @@ export default function Rewards() {
             {[
               { key: 'rewards', label: r.innerRedeem },
               { key: 'history', label: r.innerHistory },
-              { key: 'badges',  label: r.innerBadges },
             ].map(({ key, label }) => (
               <button key={key} onClick={() => setTab(key)}
                 className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
@@ -776,7 +715,6 @@ export default function Rewards() {
             </>
           )}
           {tab === 'history' && <RedemptionHistory userId={user.id} claimRefunds={claimRefunds} r={r} />}
-          {tab === 'badges'  && <BadgeGrid badges={badges} r={r} />}
         </div>
       )}
     </>

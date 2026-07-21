@@ -60,9 +60,10 @@ export function HealthProvider({ children }) {
           setUser(prev => ({
             ...prev,
             ...cloud,
-            // เก็บค่าสูงสุดเพื่อป้องกันการสูญเสียแต้มที่ได้จากเครื่องอื่น
+            // แต้มสะสมได้อย่างเดียว เก็บค่าสูงสุดป้องกันการสูญเสียแต้มจากเครื่องอื่น
             points: Math.max(prev.points ?? 0, cloud.points ?? 0),
-            streak:  Math.max(prev.streak  ?? 0, cloud.streak  ?? 0),
+            // streak ต้องรีเซ็ตได้เมื่อขาดวัน จึงเชื่อค่าล่าสุดจาก cloud แทนการเก็บค่าสูงสุด
+            streak: cloud.streak ?? prev.streak ?? 0,
           }))
         }
       })
@@ -215,7 +216,9 @@ export function HealthProvider({ children }) {
     let pointsEarned = 0
     if (!alreadyToday) {
       pointsEarned = Math.floor(data.overallScore / 10) * 5 + 10
-      setUser(prev => ({ ...prev, points: prev.points + pointsEarned, streak: prev.streak + 1 }))
+      const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+      const isConsecutiveDay = prevAssessment?.assessedAt === yesterdayStr
+      setUser(prev => ({ ...prev, points: prev.points + pointsEarned, streak: isConsecutiveDay ? prev.streak + 1 : 1 }))
     }
     setCompletedTips([])
 
@@ -260,7 +263,6 @@ export function HealthProvider({ children }) {
 
   async function redeemReward(reward) {
     if (user.points < reward.cost) throw new Error('แต้มไม่เพียงพอ')
-    if ((user.streak || 0) < 7) throw new Error('Streak ไม่ครบ 7 วัน')
     const entry = {
       id: Date.now(),
       userId: user.id,
