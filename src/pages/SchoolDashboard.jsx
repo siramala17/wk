@@ -15,8 +15,8 @@ const D_EMOJIS = ['🍱','🏃','🧘']
 const D_COLORS = ['#10b981','#3b82f6','#8b5cf6']
 const GRADES   = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
 const GRADE_KEYS = ['ม.1','ม.2','ม.3','ม.4','ม.5','ม.6']
-const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:14 }
-const TT_STYLE = { backgroundColor:'rgba(8,15,36,.95)', border:'1px solid rgba(255,255,255,.1)', borderRadius:10, color:'#cbd5e1', fontFamily:'Sarabun,sans-serif', fontSize:12 }
+const CARD = { background:'#ffffff', border:'1px solid #e2e8f0', borderRadius:14, boxShadow:'0 1px 3px rgba(15,23,42,0.06)' }
+const TT_STYLE = { backgroundColor:'#ffffff', border:'1px solid #e2e8f0', borderRadius:10, color:'#334155', fontFamily:'Sarabun,sans-serif', fontSize:12, boxShadow:'0 4px 16px rgba(15,23,42,.10)' }
 
 function lvl(s) {
   if (s >= 80) return ['ดีเยี่ยม','#10b981']
@@ -43,12 +43,12 @@ function RoleScoreCard({ roleLabel, emoji, accentColor, assessments: ass, userCo
         <div style={{ display:'flex', alignItems:'center', gap:7 }}>
           <div style={{ width:28, height:28, borderRadius:8, background:accentColor+'22', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>{emoji}</div>
           <div>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'.6px' }}>คะแนนเฉลี่ย · {roleLabel}</div>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.6px' }}>คะแนนเฉลี่ย · {roleLabel}</div>
             <div style={{ fontSize:9.5, color:'#475569', marginTop:1 }}>{userCount} คน · {ass.length} ผลประเมิน</div>
           </div>
         </div>
         <div style={{ textAlign:'right' }}>
-          <div style={{ fontSize:26, fontWeight:800, color: overallAvg ? accentColor : '#334155', lineHeight:1 }}>
+          <div style={{ fontSize:26, fontWeight:800, color: overallAvg ? accentColor : '#cbd5e1', lineHeight:1 }}>
             {overallAvg ?? '—'}
           </div>
           <div style={{ fontSize:9.5, fontWeight:700, color: lvlColor, marginTop:2 }}>{lvlLabel}</div>
@@ -57,7 +57,7 @@ function RoleScoreCard({ roleLabel, emoji, accentColor, assessments: ass, userCo
       {ass.length > 0 ? (
         <ResponsiveContainer width="100%" height={110}>
           <BarChart data={domainData} margin={{ top:2, right:2, left:-32, bottom:0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,.06)" />
             <XAxis dataKey="name" tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
             <YAxis domain={[0,100]} tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
             <Tooltip content={<CUSTOM_TT />} />
@@ -86,7 +86,7 @@ function KPI({ label, value, sub, color, trend, up }) {
       <div style={{ fontSize:26, fontWeight:800, color, lineHeight:1, marginBottom:3 }}>{value}</div>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <span style={{ fontSize:10, color:'#475569' }}>{sub}</span>
-        {trend && <span style={{ fontSize:9.5, fontWeight:700, padding:'2px 7px', borderRadius:12, background: up ? 'rgba(16,185,129,.15)' : 'rgba(239,68,68,.15)', color: up ? '#34d399' : '#f87171' }}>{trend}</span>}
+        {trend && <span style={{ fontSize:9.5, fontWeight:700, padding:'2px 7px', borderRadius:12, background: up ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)', color: up ? '#059669' : '#dc2626' }}>{trend}</span>}
       </div>
     </div>
   )
@@ -96,8 +96,8 @@ const CUSTOM_TT = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
     <div style={TT_STYLE}>
-      <p style={{ color:'#f1f5f9', fontWeight:700, marginBottom:4 }}>{label}</p>
-      {payload.map((p,i) => <p key={i} style={{ color: p.color || '#94a3b8' }}>{p.name}: <b style={{ color:'#f1f5f9' }}>{p.value}</b></p>)}
+      <p style={{ color:'#0f172a', fontWeight:700, marginBottom:4 }}>{label}</p>
+      {payload.map((p,i) => <p key={i} style={{ color: p.color || '#64748b' }}>{p.name}: <b style={{ color:'#0f172a' }}>{p.value}</b></p>)}
     </div>
   )
 }
@@ -124,7 +124,7 @@ export default function SchoolDashboard() {
 
   useEffect(() => {
     const prev = document.body.style.backgroundColor
-    document.body.style.backgroundColor = '#0a1628'
+    document.body.style.backgroundColor = '#f8fafc'
     return () => { document.body.style.backgroundColor = prev }
   }, [])
 
@@ -202,7 +202,7 @@ export default function SchoolDashboard() {
     { name:'ดี (65–79)',       value: donutCounts.good, color:'#6366f1' },
     { name:'ปานกลาง (50–64)', value: donutCounts.mid,  color:'#f59e0b' },
     { name:'ต้องปรับปรุง',    value: donutCounts.poor, color:'#ef4444' },
-  ] : [{ name:'ยังไม่มีข้อมูล', value:1, color:'rgba(255,255,255,0.08)' }]
+  ] : [{ name:'ยังไม่มีข้อมูล', value:1, color:'#e2e8f0' }]
 
   // Radar — real-time เท่านั้น
   const radarData = DOMAINS.map((_, i) => ({
@@ -299,19 +299,19 @@ export default function SchoolDashboard() {
   }, [assessments, researchUserIds, year])
   const researchCount = researchParticipants.length
 
-  const selectStyle = { background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.12)', borderRadius:8, color:'#94a3b8', padding:'6px 10px', fontFamily:'Sarabun,sans-serif', fontSize:12, outline:'none', cursor:'pointer' }
+  const selectStyle = { background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8, color:'#475569', padding:'6px 10px', fontFamily:'Sarabun,sans-serif', fontSize:12, outline:'none', cursor:'pointer' }
 
   return (
-    <div style={{ fontFamily:'Sarabun,sans-serif', background:'#0a1628', minHeight:'100vh', color:'#e2e8f0', fontSize:13 }}>
+    <div style={{ fontFamily:'Sarabun,sans-serif', background:'#f8fafc', minHeight:'100vh', color:'#1e293b', fontSize:13 }}>
 
       {/* HEADER */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid rgba(255,255,255,.06)', flexWrap:'wrap', gap:8 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid #e2e8f0', flexWrap:'wrap', gap:8 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <button
             onClick={() => navigate('/')}
-            style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 12px', borderRadius:9, background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.22)', color:'#e2e8f0', cursor:'pointer', flexShrink:0, transition:'.15s', fontFamily:'Sarabun,sans-serif', fontSize:12, fontWeight:700 }}
-            onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.20)'}
-            onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.12)'}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 12px', borderRadius:9, background:'#f1f5f9', border:'1px solid #e2e8f0', color:'#334155', cursor:'pointer', flexShrink:0, transition:'.15s', fontFamily:'Sarabun,sans-serif', fontSize:12, fontWeight:700 }}
+            onMouseEnter={e=>e.currentTarget.style.background='#e2e8f0'}
+            onMouseLeave={e=>e.currentTarget.style.background='#f1f5f9'}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6"/>
@@ -321,10 +321,10 @@ export default function SchoolDashboard() {
           <div style={{ width:34, height:34, background:'linear-gradient(135deg,#f59e0b,#fbbf24)', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>🏥</div>
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <div style={{ fontSize:17, fontWeight:800, color:'#f1f5f9' }}>WatklangHealthXAI Dashboard</div>
+              <div style={{ fontSize:17, fontWeight:800, color:'#0f172a' }}>WatklangHealthXAI Dashboard</div>
               <div style={{ display:'flex', alignItems:'center', gap:5, padding:'3px 9px', background:'rgba(16,185,129,.14)', borderRadius:6, border:'1px solid rgba(16,185,129,.25)' }}>
-                <div style={{ width:6, height:6, borderRadius:'50%', background:'#34d399', animation:'livePulse 2s ease-in-out infinite' }} />
-                <span style={{ fontSize:10, color:'#34d399', fontWeight:800, letterSpacing:.5 }}>LIVE</span>
+                <div style={{ width:6, height:6, borderRadius:'50%', background:'#059669', animation:'livePulse 2s ease-in-out infinite' }} />
+                <span style={{ fontSize:10, color:'#059669', fontWeight:800, letterSpacing:.5 }}>LIVE</span>
               </div>
             </div>
             <div style={{ fontSize:11, color:'#64748b', marginTop:1 }}>
@@ -334,7 +334,7 @@ export default function SchoolDashboard() {
           </div>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-          <select value={role} onChange={e=>{ setRole(e.target.value); setGrade('all') }} style={{ ...selectStyle, borderColor:'rgba(245,158,11,.35)', color:'#fbbf24', fontWeight:700 }}>
+          <select value={role} onChange={e=>{ setRole(e.target.value); setGrade('all') }} style={{ ...selectStyle, borderColor:'rgba(245,158,11,.35)', color:'#d97706', fontWeight:700 }}>
             {ROLES.map(r=><option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
           <select value={year} onChange={e=>setYear(e.target.value)} style={selectStyle}>
@@ -360,14 +360,14 @@ export default function SchoolDashboard() {
           <div style={{ color:'#64748b', fontSize:14 }}>กำลังโหลดข้อมูลจาก Firestore...</div>
         </div>
       ) : (
-
-      <div style={{ display:'grid', gridTemplateColumns:'210px 1fr 260px', gap:10, padding:'12px 16px 20px', alignItems:'start' }}>
+      <>
+      <div style={{ display:'grid', gridTemplateColumns:'210px 1fr', gap:10, padding:'12px 16px 20px', alignItems:'start' }}>
 
         {/* ── LEFT KPIs ── */}
         <div>
-          <KPI label={totalLabel} value={filteredUsers.length.toLocaleString() || totalStudents.toLocaleString()} sub="ลงทะเบียนแล้ว" color="#818cf8" trend={`${users.length} คนรวม`} up />
-          <KPI label="คะแนนเฉลี่ยรวม" value={avgScore || '—'} sub="จาก 100 คะแนน" color="#fbbf24" trend={avgScore ? '+3.2' : null} up />
-          <KPI label="อัตราผ่านเกณฑ์" value={filtered.length ? passRate+'%' : '—'} sub="คะแนน ≥ 50" color="#34d399" trend={filtered.length ? '+5.1%' : null} up />
+          <KPI label={totalLabel} value={filteredUsers.length.toLocaleString() || totalStudents.toLocaleString()} sub="ลงทะเบียนแล้ว" color="#6366f1" trend={`${users.length} คนรวม`} up />
+          <KPI label="คะแนนเฉลี่ยรวม" value={avgScore || '—'} sub="จาก 100 คะแนน" color="#d97706" trend={avgScore ? '+3.2' : null} up />
+          <KPI label="อัตราผ่านเกณฑ์" value={filtered.length ? passRate+'%' : '—'} sub="คะแนน ≥ 50" color="#059669" trend={filtered.length ? '+5.1%' : null} up />
           <KPI label="ระดับดีเยี่ยม" value={filtered.length ? exRate+'%' : '—'} sub="คะแนน ≥ 80" color="#10b981" />
           <KPI label="ต้องปรับปรุง" value={filtered.length ? poorRate+'%' : '—'} sub="คะแนน < 50" color="#ef4444" trend={filtered.length ? '-2.3%' : null} up={false} />
           {!filtered.length && (
@@ -380,80 +380,118 @@ export default function SchoolDashboard() {
           )}
         </div>
 
-        {/* ── CENTER ── */}
+        {/* ── CONTENT ── */}
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
 
-          {/* Top: Donut + Bar */}
+          {/* Top: (Donut + Radar) | (Bar + Stacked bar) */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-            {/* Big Donut */}
-            <div style={{ ...CARD, padding:'14px 16px' }}>
-              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>ภาพรวมสุขภาพ</div>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={{ position:'relative' }}>
-                  <ResponsiveContainer width={150} height={150}>
-                    <PieChart>
-                      <Pie data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={3} dataKey="value">
-                        {donutData.map((d,i)=><Cell key={i} fill={d.color} stroke="none" />)}
-                      </Pie>
-                      <Tooltip content={<CUSTOM_TT />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', pointerEvents:'none' }}>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {/* Big Donut */}
+              <div style={{ ...CARD, padding:'14px 16px' }}>
+                <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>ภาพรวมสุขภาพ</div>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <div style={{ position:'relative' }}>
+                    <ResponsiveContainer width={150} height={150}>
+                      <PieChart>
+                        <Pie data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={3} dataKey="value">
+                          {donutData.map((d,i)=><Cell key={i} fill={d.color} stroke="none" />)}
+                        </Pie>
+                        <Tooltip content={<CUSTOM_TT />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', pointerEvents:'none' }}>
+                      {filtered.length > 0 ? (
+                        <>
+                          <span style={{ fontSize:22, fontWeight:800, color:'#0f172a' }}>{avgScore}</span>
+                          <span style={{ fontSize:9.5, color:'#64748b' }}>คะแนนเฉลี่ย</span>
+                          <span style={{ fontSize:9, color:'#475569', marginTop:1 }}>{filtered.length} คน</span>
+                        </>
+                      ) : (
+                        <span style={{ fontSize:10, color:'#475569', textAlign:'center', lineHeight:1.4 }}>ยังไม่มี<br/>ข้อมูล</span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ flex:1 }}>
                     {filtered.length > 0 ? (
-                      <>
-                        <span style={{ fontSize:22, fontWeight:800, color:'#fff' }}>{avgScore}</span>
-                        <span style={{ fontSize:9.5, color:'#64748b' }}>คะแนนเฉลี่ย</span>
-                        <span style={{ fontSize:9, color:'#475569', marginTop:1 }}>{filtered.length} คน</span>
-                      </>
+                      [
+                        { name:'ดีเยี่ยม (≥80)',  value:donutCounts.ex,   color:'#10b981' },
+                        { name:'ดี (65–79)',        value:donutCounts.good, color:'#6366f1' },
+                        { name:'ปานกลาง (50–64)',  value:donutCounts.mid,  color:'#f59e0b' },
+                        { name:'ต้องปรับปรุง',     value:donutCounts.poor, color:'#ef4444' },
+                      ].map((d,i)=>(
+                        <div key={i} style={{ display:'flex', alignItems:'center', gap:5, marginBottom:5 }}>
+                          <div style={{ width:8, height:8, borderRadius:'50%', background:d.color, flexShrink:0 }} />
+                          <div style={{ flex:1 }}>
+                            <div style={{ fontSize:10, color:'#64748b', lineHeight:1.2 }}>{d.name}</div>
+                            <div style={{ fontSize:12, fontWeight:700, color:d.color }}>{d.value} คน</div>
+                          </div>
+                        </div>
+                      ))
                     ) : (
-                      <span style={{ fontSize:10, color:'#475569', textAlign:'center', lineHeight:1.4 }}>ยังไม่มี<br/>ข้อมูล</span>
+                      <div style={{ fontSize:10.5, color:'#475569', lineHeight:1.6 }}>
+                        ℹ️ รอข้อมูล<br/>จาก Firestore<br/>
+                        <span style={{ fontSize:10, color:'#334155' }}>เมื่อมีผู้ประเมิน<br/>กราฟจะแสดงทันที</span>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div style={{ flex:1 }}>
-                  {filtered.length > 0 ? (
-                    [
-                      { name:'ดีเยี่ยม (≥80)',  value:donutCounts.ex,   color:'#10b981' },
-                      { name:'ดี (65–79)',        value:donutCounts.good, color:'#6366f1' },
-                      { name:'ปานกลาง (50–64)',  value:donutCounts.mid,  color:'#f59e0b' },
-                      { name:'ต้องปรับปรุง',     value:donutCounts.poor, color:'#ef4444' },
-                    ].map((d,i)=>(
-                      <div key={i} style={{ display:'flex', alignItems:'center', gap:5, marginBottom:5 }}>
-                        <div style={{ width:8, height:8, borderRadius:'50%', background:d.color, flexShrink:0 }} />
-                        <div style={{ flex:1 }}>
-                          <div style={{ fontSize:10, color:'#94a3b8', lineHeight:1.2 }}>{d.name}</div>
-                          <div style={{ fontSize:12, fontWeight:700, color:d.color }}>{d.value} คน</div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{ fontSize:10.5, color:'#475569', lineHeight:1.6 }}>
-                      ℹ️ รอข้อมูล<br/>จาก Firestore<br/>
-                      <span style={{ fontSize:10, color:'#334155' }}>เมื่อมีผู้ประเมิน<br/>กราฟจะแสดงทันที</span>
-                    </div>
-                  )}
-                </div>
+              </div>
+
+              {/* Radar */}
+              <div style={{ ...CARD, padding:'14px 16px' }}>
+                <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนรายสมรรถนะ</div>
+                <ResponsiveContainer width="100%" height={210}>
+                  <RadarChart data={radarData} margin={{ top:8, right:20, bottom:0, left:20 }}>
+                    <PolarGrid stroke="rgba(15,23,42,.08)" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} />
+                    <Radar name="คะแนน" dataKey="คะแนน" stroke="#6366f1" fill="#6366f1" fillOpacity={0.18} strokeWidth={2} dot={{ r:3, fill:'#6366f1' }} />
+                    <Radar name="เป้าหมาย" dataKey="เป้าหมาย" stroke="rgba(245,158,11,.4)" fill="rgba(245,158,11,.04)" strokeWidth={1} strokeDasharray="4 3" dot={false} />
+                    <Tooltip content={<CUSTOM_TT />} />
+                    <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10.5, color:'#64748b' }} />
+                  </RadarChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
-            {/* Bar — dynamic by role */}
-            <div style={{ ...CARD, padding:'14px 16px' }}>
-              <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>
-                {barChartTitle}
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {/* Bar — dynamic by role */}
+              <div style={{ ...CARD, padding:'14px 16px' }}>
+                <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>
+                  {barChartTitle}
+                </div>
+                <ResponsiveContainer width="100%" height={150}>
+                  <BarChart data={dynamicBarData} margin={{ top:4, right:4, left:-20, bottom:0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,.06)" />
+                    <XAxis dataKey="label"
+                      tick={{ fontSize: (role === 'ครู' || role === 'บุคคลทั่วไป') ? 8.5 : 10.5, fill:'#64748b', fontFamily:'Sarabun' }}
+                      axisLine={false} tickLine={false} />
+                    <YAxis domain={role === 'วิจัย' ? [0, 'auto'] : [0, 100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<CUSTOM_TT />} />
+                    <Bar dataKey="คะแนน" radius={[5,5,0,0]}>
+                      {dynamicBarData.map((d,i) => <Cell key={i} fill={d.fill} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-              <ResponsiveContainer width="100%" height={150}>
-                <BarChart data={dynamicBarData} margin={{ top:4, right:4, left:-20, bottom:0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                  <XAxis dataKey="label"
-                    tick={{ fontSize: (role === 'ครู' || role === 'บุคคลทั่วไป') ? 8.5 : 10.5, fill:'#64748b', fontFamily:'Sarabun' }}
-                    axisLine={false} tickLine={false} />
-                  <YAxis domain={role === 'วิจัย' ? [0, 'auto'] : [0, 100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CUSTOM_TT />} />
-                  <Bar dataKey="คะแนน" radius={[5,5,0,0]}>
-                    {dynamicBarData.map((d,i) => <Cell key={i} fill={d.fill} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+
+              {/* Stacked bar */}
+              <div style={{ ...CARD, padding:'14px 16px' }}>
+                <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>สัดส่วนระดับแยกชั้น</div>
+                <ResponsiveContainer width="100%" height={150}>
+                  <BarChart data={stackedData} margin={{ top:4, right:4, left:-28, bottom:0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,.06)" />
+                    <XAxis dataKey="grade" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} unit="%" />
+                    <Tooltip content={<CUSTOM_TT />} />
+                    <Bar dataKey="ดีเยี่ยม" stackId="s" fill="#10b981" />
+                    <Bar dataKey="ดี" stackId="s" fill="#6366f1" />
+                    <Bar dataKey="ปานกลาง" stackId="s" fill="#f59e0b" />
+                    <Bar dataKey="ต้องปรับปรุง" stackId="s" fill="#ef4444" radius={[3,3,0,0]} />
+                    <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10, color:'#64748b' }} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
@@ -493,14 +531,14 @@ export default function SchoolDashboard() {
               <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:8 }}>สรุปรายด้าน</div>
               <table style={{ width:'100%', borderCollapse:'collapse' }}>
                 <thead>
-                  <tr>{['ด้าน','คะแนน','ระดับ'].map(h=><th key={h} style={{ fontSize:9, color:'#475569', fontWeight:700, textAlign:'left', padding:'4px 6px', borderBottom:'1px solid rgba(255,255,255,.06)', textTransform:'uppercase', letterSpacing:'.4px' }}>{h}</th>)}</tr>
+                  <tr>{['ด้าน','คะแนน','ระดับ'].map(h=><th key={h} style={{ fontSize:9, color:'#475569', fontWeight:700, textAlign:'left', padding:'4px 6px', borderBottom:'1px solid #e2e8f0', textTransform:'uppercase', letterSpacing:'.4px' }}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {domainScores.map((d,i)=>{
                     const[lbl,c]=lvl(d.score)
                     return (
-                      <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,.03)' }}>
-                        <td style={{ padding:'5px 6px', fontSize:11, color:'#cbd5e1' }}>{d.name}</td>
+                      <tr key={i} style={{ borderBottom:'1px solid rgba(15,23,42,.05)' }}>
+                        <td style={{ padding:'5px 6px', fontSize:11, color:'#1e293b' }}>{d.name}</td>
                         <td style={{ padding:'5px 6px', fontSize:11, fontWeight:700, color:d.color }}>{d.score}</td>
                         <td style={{ padding:'5px 6px' }}><span style={{ background:c+'22', color:c, fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:8 }}>{lbl}</span></td>
                       </tr>
@@ -512,61 +550,27 @@ export default function SchoolDashboard() {
           </div>
         </div>
 
-        {/* ── RIGHT ── */}
-        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-
-          {/* Radar */}
-          <div style={{ ...CARD, padding:'14px 16px' }}>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนรายสมรรถนะ</div>
-            <ResponsiveContainer width="100%" height={210}>
-              <RadarChart data={radarData} margin={{ top:8, right:20, bottom:0, left:20 }}>
-                <PolarGrid stroke="rgba(255,255,255,.07)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize:10, fill:'#94a3b8', fontFamily:'Sarabun' }} />
-                <Radar name="คะแนน" dataKey="คะแนน" stroke="#6366f1" fill="#6366f1" fillOpacity={0.18} strokeWidth={2} dot={{ r:3, fill:'#6366f1' }} />
-                <Radar name="เป้าหมาย" dataKey="เป้าหมาย" stroke="rgba(245,158,11,.4)" fill="rgba(245,158,11,.04)" strokeWidth={1} strokeDasharray="4 3" dot={false} />
-                <Tooltip content={<CUSTOM_TT />} />
-                <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10.5, color:'#64748b' }} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Stacked bar */}
-          <div style={{ ...CARD, padding:'14px 16px' }}>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>สัดส่วนระดับแยกชั้น</div>
-            <ResponsiveContainer width="100%" height={150}>
-              <BarChart data={stackedData} margin={{ top:4, right:4, left:-28, bottom:0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                <XAxis dataKey="grade" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize:9, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} unit="%" />
-                <Tooltip content={<CUSTOM_TT />} />
-                <Bar dataKey="ดีเยี่ยม" stackId="s" fill="#10b981" />
-                <Bar dataKey="ดี" stackId="s" fill="#6366f1" />
-                <Bar dataKey="ปานกลาง" stackId="s" fill="#f59e0b" />
-                <Bar dataKey="ต้องปรับปรุง" stackId="s" fill="#ef4444" radius={[3,3,0,0]} />
-                <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10, color:'#64748b' }} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Line domain comparison — 3อ.2ส. */}
-          <div style={{ ...CARD, padding:'14px 16px' }}>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนแยกด้านรายชั้น (3อ.2ส.)</div>
-            <ResponsiveContainer width="100%" height={150}>
-              <LineChart data={barData} margin={{ top:4, right:8, left:-28, bottom:0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.05)" />
-                <XAxis dataKey="grade" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0,100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CUSTOM_TT />} />
-                <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10, color:'#64748b' }} />
-                <Line type="monotone" dataKey="อาหาร"        stroke="#10b981" strokeWidth={2} dot={{ r:3, fill:'#10b981', stroke:'#0a1628', strokeWidth:1.5 }} activeDot={{ r:5 }} />
-                <Line type="monotone" dataKey="ออกกำลังกาย" stroke="#3b82f6" strokeWidth={2} dot={{ r:3, fill:'#3b82f6', stroke:'#0a1628', strokeWidth:1.5 }} activeDot={{ r:5 }} />
-                <Line type="monotone" dataKey="อารมณ์"       stroke="#8b5cf6" strokeWidth={2} dot={{ r:3, fill:'#8b5cf6', stroke:'#0a1628', strokeWidth:1.5 }} activeDot={{ r:5 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
       </div>
+
+      {/* Line domain comparison — 3อ.2ส. — bottom of dashboard */}
+      <div style={{ padding:'0 16px 20px' }}>
+        <div style={{ ...CARD, padding:'14px 16px' }}>
+          <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนแยกด้านรายชั้น (3อ.2ส.)</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={barData} margin={{ top:4, right:8, left:-8, bottom:0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,.06)" />
+              <XAxis dataKey="grade" tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+              <YAxis domain={[0,100]} tick={{ fontSize:10, fill:'#64748b', fontFamily:'Sarabun' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CUSTOM_TT />} />
+              <Legend wrapperStyle={{ fontFamily:'Sarabun', fontSize:10, color:'#64748b' }} />
+              <Line type="monotone" dataKey="อาหาร"        stroke="#10b981" strokeWidth={2} dot={{ r:3, fill:'#10b981', stroke:'#ffffff', strokeWidth:1.5 }} activeDot={{ r:5 }} />
+              <Line type="monotone" dataKey="ออกกำลังกาย" stroke="#3b82f6" strokeWidth={2} dot={{ r:3, fill:'#3b82f6', stroke:'#ffffff', strokeWidth:1.5 }} activeDot={{ r:5 }} />
+              <Line type="monotone" dataKey="อารมณ์"       stroke="#8b5cf6" strokeWidth={2} dot={{ r:3, fill:'#8b5cf6', stroke:'#ffffff', strokeWidth:1.5 }} activeDot={{ r:5 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      </>
       )}
     </div>
   )
