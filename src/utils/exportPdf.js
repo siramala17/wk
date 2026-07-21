@@ -1,9 +1,7 @@
 const DIMENSIONS = [
-  { key: 'sleepScore',     label: 'การนอนหลับ',    icon: '🌙' },
   { key: 'nutritionScore', label: 'โภชนาการ',       icon: '🥗' },
   { key: 'exerciseScore',  label: 'การออกกำลังกาย', icon: '🏃' },
-  { key: 'digitalScore',   label: 'การใช้หน้าจอ',  icon: '📱' },
-  { key: 'stressScore',    label: 'ความเครียด',     icon: '🧠' },
+  { key: 'stressScore',    label: 'อารมณ์',          icon: '🧘' },
 ]
 
 function scoreLevel(s) {
