@@ -211,7 +211,7 @@ ${hasAss ? `<h2>📈 ภาพรวมสุขภาพ (จาก ${assessmen
 }
 
 // ── Research Individual PDF ───────────────────────────────────────────────────
-function exportParticipantPDF(p) {
+function exportParticipantPDF(p, assessments = [], bodyComps = []) {
   const now = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
   const regDate = new Date(p.registeredAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
   const CONSENT_LABELS = [
@@ -227,6 +227,89 @@ function exportParticipantPDF(p) {
       <td>${label}</td>
     </tr>`
   }).join('')
+
+  const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' }) : '-'
+
+  // ── ก่อน-หลัง: การประเมินพฤติกรรมสุขภาพ (คะแนนรวม + 3 ด้าน) ──
+  const ASS_DIMS = [
+    { key: 'overallScore',   emoji: '⭐', label: 'คะแนนรวม' },
+    { key: 'nutritionScore', emoji: '🍱', label: 'พฤติกรรมการบริโภคอาหาร' },
+    { key: 'exerciseScore',  emoji: '🏃', label: 'พฤติกรรมการออกกำลังกาย' },
+    { key: 'stressScore',    emoji: '🧘', label: 'พฤติกรรมการจัดการอารมณ์' },
+  ]
+  const firstAss  = assessments[0]
+  const latestAss = assessments[assessments.length - 1]
+  const isSameAss = assessments.length === 1
+  const assessmentSection = assessments.length === 0
+    ? `<p style="color:#94a3b8;font-size:12px;text-align:center;padding:14px 0">ยังไม่มีข้อมูลการประเมินสุขภาพ</p>`
+    : `<div style="display:flex;gap:8px;margin-bottom:10px">
+         <span style="font-size:10px;padding:3px 9px;background:#f1f5f9;color:#64748b;border-radius:999px;font-weight:600">ครั้งแรก: ${fmtDate(firstAss?.date)}</span>
+         ${!isSameAss ? `<span style="font-size:10px;padding:3px 9px;background:#eef2ff;color:#4f46e5;border-radius:999px;font-weight:700">ล่าสุด: ${fmtDate(latestAss?.date)}</span>` : ''}
+       </div>
+       <table>
+         <thead><tr style="color:#94a3b8;border-bottom:1px solid #f1f5f9">
+           <th style="text-align:left;padding:5px 8px;font-size:11px">ด้าน</th>
+           <th style="text-align:center;padding:5px 8px;font-size:11px">ครั้งแรก</th>
+           ${!isSameAss ? `<th style="text-align:center;padding:5px 8px;font-size:11px">ล่าสุด</th><th style="text-align:center;padding:5px 8px;font-size:11px">เปลี่ยน</th>` : ''}
+         </tr></thead>
+         <tbody>${ASS_DIMS.map(({ key, emoji, label }) => {
+           const fv = firstAss?.[key] ?? 0
+           const lv = latestAss?.[key] ?? 0
+           const diff = lv - fv
+           const diffColor = diff > 0 ? '#059669' : diff < 0 ? '#dc2626' : '#94a3b8'
+           const scoreColor = lv >= 80 ? '#059669' : lv >= 65 ? '#2563eb' : lv >= 50 ? '#d97706' : '#dc2626'
+           return `<tr>
+             <td style="padding:6px 8px">${emoji} ${label}</td>
+             <td style="text-align:center;padding:6px 8px;font-weight:600">${fv}</td>
+             ${!isSameAss ? `<td style="text-align:center;padding:6px 8px;font-weight:700;color:${scoreColor}">${lv}</td>
+             <td style="text-align:center;padding:6px 8px;font-weight:700;color:${diffColor}">${diff > 0 ? '+'+diff.toFixed(0) : diff.toFixed(0)}</td>` : ''}
+           </tr>`
+         }).join('')}</tbody>
+       </table>`
+
+  // ── ก่อน-หลัง: Body Composition ──
+  const BC_FIELDS = [
+    { get: r => r?.data?.weight,       label: 'น้ำหนัก',       unit: 'kg',  upGood: false },
+    { get: r => r?.data?.bodyFatPct,   label: 'ไขมัน',         unit: '%',   upGood: false },
+    { get: r => r?.data?.muscleMassKg, label: 'กล้ามเนื้อ',    unit: 'kg',  upGood: true  },
+    { get: r => r?.data?.protein,      label: 'โปรตีน',        unit: 'kg',  upGood: true  },
+    { get: r => r?.data?.waterPct,     label: 'น้ำในร่างกาย',  unit: '%',   upGood: true  },
+    { get: r => r?.data?.bodyScore,    label: 'คะแนนร่างกาย',  unit: '',    upGood: true  },
+  ]
+  const firstBc  = bodyComps[0]
+  const latestBc = bodyComps[bodyComps.length - 1]
+  const isSameBc = bodyComps.length === 1
+  const bodyCompRows = BC_FIELDS.map(({ get, label, unit, upGood }) => {
+    const fv = get(firstBc?.result)
+    const lv = get(latestBc?.result)
+    if (fv == null && lv == null) return ''
+    const fvn = parseFloat(fv) || 0
+    const lvn = parseFloat(lv) || 0
+    const diff = lvn - fvn
+    const isGood = upGood ? diff >= 0 : diff <= 0
+    const diffColor = diff === 0 ? '#94a3b8' : isGood ? '#059669' : '#dc2626'
+    return `<tr>
+      <td style="padding:6px 8px">🏋️ ${label}</td>
+      <td style="text-align:center;padding:6px 8px;font-weight:600">${fv ?? '-'}${unit}</td>
+      ${!isSameBc ? `<td style="text-align:center;padding:6px 8px;font-weight:700">${lv ?? '-'}${unit}</td>
+      <td style="text-align:center;padding:6px 8px;font-weight:700;color:${diffColor}">${diff > 0 ? '+'+diff.toFixed(1) : diff.toFixed(1)}</td>` : ''}
+    </tr>`
+  }).join('')
+  const bodyCompSection = bodyComps.length === 0
+    ? `<p style="color:#94a3b8;font-size:12px;text-align:center;padding:14px 0">ยังไม่มีข้อมูล Body Composition</p>`
+    : `<div style="display:flex;gap:8px;margin-bottom:10px">
+         <span style="font-size:10px;padding:3px 9px;background:#f1f5f9;color:#64748b;border-radius:999px;font-weight:600">ครั้งแรก: ${fmtDate(firstBc?.date)}</span>
+         ${!isSameBc ? `<span style="font-size:10px;padding:3px 9px;background:#ecfeff;color:#0891b2;border-radius:999px;font-weight:700">ล่าสุด: ${fmtDate(latestBc?.date)}</span>` : ''}
+       </div>
+       <table>
+         <thead><tr style="color:#94a3b8;border-bottom:1px solid #f1f5f9">
+           <th style="text-align:left;padding:5px 8px;font-size:11px">ค่า</th>
+           <th style="text-align:center;padding:5px 8px;font-size:11px">ครั้งแรก</th>
+           ${!isSameBc ? `<th style="text-align:center;padding:5px 8px;font-size:11px">ล่าสุด</th><th style="text-align:center;padding:5px 8px;font-size:11px">เปลี่ยน</th>` : ''}
+         </tr></thead>
+         <tbody>${bodyCompRows}</tbody>
+       </table>`
+
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <style>
   body { font-family:'Sarabun',sans-serif; margin:36px; color:#1e293b; font-size:13px; }
@@ -257,6 +340,16 @@ function exportParticipantPDF(p) {
     <div><div class="field-label">เบอร์โทรตนเอง</div><div class="field-value">${p.phone || '-'}</div></div>
     <div style="grid-column:1/-1"><div class="field-label">วันที่ลงทะเบียน</div><div class="field-value">${regDate}</div></div>
   </div>
+</div>
+
+<div class="section">
+  <div class="section-title">การประเมินพฤติกรรมสุขภาพ · ก่อน-หลัง${assessments.length > 0 ? ` (${assessments.length} ครั้ง)` : ''}</div>
+  ${assessmentSection}
+</div>
+
+<div class="section">
+  <div class="section-title">Body Composition · ก่อน-หลัง${bodyComps.length > 0 ? ` (${bodyComps.length} ครั้ง)` : ''}</div>
+  ${bodyCompSection}
 </div>
 
 <div class="section">
@@ -636,7 +729,7 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
                   className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors">
                   ปิด
                 </button>
-                <button onClick={() => exportParticipantPDF(selectedParticipant)}
+                <button onClick={() => exportParticipantPDF(selectedParticipant, modalAssessments, modalBodyComps)}
                   className="flex-1 py-3 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                   style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>
                   <FileDown size={15} /> Export PDF
