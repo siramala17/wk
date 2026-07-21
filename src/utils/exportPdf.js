@@ -27,6 +27,67 @@ function bar(score) {
   </div>`
 }
 
+const NUTRITION_ADVICE = {
+  urgent: [ // < 35
+    'จัดตารางกินอาหารให้ครบ 3 มื้อทุกวัน โดยเฉพาะมื้อเช้า ห้ามงดเด็ดขาด',
+    'ลดอาหารทอด อาหารแปรรูป และเครื่องดื่มรสหวานให้เหลือน้อยที่สุด',
+    'เพิ่มผักผลไม้อย่างน้อยมื้อละ 1 ส่วน เริ่มจากที่กินง่ายก่อน เช่น กล้วย แตงกวา',
+  ],
+  needsWork: [ // 35–49
+    'พยายามกินให้ครบ 3 มื้อสม่ำเสมอ ไม่ควรอดมื้อใดมื้อหนึ่งบ่อยๆ',
+    'เลือกของว่างที่มีประโยชน์แทนขนมกรุบกรอบ เช่น ผลไม้ นมจืด ถั่วต้ม',
+    'ลดน้ำหวาน/น้ำอัดลม เปลี่ยนเป็นน้ำเปล่าหรือน้ำผลไม้ไม่เติมน้ำตาล',
+  ],
+  fair: [ // 50–64
+    'เพิ่มสัดส่วนผักในแต่ละมื้อให้มากขึ้นอีกเล็กน้อย',
+    'ระวังปริมาณของหวาน/ของทอดในแต่ละสัปดาห์ไม่ให้บ่อยเกินไป',
+    'ลองวางแผนมื้ออาหารล่วงหน้า จะช่วยให้เลือกกินได้ดีขึ้น',
+  ],
+}
+
+const EXERCISE_ADVICE = {
+  urgent: [ // < 35
+    'เริ่มต้นง่ายๆ ด้วยการเดินหรือขยับร่างกายอย่างน้อยวันละ 15-20 นาที',
+    'ลดเวลานั่งติดต่อกันนานๆ ลุกยืดเส้นยืดสายทุก 1 ชั่วโมง',
+    'เลือกกิจกรรมที่ชอบ เช่น เดินเล่น ปั่นจักรยาน เพื่อให้ทำได้ต่อเนื่อง',
+  ],
+  needsWork: [ // 35–49
+    'ตั้งเป้าออกกำลังกายอย่างน้อย 3 วันต่อสัปดาห์ ครั้งละ 20-30 นาที',
+    'ใช้บันไดแทนลิฟต์ หรือเดินแทนการนั่งรถในระยะใกล้ๆ',
+    'ชวนเพื่อนออกกำลังกายด้วยกัน จะช่วยให้ทำต่อเนื่องได้ง่ายขึ้น',
+  ],
+  fair: [ // 50–64
+    'เพิ่มความเข้มข้นหรือระยะเวลาออกกำลังกายอีกเล็กน้อยจากที่ทำอยู่',
+    'ลองเพิ่มความหลากหลาย เช่น สลับคาร์ดิโอกับยืดกล้ามเนื้อ',
+    'รักษาความสม่ำเสมอให้ครบ 5 วันต่อสัปดาห์ตามเกณฑ์ที่แนะนำ',
+  ],
+}
+
+const STRESS_ADVICE = {
+  urgent: [ // < 35
+    'หาเวลาพักผ่อนและทำกิจกรรมที่ชอบทุกวัน แม้เพียงวันละ 10-15 นาที',
+    'พูดคุยกับคนที่ไว้ใจได้ เช่น เพื่อน ครอบครัว หรือครูแนะแนว เมื่อรู้สึกเครียด',
+    'ฝึกหายใจลึกๆ ช้าๆ เมื่อรู้สึกกดดันหรือวิตกกังวล',
+    'ถ้าเครียดจนกระทบการใช้ชีวิตประจำวัน ควรปรึกษาผู้เชี่ยวชาญ หรือโทรสายด่วนสุขภาพจิต 1323 (ฟรี ตลอด 24 ชม.)',
+  ],
+  needsWork: [ // 35–49
+    'แบ่งเวลาพักระหว่างเรียน/ทำกิจกรรม อย่าฝืนทำต่อเนื่องนานเกินไป',
+    'นอนหลับให้เพียงพอ จะช่วยให้จัดการความเครียดได้ดีขึ้น',
+    'ลองจดบันทึกสิ่งที่ทำให้เครียด จะช่วยเข้าใจสาเหตุและรับมือได้ตรงจุด',
+  ],
+  fair: [ // 50–64
+    'รักษากิจกรรมผ่อนคลายที่ทำอยู่แล้วให้สม่ำเสมอ',
+    'หมั่นสังเกตอารมณ์ตัวเอง ถ้าเริ่มเครียดสะสมให้พักทันที',
+    'จัดลำดับความสำคัญของงาน ไม่ควรทำหลายอย่างพร้อมกันจนกดดันตัวเอง',
+  ],
+}
+
+function pickAdvice(library, score) {
+  if (score < 35) return library.urgent
+  if (score < 50) return library.needsWork
+  return library.fair
+}
+
 function userCard(user, assessment, index) {
   const overall = assessment.overallScore ?? 0
   const ol = overallLevel(overall)
@@ -52,6 +113,20 @@ function userCard(user, assessment, index) {
   const improveTags = needImprove.map(d =>
     `<span style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;padding:3px 10px;border-radius:99px;font-size:12px;margin:2px;">⚠️ ${d.label}</span>`
   ).join('')
+
+  const nutritionScore = assessment.nutritionScore ?? 0
+  const exerciseScore  = assessment.exerciseScore ?? 0
+  const stressScore    = assessment.stressScore ?? 0
+  const nutritionTips = nutritionScore < 65 ? pickAdvice(NUTRITION_ADVICE, nutritionScore) : []
+  const exerciseTips  = exerciseScore  < 65 ? pickAdvice(EXERCISE_ADVICE,  exerciseScore)  : []
+  const stressTips    = stressScore    < 65 ? pickAdvice(STRESS_ADVICE,   stressScore)    : []
+  const adviceBlock = (title, tips, bg, border, color) => tips.length > 0 ? `
+    <div style="padding:10px 16px;background:${bg};border-top:1px solid ${border};">
+      <div style="font-size:12px;font-weight:700;color:${color};margin-bottom:6px;">${title}</div>
+      <ul style="margin:0;padding-left:18px;font-size:12px;color:#1e293b;line-height:1.7;">
+        ${tips.map(t => `<li>${t}</li>`).join('')}
+      </ul>
+    </div>` : ''
 
   return `
   <div style="page-break-inside:avoid;margin-bottom:24px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;font-family:'Sarabun',sans-serif;">
@@ -92,6 +167,11 @@ function userCard(user, assessment, index) {
     <div style="padding:10px 16px;background:#f0fdf4;border-top:1px solid #bbf7d0;">
       <span style="font-size:12px;color:#166534;">✅ ผ่านเกณฑ์ทุกด้าน</span>
     </div>`}
+
+    <!-- Personalized recommendations -->
+    ${adviceBlock('🥗 คำแนะนำเฉพาะบุคคล: โภชนาการ', nutritionTips, '#eff6ff', '#bfdbfe', '#1e40af')}
+    ${adviceBlock('🏃 คำแนะนำเฉพาะบุคคล: ออกกำลังกาย', exerciseTips, '#fff7ed', '#fed7aa', '#9a3412')}
+    ${adviceBlock('🧘 คำแนะนำเฉพาะบุคคล: อารมณ์', stressTips, '#faf5ff', '#e9d5ff', '#6b21a8')}
   </div>`
 }
 
