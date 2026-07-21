@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Moon, Smartphone, Brain, Dumbbell, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
+import { Utensils, Brain, Dumbbell, HeartPulse, Zap, ChevronRight, Home, UserCircle } from 'lucide-react'
 import { useHealth } from '../context/HealthContext'
 import { useLang } from '../context/LangContext'
 import { getHealthLevel } from '../utils/healthScore'
@@ -12,10 +12,10 @@ import { requestPermissionAndSaveToken, fcmReady } from '../services/fcm'
 
 function getStatConfig(t) {
   return [
-    { key: 'sleep',    icon: Moon,       label: t.stats.sleep,    unit: t.units.hrs,       max: 9,  color: '#6366f1', bg: '#eef2ff', getVal: a => a.sleepHours },
-    { key: 'screen',   icon: Smartphone, label: t.stats.screen,   unit: t.units.hrs,       max: 12, color: '#8b5cf6', bg: '#f5f3ff', getVal: a => a.screenHours },
-    { key: 'stress',   icon: Brain,      label: t.stats.stress,   unit: t.units.outOf10,   max: 10, color: '#f59e0b', bg: '#fffbeb', getVal: a => a.stressLevel },
-    { key: 'exercise', icon: Dumbbell,   label: t.stats.exercise, unit: t.units.daysPerWk, max: 7,  color: '#10b981', bg: '#ecfdf5', getVal: a => a.exerciseDays },
+    { key: 'nutrition', icon: Utensils,  label: t.stats.nutrition, unit: t.units.score, max: 100, color: '#10b981', bg: '#ecfdf5', getVal: a => a.nutritionScore },
+    { key: 'exercise',  icon: Dumbbell,  label: t.stats.exercise,  unit: t.units.score, max: 100, color: '#3b82f6', bg: '#eff6ff', getVal: a => a.exerciseScore },
+    { key: 'emotion',   icon: Brain,     label: t.stats.emotion,   unit: t.units.score, max: 100, color: '#8b5cf6', bg: '#f5f3ff', getVal: a => a.stressScore },
+    { key: 'overall',   icon: HeartPulse,label: t.stats.overall,   unit: t.units.score, max: 100, color: '#6366f1', bg: '#eef2ff', getVal: a => a.overallScore },
   ]
 }
 

@@ -53,18 +53,14 @@ export const translations = {
     },
 
     stats: {
-      sleep:    'นอนหลับ',
-      screen:   'หน้าจอ',
-      stress:   'ความเครียด',
-      exercise: 'ออกกำลัง',
-      water:    'ดื่มน้ำ',
+      nutrition: 'อาหาร',
+      exercise:  'ออกกำลังกาย',
+      emotion:   'อารมณ์',
+      overall:   'ภาพรวม',
     },
 
     units: {
-      hrs:       'ชม.',
-      daysPerWk: 'วัน/สปด.',
-      glasses:   'แก้ว',
-      outOf10:   '/10',
+      score: 'คะแนน',
     },
 
     tips: [
@@ -791,18 +787,14 @@ export const translations = {
     },
 
     stats: {
-      sleep:    'Sleep',
-      screen:   'Screen',
-      stress:   'Stress',
-      exercise: 'Exercise',
-      water:    'Water',
+      nutrition: 'Nutrition',
+      exercise:  'Exercise',
+      emotion:   'Emotion',
+      overall:   'Overall',
     },
 
     units: {
-      hrs:       'hrs',
-      daysPerWk: 'days/wk',
-      glasses:   'glasses',
-      outOf10:   '/10',
+      score: 'pts',
     },
 
     tips: [
