@@ -1084,7 +1084,6 @@ export default function Admin() {
   const avgAge    = total > 0 ? Math.round(cloudUsers.reduce((s, u) => s + (u.age || 0), 0) / total) : null
   const male      = cloudUsers.filter(u => u.gender === 'ชาย').length
   const female    = cloudUsers.filter(u => u.gender === 'หญิง').length
-  const lgbt      = cloudUsers.filter(u => u.gender === 'LGBTQ+').length
   const ELEM_GRADES = new Set(['ป.1','ป.2','ป.3','ป.4','ป.5','ป.6'])
   const students  = cloudUsers.filter(u => u.role === 'นักเรียน' && !ELEM_GRADES.has(u.gradeLevel)).length
   const teachers  = cloudUsers.filter(u => u.role === 'ครู').length
@@ -1249,10 +1248,9 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                   <div className="bg-indigo-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">♂</span><p className="text-lg sm:text-xl font-bold text-indigo-700">{male}</p><p className="text-indigo-500 text-xs">ชาย</p></div>
                   <div className="bg-pink-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">♀</span><p className="text-lg sm:text-xl font-bold text-pink-700">{female}</p><p className="text-pink-500 text-xs">หญิง</p></div>
-                  <div className="bg-purple-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">🏳️‍🌈</span><p className="text-lg sm:text-xl font-bold text-purple-700">{lgbt}</p><p className="text-purple-500 text-xs">LGBTQ+</p></div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
                   <div className="bg-sky-50 rounded-2xl p-2.5 sm:p-4 flex flex-col items-center gap-1"><span className="text-xl sm:text-2xl">🎒</span><p className="text-lg sm:text-xl font-bold text-sky-700">{students}</p><p className="text-sky-500 text-xs">นักเรียน</p></div>
