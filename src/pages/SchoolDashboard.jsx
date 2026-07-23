@@ -182,6 +182,7 @@ export default function SchoolDashboard() {
 
   const totalLabel = role === 'ครู' ? 'ครูทั้งหมด' : role === 'บุคคลทั่วไป' ? 'บุคคลทั่วไป' : role === 'นักเรียน' ? 'นักเรียนทั้งหมด' : role === 'วิจัย' ? 'ผู้เข้าร่วมวิจัย' : 'ผู้ใช้ทั้งหมด'
   const showGrade  = role === 'all' || role === 'นักเรียน' || role === 'วิจัย'
+  const showGradeCharts = role === 'all' || role === 'นักเรียน'
 
   // KPIs
   const totalStudents = filteredUsers.length || users.length
@@ -476,6 +477,7 @@ export default function SchoolDashboard() {
               </div>
 
               {/* Stacked bar */}
+              {showGradeCharts && (
               <div style={{ ...CARD, padding:'14px 16px' }}>
                 <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>สัดส่วนระดับแยกชั้น</div>
                 <ResponsiveContainer width="100%" height={150}>
@@ -492,6 +494,7 @@ export default function SchoolDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              )}
             </div>
           </div>
 
@@ -553,6 +556,7 @@ export default function SchoolDashboard() {
       </div>
 
       {/* Line domain comparison — 3อ.2ส. — bottom of dashboard */}
+      {showGradeCharts && (
       <div style={{ padding:'0 16px 20px' }}>
         <div style={{ ...CARD, padding:'14px 16px' }}>
           <div style={{ fontSize:10.5, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'.8px', marginBottom:6 }}>คะแนนแยกด้านรายชั้น (3อ.2ส.)</div>
@@ -570,6 +574,7 @@ export default function SchoolDashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+      )}
       </>
       )}
     </div>
