@@ -440,6 +440,21 @@ function ResearchTab({ participants, loading, onRefresh, onDelete, deletingId, a
             style={{ background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }}>
             <FileDown size={14} /> Export PDF
           </button>
+          <button
+            onClick={() => {
+              const matched = participants
+                .map(p => cloudUsers.find(u =>
+                  u.firstName?.trim().toLowerCase() === p.firstName?.trim().toLowerCase() &&
+                  u.lastName?.trim().toLowerCase()  === p.lastName?.trim().toLowerCase()
+                ))
+                .filter(Boolean)
+              exportComparisonPDF(matched, allAssessments)
+            }}
+            disabled={total === 0}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg,#0891b2,#0e7490)' }}>
+            <FileDown size={14} /> Export PDF ก่อน-หลัง
+          </button>
         </div>
       </div>
 
