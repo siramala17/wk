@@ -7,7 +7,7 @@ import { sendPushToAll, fcmReady } from '../services/fcm'
 import { useHealth } from '../context/HealthContext'
 import { firebaseReady } from '../config/firebase'
 
-const ADMIN_PASSWORD = '2569'
+import { ADMIN_PASSWORD } from '../config/adminAuth'
 
 const GENDER_STYLE = {
   'ชาย':    { bg: 'bg-indigo-100',   text: 'text-indigo-700',   emoji: '♂' },

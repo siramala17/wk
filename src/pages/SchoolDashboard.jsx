@@ -7,6 +7,7 @@ import {
   LineChart, Line,
 } from 'recharts'
 import { subscribeUsers, subscribeAssessments, fetchResearchParticipants } from '../services/userSync'
+import { ADMIN_PASSWORD } from '../config/adminAuth'
 
 const DOMAINS  = ['อาหาร','ออกกำลังกาย','อารมณ์']
 const D_SHORT  = ['อาหาร','ออกกำลัง','อารมณ์']
@@ -112,6 +113,10 @@ const ROLES = [
 
 export default function SchoolDashboard() {
   const navigate = useNavigate()
+  const [authenticated, setAuthenticated] = useState(false)
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState(false)
+  const [shake, setShake] = useState(false)
   const [users, setUsers]       = useState([])
   const [assessments, setAss]   = useState([])
   const [loading, setLoading]   = useState(true)
@@ -129,16 +134,55 @@ export default function SchoolDashboard() {
   }, [])
 
   useEffect(() => {
+    if (!authenticated) return
     let loadCount = 0
     const done = () => { loadCount++; if (loadCount >= 2) setLoading(false) }
     const unsubUsers = subscribeUsers(u => { setUsers(u); setLastUpdate(new Date()); done() })
     const unsubAss   = subscribeAssessments(a => { setAss(a); setLastUpdate(new Date()); done() })
     return () => { unsubUsers(); unsubAss() }
-  }, [])
+  }, [authenticated])
 
   useEffect(() => {
+    if (!authenticated) return
     fetchResearchParticipants().then(data => setResearchParticipants(data)).catch(() => {})
-  }, [])
+  }, [authenticated])
+
+  function handleLogin(e) {
+    e.preventDefault()
+    if (password === ADMIN_PASSWORD) { setAuthenticated(true); setLoginError(false) }
+    else {
+      setLoginError(true); setShake(true); setPassword('')
+      setTimeout(() => setShake(false), 600)
+    }
+  }
+
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
+        <div className={`w-full max-w-sm bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl ${shake ? 'animate-bounce' : ''}`}>
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-indigo-500/20 border-2 border-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">🏥</div>
+            <h1 className="text-2xl font-bold text-white">School Dashboard</h1>
+            <p className="text-indigo-300 text-sm mt-1">ข้อมูลนักเรียน — กรุณาใส่รหัสผ่าน</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input type="password" value={password}
+              onChange={e => { setPassword(e.target.value); setLoginError(false) }}
+              placeholder="รหัสผ่าน"
+              className={`w-full px-4 py-3.5 rounded-xl bg-white/10 border text-white placeholder-white/40 focus:outline-none focus:ring-2 transition-colors ${loginError ? 'border-red-400 focus:ring-red-400' : 'border-white/20 focus:ring-indigo-400'}`}
+            />
+            {loginError && <p className="text-red-400 text-sm text-center">รหัสผ่านไม่ถูกต้อง</p>}
+            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-semibold transition-colors active:scale-[0.98]">
+              เข้าสู่ระบบ
+            </button>
+          </form>
+          <button onClick={() => navigate('/')} className="w-full text-white/40 hover:text-white/70 text-sm mt-4 transition-colors">
+            ← กลับหน้าหลัก
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   // users filtered by role
   const roleUsers = useMemo(() => {

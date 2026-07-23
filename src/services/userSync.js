@@ -36,6 +36,12 @@ function saveLocalUsers(users) {
   try { localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users)) } catch {}
 }
 
+// ไม่ควรส่ง PIN ออกไปนอกฟังก์ชัน login/fetchUserById — ใช้ตัวนี้ก่อน return ข้อมูล user แบบเป็นลิสต์เสมอ
+function stripPin(u) {
+  const { pin: _, ...safe } = u
+  return safe
+}
+
 // ── Firestore Diagnostics ────────────────────────────────────
 
 export async function testFirestoreAccess() {
@@ -65,22 +71,19 @@ export async function fetchCloudUsers() {
         stored.push({ ...session, registeredAt: session.registeredAt || new Date().toISOString() })
       }
     } catch {}
-    return stored.sort((a, b) => (b.registeredAt || '').localeCompare(a.registeredAt || ''))
+    return stored.map(stripPin).sort((a, b) => (b.registeredAt || '').localeCompare(a.registeredAt || ''))
   }
 
   // ไม่ใช้ orderBy เพราะ Firestore จะข้าม document ที่ไม่มี field registeredAt
   const snap = await getDocs(collection(db, 'users'))
-  const firestoreUsers = snap.docs.map(d => {
-    const data = d.data()
-    return { ...data, id: data.id ?? d.id }
-  })
+  const firestoreUsers = snap.docs.map(d => stripPin({ ...d.data(), id: d.data().id ?? d.id }))
 
   // รวม user จาก localStorage ที่อาจยังไม่ sync ขึ้น Firestore
   const localUsers = getLocalUsers()
   for (const lu of localUsers) {
     if (!firestoreUsers.some(fu => String(fu.id) === String(lu.id))) {
-      firestoreUsers.push(lu)
-      pushUserToCloud(lu).catch(() => {})
+      firestoreUsers.push(stripPin(lu))
+      pushUserToCloud(lu).catch(() => {}) // ใช้ lu (มี pin) เพื่อ sync ขึ้น Firestore ให้ครบ
     }
   }
 
@@ -383,19 +386,19 @@ export async function deleteBodyComposition(userId, date) {
 
 export function subscribeUsers(callback) {
   if (!db) {
-    callback(getLocalUsers())
+    callback(getLocalUsers().map(stripPin))
     return () => {}
   }
   return onSnapshot(collection(db, 'users'), snap => {
-    const firestoreUsers = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? d.id }))
-    const localUsers = getLocalUsers()
+    const firestoreUsers = snap.docs.map(d => stripPin({ ...d.data(), id: d.data().id ?? d.id }))
+    const localUsers = getLocalUsers().map(stripPin)
     for (const lu of localUsers) {
       if (!firestoreUsers.some(fu => String(fu.id) === String(lu.id))) {
         firestoreUsers.push(lu)
       }
     }
     callback(firestoreUsers)
-  }, () => callback(getLocalUsers()))
+  }, () => callback(getLocalUsers().map(stripPin)))
 }
 
 export function subscribeAssessments(callback) {
