@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import {
   pushUserToCloud, loginUserFromCloud, fetchUserById, syncUserPointsToCloud, updateUserAvatarInCloud,
-  claimApprovedPoints, submitRedemption, claimRedemptionRefunds, saveAssessmentToCloud,
+  claimApprovedPoints, submitRedemption, claimRedemptionRefunds, saveAssessmentToCloud, syncCalorieLogToCloud,
+  syncBmiToCloud, fetchUserAssessments,
 } from '../services/userSync'
 
 const HealthContext = createContext(null)
@@ -54,17 +55,74 @@ export function HealthProvider({ children }) {
   // เพื่อป้องกัน localStorage เขียนทับแต้มที่ถูกต้องจากเครื่องอื่น
   useEffect(() => {
     if (!isLoggedIn || !user?.id) { setIsHydrating(false); return }
-    fetchUserById(user.id)
-      .then(cloud => {
+    Promise.all([fetchUserById(user.id), fetchUserAssessments(user.id)])
+      .then(([cloud, cloudAssessments]) => {
         if (cloud) {
+          const { calorieLog: cloudCalorieLog, bmiData: cloudBmiData, ...cloudUser } = cloud
           setUser(prev => ({
             ...prev,
-            ...cloud,
+            ...cloudUser,
             // แต้มสะสมได้อย่างเดียว เก็บค่าสูงสุดป้องกันการสูญเสียแต้มจากเครื่องอื่น
-            points: Math.max(prev.points ?? 0, cloud.points ?? 0),
+            points: Math.max(prev.points ?? 0, cloudUser.points ?? 0),
             // streak ต้องรีเซ็ตได้เมื่อขาดวัน จึงเชื่อค่าล่าสุดจาก cloud แทนการเก็บค่าสูงสุด
-            streak: cloud.streak ?? prev.streak ?? 0,
+            streak: cloudUser.streak ?? prev.streak ?? 0,
           }))
+          // รวมไดอารี่อาหารจาก cloud เข้ากับของเครื่องนี้ (union ตาม id กันข้อมูลหาย)
+          if (cloudCalorieLog) {
+            setCalorieLog(prev => {
+              const merged = { ...prev }
+              for (const [date, entries] of Object.entries(cloudCalorieLog)) {
+                const localEntries = merged[date] || []
+                const localIds = new Set(localEntries.map(e => e.id))
+                const fromCloud = (entries || []).filter(e => !localIds.has(e.id))
+                merged[date] = [...localEntries, ...fromCloud]
+              }
+              return merged
+            })
+          }
+          // ผล BMI ล่าสุด — เทียบเวลา คำนวณ ใครใหม่กว่าใช้อันนั้น
+          if (cloudBmiData) {
+            setBmiData(prev => {
+              if (!prev) return cloudBmiData
+              const prevAt  = prev.calculatedAt || ''
+              const cloudAt = cloudBmiData.calculatedAt || ''
+              return cloudAt > prevAt ? cloudBmiData : prev
+            })
+          }
+        }
+
+        // ผลประเมินสุขภาพ — รวมประวัติจาก cloud เข้ากับของเครื่องนี้ (union ตามวันที่)
+        if (cloudAssessments?.length) {
+          const days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
+          const cloudEntries = cloudAssessments.map(a => ({
+            date: days[new Date(a.date + 'T00:00:00').getDay()],
+            fullDate: a.date,
+            sleep: a.sleepScore ?? 0, stress: a.stressScore ?? 0, screen: a.digitalScore ?? 0,
+            exercise: a.exerciseScore ?? 0, nutrition: a.nutritionScore ?? 0, score: a.overallScore ?? 0,
+          }))
+          setHistory(prev => {
+            const merged = [...prev]
+            for (const ce of cloudEntries) {
+              if (!merged.some(h => h.fullDate === ce.fullDate)) merged.push(ce)
+            }
+            return merged.sort((a, b) => a.fullDate.localeCompare(b.fullDate)).slice(-7)
+          })
+
+          const latestCloud = cloudAssessments[cloudAssessments.length - 1]
+          setLatestAssessment(prev => {
+            if (!prev || (latestCloud.date || '') > (prev.assessedAt || '')) {
+              return {
+                overallScore: latestCloud.overallScore ?? 0,
+                nutritionScore: latestCloud.nutritionScore ?? 0,
+                exerciseScore: latestCloud.exerciseScore ?? 0,
+                stressScore: latestCloud.stressScore ?? 0,
+                sleepScore: latestCloud.sleepScore ?? 0,
+                digitalScore: latestCloud.digitalScore ?? 0,
+                assessedAt: latestCloud.date,
+              }
+            }
+            return prev
+          })
         }
       })
       .catch(() => {})
@@ -100,6 +158,22 @@ export function HealthProvider({ children }) {
       syncUserPointsToCloud(user.id, user.points, user.streak).catch(() => {})
     }
   }, [user.points, user.streak, isHydrating]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // sync ไดอารี่อาหารไป Firestore ทุกครั้งที่เปลี่ยนแปลง — เพื่อไม่ให้ข้อมูลหายตอนปิดเบราว์เซอร์/เปลี่ยนเครื่อง
+  useEffect(() => {
+    if (isHydrating) return
+    if (user.id && isLoggedIn) {
+      syncCalorieLogToCloud(user.id, calorieLog).catch(() => {})
+    }
+  }, [calorieLog, isHydrating]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // sync ผล BMI ล่าสุดไป Firestore ทุกครั้งที่คำนวณใหม่
+  useEffect(() => {
+    if (isHydrating) return
+    if (user.id && isLoggedIn && bmiData) {
+      syncBmiToCloud(user.id, bmiData).catch(() => {})
+    }
+  }, [bmiData, isHydrating]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loginByName(firstName, pin) {
     try {

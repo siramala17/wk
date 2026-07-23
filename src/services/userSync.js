@@ -166,6 +166,30 @@ export async function syncUserPointsToCloud(userId, points, streak) {
   } catch { /* silent — offline */ }
 }
 
+export async function syncCalorieLogToCloud(userId, calorieLog) {
+  if (!db) {
+    saveLocalUsers(getLocalUsers().map(u =>
+      String(u.id) === String(userId) ? { ...u, calorieLog } : u
+    ))
+    return
+  }
+  try {
+    await updateDoc(doc(db, 'users', String(userId)), { calorieLog })
+  } catch { /* silent — offline */ }
+}
+
+export async function syncBmiToCloud(userId, bmiData) {
+  if (!db) {
+    saveLocalUsers(getLocalUsers().map(u =>
+      String(u.id) === String(userId) ? { ...u, bmiData } : u
+    ))
+    return
+  }
+  try {
+    await updateDoc(doc(db, 'users', String(userId)), { bmiData })
+  } catch { /* silent — offline */ }
+}
+
 export async function updateUserAvatarInCloud(userId, faceImage) {
   const avatar = await resizeImage(faceImage, 64, 0.4)
   if (!avatar) return
@@ -351,6 +375,14 @@ export async function fetchAllAssessments() {
   try {
     const snap = await getDocs(collection(db, 'assessments'))
     return snap.docs.map(d => d.data())
+  } catch { return [] }
+}
+
+export async function fetchUserAssessments(userId) {
+  if (!db) return []
+  try {
+    const snap = await getDocs(query(collection(db, 'assessments'), where('userId', '==', String(userId))))
+    return snap.docs.map(d => d.data()).sort((a, b) => (a.date || '').localeCompare(b.date || ''))
   } catch { return [] }
 }
 
