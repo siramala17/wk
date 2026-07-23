@@ -171,7 +171,13 @@ export default function SchoolDashboard() {
     if (role !== 'all') a = a.filter(x => roleUserIds.has(String(x.userId)))
     if (grade !== 'all') a = a.filter(x => x.gradeLevel === grade)
     if (year  !== 'all') a = a.filter(x => x.year === year)
-    return a
+    // เอาเฉพาะการประเมินล่าสุดของแต่ละคน ให้จำนวนที่นับสอดคล้องกับจำนวนผู้ใช้ (ไม่นับซ้ำคนที่ประเมินหลายครั้ง)
+    const latestByUser = {}
+    for (const x of a) {
+      const uid = String(x.userId)
+      if (!latestByUser[uid] || (x.date || '') > (latestByUser[uid].date || '')) latestByUser[uid] = x
+    }
+    return Object.values(latestByUser)
   }, [assessments, role, grade, year, roleUserIds])
 
   const filteredUsers = useMemo(() => {
