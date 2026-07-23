@@ -218,10 +218,13 @@ export function exportComparisonPDF(users, assessments) {
   <style>
     * { box-sizing:border-box; margin:0; padding:0; }
     body { font-family:'Sarabun',sans-serif; background:white; color:#1e293b; padding:32px; font-size:14px; }
-    @media print { body { padding:16px; } @page { margin:16mm; size:A4; } }
+    @media print { body { padding:16px; } @page { margin:16mm; size:A4; } .back-btn { display:none; } }
+    .back-btn { display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; padding:8px 16px; background:#1e40af; color:white; border:none; border-radius:8px; font-family:'Sarabun',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
+    .back-btn:hover { background:#1e3a8a; }
   </style>
 </head>
 <body>
+  <button class="back-btn" onclick="window.close()">← กลับ</button>
   <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e2e8f0;">
     <div style="font-size:22px;font-weight:800;color:#1e40af;">WatklangHealthXAI — รายงานเปรียบเทียบผลประเมินก่อน-หลัง</div>
     <div style="color:#64748b;margin-top:6px;font-size:13px;">วันที่ออกรายงาน: ${today} · พบ ${targets.length} ราย ที่มีการประเมินมากกว่า 1 ครั้ง</div>
@@ -273,10 +276,14 @@ export function exportImprovementPDF(users, assessments) {
     @media print {
       body { padding: 16px; }
       @page { margin: 16mm; size: A4; }
+      .back-btn { display: none; }
     }
+    .back-btn { display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; padding:8px 16px; background:#1e40af; color:white; border:none; border-radius:8px; font-family:'Sarabun',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
+    .back-btn:hover { background:#1e3a8a; }
   </style>
 </head>
 <body>
+  <button class="back-btn" onclick="window.close()">← กลับ</button>
   <!-- Cover header -->
   <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e2e8f0;">
     <div style="font-size:22px;font-weight:800;color:#1e40af;">WatklangHealthXAI — รายงานผู้ที่ต้องปรับปรุงสุขภาพ</div>

@@ -162,7 +162,11 @@ function exportResearchPDF(participants, assessments, cloudUsers) {
   .stat-num { font-size:28px; font-weight:900; color:#4f46e5; }
   .stat-lbl { font-size:11px; color:#666; margin-top:2px; }
   .footer { margin-top:32px; font-size:10px; color:#888; border-top:1px solid #eee; padding-top:10px; }
+  .back-btn { display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-family:'Sarabun',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
+  .back-btn:hover { background:#4338ca; }
+  @media print { .back-btn { display:none; } }
 </style></head><body>
+<button class="back-btn" onclick="window.close()">← กลับ</button>
 <h1>🔬 รายงานผู้เข้าร่วมวิจัย — WatklangHealthXAI</h1>
 <p style="color:#666;font-size:12px">ส่งออกเมื่อ ${now} · ผู้ดูแลระบบ Admin</p>
 
@@ -323,8 +327,11 @@ function exportParticipantPDF(p, assessments = [], bodyComps = []) {
   table { width:100%; border-collapse:collapse; }
   td { padding:7px 8px; border-bottom:1px solid #f1f5f9; font-size:12px; vertical-align:top; }
   .footer { margin-top:28px; font-size:10px; color:#94a3b8; text-align:center; border-top:1px solid #e2e8f0; padding-top:10px; }
-  @media print { body { margin:20px; } }
+  .back-btn { display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; padding:8px 16px; background:#7c3aed; color:white; border:none; border-radius:8px; font-family:'Sarabun',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
+  .back-btn:hover { background:#6d28d9; }
+  @media print { body { margin:20px; } .back-btn { display:none; } }
 </style></head><body>
+<button class="back-btn" onclick="window.close()">← กลับ</button>
 <h1>🔬 ข้อมูลผู้เข้าร่วมวิจัย</h1>
 <div class="sub">WatklangHealthXAI · พิมพ์วันที่ ${now}</div>
 
